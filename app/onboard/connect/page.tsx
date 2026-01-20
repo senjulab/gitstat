@@ -112,8 +112,8 @@ export default function ConnectPage() {
 
       if (error) throw error;
 
-      // Navigate to dashboard
-      router.push("/dashboard");
+      // Navigate to repository-specific dashboard
+      router.push(`/${selectedRepo.full_name}/dashboard`);
     } catch (err: any) {
       console.error("Failed to save repository:", err);
       alert("Failed to save repository. Please try again.");

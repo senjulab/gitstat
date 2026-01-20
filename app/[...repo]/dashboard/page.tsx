@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import UserHeader from "@/components/user-header";
 
 export default function DashboardPage() {
+  const params = useParams();
+  const repoSegments = params.repo as string[];
+  // Reconstruct full repo name from segments (e.g., ["vercel", "next.js"] -> "vercel/next.js")
+  const repoFullName = repoSegments ? repoSegments.slice(0, -1).join("/") : "";
   const [user, setUser] = useState<any>(null);
   const [repository, setRepository] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -25,22 +29,27 @@ export default function DashboardPage() {
 
       setUser(currentUser);
 
-      // Fetch connected repository
-      const { data: repos } = await supabase
+      // Fetch the specific repository from URL
+      const { data: repoData } = await supabase
         .from("connected_repositories")
         .select("*")
         .eq("user_id", currentUser.id)
+        .eq("repo_full_name", decodeURIComponent(repoFullName))
         .single();
 
-      if (repos) {
-        setRepository(repos);
+      if (repoData) {
+        setRepository(repoData);
+      } else {
+        // Repository not found, redirect to connect
+        router.push("/onboard/connect");
+        return;
       }
 
       setLoading(false);
     };
 
     checkAuth();
-  }, [router, supabase]);
+  }, [router, supabase, repoFullName]);
 
   if (loading) {
     return (
@@ -59,19 +68,17 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div>
             <h1 className="text-3xl font-bold text-black">
-              Welcome to GitStat! 🎉
+              {repository?.repo_name}
             </h1>
-            <p className="text-[#666666] mt-2">
-              Your repository analytics dashboard
-            </p>
+            <p className="text-[#666666] mt-2">{repository?.repo_full_name}</p>
           </div>
 
-          {/* Connected Repository */}
-          {repository ? (
-            <div className="bg-white rounded-xl p-6 border border-neutral-200">
-              <h2 className="text-lg font-semibold text-black mb-4">
-                Connected Repository
-              </h2>
+          {/* Repository Info */}
+          <div className="bg-white rounded-xl p-6 border border-neutral-200">
+            <h2 className="text-lg font-semibold text-black mb-4">
+              Repository Details
+            </h2>
+            <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <svg
                   className="w-5 h-5 text-neutral-600"
@@ -82,25 +89,19 @@ export default function DashboardPage() {
                 </svg>
                 <div>
                   <p className="font-medium text-black">
-                    {repository.repo_full_name}
+                    {repository?.repo_full_name}
                   </p>
-                  {repository.is_organization && (
+                  {repository?.is_organization && (
                     <span className="text-xs text-[#666666]">Organization</span>
                   )}
                 </div>
               </div>
+              <div className="text-sm text-[#666666]">
+                <span className="font-medium">Default branch:</span>{" "}
+                {repository?.default_branch}
+              </div>
             </div>
-          ) : (
-            <div className="bg-white rounded-xl p-6 border border-neutral-200 text-center">
-              <p className="text-[#666666] mb-4">No repository connected yet</p>
-              <button
-                onClick={() => router.push("/onboard/connect")}
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
-              >
-                Connect a repository
-              </button>
-            </div>
-          )}
+          </div>
 
           {/* Coming Soon */}
           <div className="bg-white rounded-xl p-6 border border-neutral-200">
