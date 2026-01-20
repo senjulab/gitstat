@@ -1,50 +1,115 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import OnboardingProgress from "@/components/onboarding-progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const supabase = createClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size must be less than 2MB");
+        return;
+      }
 
+      // Validate file type
+      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+        alert("Only PNG, JPEG, and WebP images are allowed");
+        return;
+      }
+
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadAvatarInBackground = async (userId: string, file: File) => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, {
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+      // Update user metadata with avatar URL
+      await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl },
+      });
+    } catch (error) {
+      console.error("Failed to upload avatar:", error);
+      // Silent fail - user already navigated away
+    }
+  };
+
+  const saveProfileInBackground = async (
+    userName: string,
+    file: File | null,
+  ) => {
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
-        throw new Error("Not authenticated");
-      }
+      if (!user) return;
 
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: name },
+      // Update name in metadata
+      await supabase.auth.updateUser({
+        data: { full_name: userName },
       });
 
-      if (error) throw error;
-
-      // Redirect to dashboard or next onboarding step
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile");
-    } finally {
-      setLoading(false);
+      // Upload avatar if provided
+      if (file) {
+        await uploadAvatarInBackground(user.id, file);
+      }
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+      // Silent fail - user already navigated away
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Navigate immediately without waiting
+    router.push("/onboard/connect");
+
+    // Save data in background (non-blocking)
+    saveProfileInBackground(name, avatarFile);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
+        <div className="flex items-center justify-center">
+          <span className="text-sm text-[#0006] border-transparent h-[24px] min-w-[24px] bg-[#00000008] px-3 py-1 pl-2 pr-2 gap-1 rounded-sm font-medium flex items-center justify-center border border-[#00000008]">
+            Account
+          </span>
+        </div>
+
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-medium text-black">
@@ -55,12 +120,6 @@ export default function ProfilePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-              {error}
-            </div>
-          )}
-
           <div className="space-y-2">
             <label
               htmlFor="name"
@@ -75,7 +134,6 @@ export default function ProfilePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              disabled={loading}
               className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
             />
           </div>
@@ -88,11 +146,22 @@ export default function ProfilePage() {
               Profile photo (optional)
             </label>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-[#f3f3f3] flex items-center justify-center text-2xl font-medium text-[#666666]">
-                {name ? name[0].toUpperCase() : "?"}
-              </div>
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={avatarPreview} alt="Profile" />
+                <AvatarFallback className="bg-[#f3f3f3] text-2xl font-medium text-[#666666]">
+                  {name ? name[0].toUpperCase() : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
               <Button
                 type="button"
+                onClick={() => fileInputRef.current?.click()}
                 variant="outline"
                 className="h-10 border-2 border-neutral-200 hover:bg-neutral-50 rounded-xl"
               >
@@ -103,11 +172,13 @@ export default function ProfilePage() {
 
           <Button
             type="submit"
-            disabled={loading || !name}
+            disabled={!name}
             className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
           >
-            {loading ? "Saving..." : "Continue"}
+            Continue
           </Button>
+
+          <OnboardingProgress currentStep={0} totalSteps={2} />
         </form>
       </div>
     </div>
