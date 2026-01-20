@@ -12,7 +12,7 @@ export default function RegisterPage() {
             Create your account
           </h1>
           <p className="text-[#666666] text-md">
-            Simple, beautiful repository analytics.
+            Simple, beautiful repository analytics
           </p>
         </div>
 
