@@ -46,11 +46,12 @@ export default function Pricing() {
         </div>
 
         {/* CTA */}
-        <button className="w-full bg-[#918df6] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium mt-2">
-          Start 14 day free trial
-        </button>
-        
-        <span className="text-sm text-[#999]">No credit card required</span>
+        <div className="w-full flex flex-col items-center gap-2 mt-2">
+          <button className="w-full bg-[#918df6] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
+            Start 14 day free trial
+          </button>
+          <span className="text-sm text-[#999]">No credit card required</span>
+        </div>
       </div>
     </div>
   );
