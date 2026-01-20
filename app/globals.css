@@ -40,6 +40,14 @@
   font-display: swap;
 }
 
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --font-open-runde: 'Open Runde', sans-serif;
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -88,6 +96,7 @@ body {
   background: #ffffff;
   font-family: 'Open Runde', sans-serif;
 }
+
 
 :root {
   --radius: 0.625rem;
@@ -165,4 +174,10 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-open-runde);
+
 }

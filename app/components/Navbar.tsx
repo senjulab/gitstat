@@ -1,46 +1,21 @@
-import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <header className="fixed top-8 left-1/2 -translate-x-1/2 z-99 w-[460px] bg-[#14141F] rounded-[24px] overflow-hidden shadow-xl corner-superellipse/1.125 hidden md:block">
+    <header className="dark fixed top-8 left-1/2 -translate-x-1/2 z-[99] w-[400px] bg-[#14141f] backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xl hidden md:block tracking-tight">
       <div>
-        <div className="flex items-center gap-2 h-13 pl-4 pr-3.25">
-          <Link
-            href="/features"
-            className="text-sm font-medium transition-colors px-2 text-[#bbbcc3] hover:text-[#eaeaeb]"
-          >
-            Features
-          </Link>
-          <Link
-            href="/why"
-            className="text-sm font-medium transition-colors px-2 text-[#bbbcc3] hover:text-[#eaeaeb]"
-          >
-            Why
-          </Link>
-          <Link
-            href="/blog"
-            className="text-sm font-medium transition-colors px-2 text-[#bbbcc3] hover:text-[#eaeaeb]"
-          >
-            Blog
-          </Link>
-          <Link
-            href="/docs"
-            className="text-sm font-medium transition-colors px-2 text-[#bbbcc3] hover:text-[#eaeaeb]"
-          >
-            Docs
-          </Link>
-          <Link
-            href="/login"
-            className="ml-4 text-sm font-medium transition-colors px-2 text-[#bbbcc3] hover:text-[#eaeaeb]"
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="px-3 py-2 text-sm font-medium text-white hover:text-white/80 transition-colors"
-          >
-            Register
-          </Link>
+        <div className="flex items-center justify-between h-[52px] pl-4 pr-3">
+          <div className="flex items-center gap-4">
+            <span className="text-[#666] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">Features</span>
+            <span className="text-[#666] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">Why</span>
+            <span className="text-[#666] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">Blog</span>
+            <span className="text-[#666] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">Docs</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[#666] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">Login</span>
+            <button className="bg-[#9580ff] hover:opacity-90 transition-colors duration-200 cursor-pointer text-white text-sm px-4 py-1.5 rounded-full font-medium">
+              Register
+            </button>
+          </div>
         </div>
       </div>
     </header>
