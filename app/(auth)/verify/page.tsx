@@ -74,12 +74,12 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 font-medium tracking-tight">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Sign up to GitStat</h1>
-          <p className="text-[#666666] text-md">
+          <p className="text-[#666666] text-md font-normal">
             Simple, beautiful repository analytics.
           </p>
         </div>

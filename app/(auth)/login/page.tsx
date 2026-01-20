@@ -1,15 +1,20 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 font-medium tracking-tight">
       <div className="w-full max-w-sm space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Log in to GitStat</h1>
-          <p className="text-[#666666] text-md">
+          <p className="text-[#666666] text-md font-normal">
             Simple, beautiful repository analytics.
           </p>
         </div>
@@ -19,16 +24,21 @@ export default function LoginPage() {
           <Input
             type="email"
             placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
           />
 
-          <Button className="w-full h-12 bg-indigo-200  hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer">
+          <Button
+            disabled={!email.trim()}
+            className="w-full h-12 bg-[#918df6] hover:bg-[#918df6]/90 transition-colors duration-200 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+          >
             Continue with email
           </Button>
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-4">
-            <Button className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none ">
+            <Button className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -50,7 +60,7 @@ export default function LoginPage() {
               Google
             </Button>
 
-            <Button className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none">
+            <Button className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none">
               <svg
                 className="w-5 h-5 mr-2"
                 fill="currentColor"
@@ -63,7 +73,7 @@ export default function LoginPage() {
           </div>
 
           {/* Register Link */}
-          <p className="text-center text-[#666666] text-sm">
+          <p className="text-center text-[#666666] text-sm font-normal">
             Don't have an account?{" "}
             <Link
               href="/register"
