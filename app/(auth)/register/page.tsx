@@ -1,8 +1,44 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) throw error;
+
+      // Store email in sessionStorage for verification page
+      sessionStorage.setItem("verification_email", email);
+      router.push("/verify");
+    } catch (err: any) {
+      setError(err.message || "Failed to send verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-sm space-y-8">
@@ -17,20 +53,37 @@ export default function RegisterPage() {
         </div>
 
         {/* Form */}
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
+
           <Input
             type="email"
             placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
             className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
           />
 
-          <Button className="w-full h-12 bg-indigo-200  hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer">
-            Continue with email
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+          >
+            {loading ? "Sending code..." : "Continue with email"}
           </Button>
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-4">
-            <Button className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none ">
+            <Button
+              type="button"
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none"
+            >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -52,7 +105,10 @@ export default function RegisterPage() {
               Google
             </Button>
 
-            <Button className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none">
+            <Button
+              type="button"
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none"
+            >
               <svg
                 className="w-5 h-5 mr-2"
                 fill="currentColor"
@@ -74,7 +130,7 @@ export default function RegisterPage() {
               Log in
             </Link>
           </p>
-        </div>
+        </form>
       </div>
     </div>
   );
