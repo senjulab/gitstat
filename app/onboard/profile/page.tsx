@@ -33,8 +33,8 @@ export default function ProfilePage() {
 
       if (error) throw error;
 
-      // Redirect to dashboard or next onboarding step
-      router.push("/dashboard");
+      // Redirect to next onboarding step
+      router.push("/onboard/connect");
     } catch (err: any) {
       setError(err.message || "Failed to update profile");
     } finally {
@@ -45,6 +45,11 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
+        <div className="flex items-center justify-center ">
+          <span className="text-sm text-[#0006]  border-transparent h-[24px] min-w-[24px] bg-[#00000008] px-3 py-1 pl-2 pr-2 gap-1 rounded-sm font-medium flex items-center justify-center border border-[#00000008]">
+            Account
+          </span>
+        </div>
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-medium text-black">
