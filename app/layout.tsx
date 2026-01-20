@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Gistat - Analytics for your gitHub repos",
-  description: "GitHub repo analytics made simple. track stars, commits, traffic, and more.",
+  description:
+    "GitHub repo analytics made simple. track stars, commits, traffic, and more.",
 };
 
 export default function RootLayout({
@@ -13,12 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}
-      >
-        {children}
-      </body>
+      <body className={`antialiased bg-white`}>{children}</body>
     </html>
   );
 }
