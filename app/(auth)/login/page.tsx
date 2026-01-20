@@ -5,20 +5,13 @@ import { Input } from "@/components/ui/input";
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
-      <div className="w-full max-w-md space-y-8">
-        {/* Logo */}
-        <div className="flex justify-center">
-          <div className="w-20 h-20 bg-neutral-900 rounded-full flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-white rounded-full"></div>
-          </div>
-        </div>
-
+      <div className="w-full max-w-sm space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-semibold text-neutral-900">
-            Log in to Visitors
-          </h1>
-          <p className="text-neutral-600">Simple, beautiful web analytics.</p>
+          <h1 className="text-xl font-medium text-black">Log in to GitStat</h1>
+          <p className="text-[#666666] text-md">
+            Simple, beautiful repository analytics.
+          </p>
         </div>
 
         {/* Form */}
@@ -26,19 +19,16 @@ export default function LoginPage() {
           <Input
             type="email"
             placeholder="Email address"
-            className="h-14 border-2 border-indigo-400 focus-visible:ring-indigo-400 focus-visible:border-indigo-400 rounded-xl text-base"
+            className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
           />
 
-          <Button className="w-full h-14 bg-indigo-200 hover:bg-indigo-300 text-white rounded-xl text-base font-medium">
+          <Button className="w-full h-12 bg-indigo-200  hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer">
             Continue with email
           </Button>
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-4">
-            <Button
-              variant="outline"
-              className="h-12 border-2 border-neutral-200 hover:bg-neutral-50 rounded-xl"
-            >
+            <Button className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none ">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -60,10 +50,7 @@ export default function LoginPage() {
               Google
             </Button>
 
-            <Button
-              variant="outline"
-              className="h-12 border-2 border-neutral-200 hover:bg-neutral-50 rounded-xl"
-            >
+            <Button className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none">
               <svg
                 className="w-5 h-5 mr-2"
                 fill="currentColor"
@@ -76,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           {/* Register Link */}
-          <p className="text-center text-neutral-600 pt-4">
+          <p className="text-center text-[#666666] text-sm">
             Don't have an account?{" "}
             <Link
               href="/register"
