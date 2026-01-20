@@ -7,14 +7,23 @@ import OnboardingProgress from "@/components/onboarding-progress";
 
 export default function ConnectPage() {
   const [loading, setLoading] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [repositories, setRepositories] = useState<string[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const router = useRouter();
 
   const handleConnectGitHub = async () => {
     setLoading(true);
     // TODO: Implement GitHub OAuth flow
-    // For now, just simulate connection
+    // For now, simulate connection and fetch repos
     setTimeout(() => {
+      setConnected(true);
+      // Mock repositories - will be replaced with real GitHub API call
+      setRepositories([
+        "my-awesome-repo",
+        "company/main-project",
+        "personal/website",
+      ]);
       setLoading(false);
     }, 1000);
   };
@@ -59,19 +68,14 @@ export default function ConnectPage() {
           </Button>
 
           {/* Repository Selection - Shows after connection */}
-          {!loading && (
+          {connected && repositories.length > 0 && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-[#666666]">
                   Select a repository or organization
                 </label>
                 <div className="space-y-2">
-                  {/* Placeholder repositories */}
-                  {[
-                    "my-awesome-repo",
-                    "company/main-project",
-                    "personal/website",
-                  ].map((repo) => (
+                  {repositories.map((repo) => (
                     <button
                       key={repo}
                       onClick={() => setSelectedRepo(repo)}
