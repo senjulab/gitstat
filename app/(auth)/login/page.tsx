@@ -4,9 +4,27 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const supabase = createClient();
+
+  const handleOAuthLogin = async (provider: "google" | "github") => {
+    setError("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || `Failed to sign in with ${provider}`);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 font-medium tracking-tight">
@@ -21,6 +39,12 @@ export default function LoginPage() {
 
         {/* Form */}
         <div className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
+
           <Input
             type="email"
             placeholder="Email address"
@@ -38,7 +62,10 @@ export default function LoginPage() {
 
           {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-4">
-            <Button className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none">
+            <Button
+              onClick={() => handleOAuthLogin("google")}
+              className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none"
+            >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -60,7 +87,10 @@ export default function LoginPage() {
               Google
             </Button>
 
-            <Button className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none">
+            <Button
+              onClick={() => handleOAuthLogin("github")}
+              className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none"
+            >
               <svg
                 className="w-5 h-5 mr-2"
                 fill="currentColor"

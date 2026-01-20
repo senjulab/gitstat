@@ -39,6 +39,21 @@ export default function RegisterPage() {
     }
   };
 
+  const handleOAuthLogin = async (provider: "google" | "github") => {
+    setError("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || `Failed to sign in with ${provider}`);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 font-medium tracking-tight">
       <div className="w-full max-w-sm space-y-8">
@@ -82,6 +97,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-3 pt-4">
             <Button
               type="button"
+              onClick={() => handleOAuthLogin("google")}
               className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -107,6 +123,7 @@ export default function RegisterPage() {
 
             <Button
               type="button"
+              onClick={() => handleOAuthLogin("github")}
               className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none"
             >
               <svg
