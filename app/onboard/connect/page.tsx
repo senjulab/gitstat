@@ -15,17 +15,10 @@ export default function ConnectPage() {
   const handleConnectGitHub = async () => {
     setLoading(true);
     // TODO: Implement GitHub OAuth flow
-    // For now, simulate connection and fetch repos
-    setTimeout(() => {
-      setConnected(true);
-      // Mock repositories - will be replaced with real GitHub API call
-      setRepositories([
-        "my-awesome-repo",
-        "company/main-project",
-        "personal/website",
-      ]);
-      setLoading(false);
-    }, 1000);
+    // After successful OAuth, fetch repositories and call:
+    // setConnected(true);
+    // setRepositories(fetchedRepos);
+    // setLoading(false);
   };
 
   const handleContinue = () => {
