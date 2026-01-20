@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import OnboardingProgress from "@/components/onboarding-progress";
 
 export default function ProfilePage() {
   const [name, setName] = useState("");
@@ -113,6 +114,8 @@ export default function ProfilePage() {
           >
             {loading ? "Saving..." : "Continue"}
           </Button>
+
+          <OnboardingProgress currentStep={0} totalSteps={2} />
         </form>
       </div>
     </div>

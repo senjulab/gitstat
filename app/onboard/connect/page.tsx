@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import OnboardingProgress from "@/components/onboarding-progress";
 
 export default function ConnectPage() {
   const [loading, setLoading] = useState(false);
@@ -106,6 +107,8 @@ export default function ConnectPage() {
               </Button>
             </div>
           )}
+
+          <OnboardingProgress currentStep={1} totalSteps={2} />
 
           {/* Skip option */}
           <p className="text-center text-[#666666] text-sm">
