@@ -1,3 +1,4 @@
+
 export default function Navbar() {
   return (
     <header className="dark fixed top-8 left-1/2 -translate-x-1/2 z-[99] w-[400px] bg-[#14141f] backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xl hidden md:block tracking-tight">
