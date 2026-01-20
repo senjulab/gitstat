@@ -38,10 +38,6 @@ export default function Footer() {
             <p className="text-[#666] text-sm leading-relaxed">
               Built over hundreds of late nights, GitStat gives you friendly, privacy-first insights about your repositories and projects.
             </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[#666] text-sm">Operational</span>
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
-            </div>
             <span className="text-[#999] text-sm">© 2026</span>
           </div>
 
