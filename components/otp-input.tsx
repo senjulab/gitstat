@@ -13,19 +13,15 @@ export default function OTPInput({ length = 6, onComplete }: OTPInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, value: string) => {
-    // Only allow numbers
     if (value && !/^\d$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
-
-    // Check if complete
     if (newOtp.every((digit) => digit !== "")) {
       onComplete(newOtp.join(""));
     }
@@ -51,11 +47,8 @@ export default function OTPInput({ length = 6, onComplete }: OTPInputProps) {
     });
     setOtp(newOtp);
 
-    // Focus last filled input
     const lastFilledIndex = Math.min(pastedData.length, length) - 1;
     inputRefs.current[lastFilledIndex]?.focus();
-
-    // Check if complete
     if (newOtp.every((digit) => digit !== "")) {
       onComplete(newOtp.join(""));
     }
