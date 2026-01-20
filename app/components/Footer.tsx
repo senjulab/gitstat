@@ -30,12 +30,12 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="py-16 md:py-24 bg-background tracking-tight">
+    <footer className="py-16 md:py-24 bg-background tracking-tight font-medium">
       <div className="w-full max-w-5xl mx-auto px-5">
         <div className="flex flex-col md:flex-row justify-between gap-12">
           {/* Left side - Description */}
           <div className="flex flex-col gap-6 max-w-sm">
-            <p className="text-[#666] text-sm leading-relaxed">
+            <p className="text-[#999] text-sm leading-relaxed">
               Built over hundreds of late nights, GitStat gives you friendly, privacy-first insights about your repositories and projects.
             </p>
             <span className="text-[#999] text-sm">© 2026</span>
@@ -50,7 +50,7 @@ export default function Footer() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-[#666] text-sm hover:text-[#181925] transition-colors duration-200"
+                  className="text-[#999] text-sm hover:text-[#181925] transition-colors duration-200"
                 >
                   {link.label}
                 </a>
@@ -64,7 +64,7 @@ export default function Footer() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-[#666] text-sm hover:text-[#181925] transition-colors duration-200"
+                  className="text-[#999] text-sm hover:text-[#181925] transition-colors duration-200"
                 >
                   {link.label}
                 </a>
@@ -78,7 +78,7 @@ export default function Footer() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-[#666] text-sm hover:text-[#181925] transition-colors duration-200"
+                  className="text-[#999] text-sm hover:text-[#181925] transition-colors duration-200"
                 >
                   {link.label}
                 </a>
@@ -92,7 +92,7 @@ export default function Footer() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-[#666] text-sm hover:text-[#181925] transition-colors duration-200"
+                  className="text-[#999] text-sm hover:text-[#181925] transition-colors duration-200"
                 >
                   {link.label}
                 </a>
