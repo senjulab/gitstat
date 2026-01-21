@@ -76,7 +76,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#fff] px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Log in to GitStat</h1>
@@ -99,13 +99,13 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
+            className="border-none rounded-xl h-12 w-full bg-[#f5f5f5] text-base placeholder:text-[#b3b3b3] placeholder:font-semibold"
           />
 
           <Button
             type="submit"
             disabled={loading || !email}
-            className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+            className="w-full h-12 bg-[#38b000] hover:bg-[#38b000] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
           >
             {loading ? "Sending code..." : "Continue with email"}
           </Button>
@@ -115,7 +115,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none disabled:opacity-50"
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f5f5f5] border-none disabled:opacity-50"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -142,7 +142,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGitHubLogin}
               disabled={loading}
-              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none disabled:opacity-50"
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f5f5f5] border-none disabled:opacity-50"
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -159,7 +159,7 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <Link
               href="/register"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-[#38b000] hover:text-[#38b000] font-medium"
             >
               Register
             </Link>

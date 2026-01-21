@@ -103,7 +103,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-sm space-y-6">
         <div className="flex items-center justify-center">
           <span className="text-sm text-[#0006] border-transparent h-[24px] min-w-[24px] bg-[#00000008] px-3 py-1 pl-2 pr-2 gap-1 rounded-sm font-medium flex items-center justify-center border border-[#00000008]">
             Account
@@ -118,8 +118,32 @@ export default function ProfilePage() {
           <p className="text-[#666666] text-md">Let's set up your profile</p>
         </div>
 
+        <div className="space-y-2">
+          <div className="flex items-center justify-center ">
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={avatarPreview} alt="Profile" />
+                <AvatarFallback className="bg-[#f5f5f5] text-2xl font-medium text-[#b3b3b3]">
+                  {name ? name[0].toUpperCase() : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <p className="text-[#666666] text-xs text-center">optional</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+        </div>
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label
               htmlFor="name"
@@ -138,42 +162,10 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label
-              htmlFor="photo"
-              className="text-sm font-medium text-[#666666]"
-            >
-              Profile photo (optional)
-            </label>
-            <div className="flex items-center gap-4">
-              <Avatar className="w-16 h-16">
-                <AvatarImage src={avatarPreview} alt="Profile" />
-                <AvatarFallback className="bg-[#f3f3f3] text-2xl font-medium text-[#666666]">
-                  {name ? name[0].toUpperCase() : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                variant="outline"
-                className="h-10 border-2 border-neutral-200 hover:bg-neutral-50 rounded-xl"
-              >
-                Upload photo
-              </Button>
-            </div>
-          </div>
-
           <Button
             type="submit"
             disabled={!name}
-            className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+            className="w-full h-12 bg-[#14141F] hover:bg-[#14141F99] text-white rounded-full text-base font-medium cursor-pointer"
           >
             Continue
           </Button>
