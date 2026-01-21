@@ -84,7 +84,7 @@ export default function ConnectPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${window.location.origin}/onboard/connect`,
+          redirectTo: `${window.location.origin}/auth/callback`,
           scopes: "read:user user:email read:org repo",
         },
       });
