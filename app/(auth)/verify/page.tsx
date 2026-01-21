@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import OTPInput from "@/components/otp-input";
@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getOnboardingRedirect } from "@/lib/auth/redirect";
 import Link from "next/link";
 
-export default function VerifyPage() {
+function VerifyContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -141,5 +141,19 @@ export default function VerifyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <VerifyContent />
+    </Suspense>
   );
 }
