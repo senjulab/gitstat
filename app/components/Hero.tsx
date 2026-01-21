@@ -15,7 +15,7 @@ export default function Hero() {
           repo evolves in realtime.
         </p>
         <div className="flex items-center gap-4 mt-4">
-          <button className="bg-[#38b000] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white w-[320px] md:w-auto items-center justify-center cursor-pointer rounded-full font-medium">
+          <button className="bg-[#F81DE5] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white w-[320px] md:w-auto items-center justify-center cursor-pointer rounded-full font-medium">
             Start 14 day free trial
           </button>
           <button className="bg-[#00000008] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] w-[320px] md:w-auto items-center justify-center cursor-pointer rounded-full font-medium">
