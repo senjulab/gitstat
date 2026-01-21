@@ -82,12 +82,12 @@ export default function FAQ() {
               className="bg-[#00000008] rounded-xl overflow-hidden border-0"
             >
               <AccordionTrigger className="w-full text-foreground-4 focus-visible:border-ring focus-visible:ring-ring/50 flex items-center justify-between gap-4 pl-4 pr-3 py-2.5 text-left font-medium transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 hover:cursor-pointer">
-                <span className="text-[#181925] font-medium">
+                <span className="text-[#181925] font-medium text-base">
                   {faq.question}
                 </span>
               </AccordionTrigger>
               <AccordionPanel className="px-5 pb-4 pt-0">
-                <p className="text-[#666]">{faq.answer}</p>
+                <p className="text-[#666] text-base">{faq.answer}</p>
               </AccordionPanel>
             </AccordionItem>
           ))}
