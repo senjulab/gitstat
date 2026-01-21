@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import OTPInput from "@/components/otp-input";
 import { createClient } from "@/lib/supabase/client";
+import { getOnboardingRedirect } from "@/lib/auth/redirect";
 import Link from "next/link";
 
 export default function VerifyPage() {
@@ -29,26 +30,7 @@ export default function VerifyPage() {
   }, [router, searchParams]);
 
   const getRedirectPath = async (userId: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return "/onboard/profile";
-
-    const hasName = user.user_metadata?.full_name;
-    if (!hasName) return "/onboard/profile";
-
-    const { data: repos } = await supabase
-      .from("connected_repositories")
-      .select("repo_full_name")
-      .eq("user_id", userId)
-      .limit(1);
-
-    if (!repos || repos.length === 0) {
-      return "/onboard/connect";
-    }
-
-    return `/${repos[0].repo_full_name}`;
+    return await getOnboardingRedirect(userId);
   };
 
   const handleVerify = async (otp: string) => {
