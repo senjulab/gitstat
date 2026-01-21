@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,37 +9,83 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
   const supabase = createClient();
 
-  const handleOAuthLogin = async (provider: "google" | "github") => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/verify`,
+        },
+      });
+
+      if (error) throw error;
+
+      router.push(`/verify?email=${encodeURIComponent(email)}`);
+    } catch (err: any) {
+      setError(err.message || "Failed to send login code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
+
       if (error) throw error;
     } catch (err: any) {
-      setError(err.message || `Failed to sign in with ${provider}`);
+      setError(err.message || "Failed to login with Google");
+      setLoading(false);
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "Failed to login with GitHub");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 font-medium tracking-tight">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Log in to GitStat</h1>
-          <p className="text-[#666666] text-md font-normal">
+          <p className="text-[#666666] text-md">
             Simple, beautiful repository analytics.
           </p>
         </div>
 
-        {/* Form */}
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
               {error}
@@ -50,21 +97,25 @@ export default function LoginPage() {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
             className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
           />
 
           <Button
-            disabled={!email.trim()}
-            className="w-full h-12 bg-[#918df6] hover:bg-[#918df6]/90 transition-colors duration-200 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+            type="submit"
+            disabled={loading || !email}
+            className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
           >
-            Continue with email
+            {loading ? "Sending code..." : "Continue with email"}
           </Button>
 
-          {/* OAuth Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-4">
             <Button
-              onClick={() => handleOAuthLogin("google")}
-              className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none"
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none disabled:opacity-50"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -88,8 +139,10 @@ export default function LoginPage() {
             </Button>
 
             <Button
-              onClick={() => handleOAuthLogin("github")}
-              className="h-12 text-[#666] text-base bg-[#00000008] transition-colors duration-200 cursor-pointer hover:bg-[#e8e8e8] rounded-full border-none"
+              type="button"
+              onClick={handleGitHubLogin}
+              disabled={loading}
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none disabled:opacity-50"
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -102,8 +155,7 @@ export default function LoginPage() {
             </Button>
           </div>
 
-          {/* Register Link */}
-          <p className="text-center text-[#666666] text-sm font-normal">
+          <p className="text-center text-[#666666] text-sm">
             Don't have an account?{" "}
             <Link
               href="/register"
@@ -112,7 +164,7 @@ export default function LoginPage() {
               Register
             </Link>
           </p>
-        </div>
+        </form>
       </div>
     </div>
   );

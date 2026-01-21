@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import OnboardingProgress from "@/components/onboarding-progress";
 import { createClient } from "@/lib/supabase/client";
@@ -15,6 +14,8 @@ interface Repository {
     type: string;
   };
   default_branch: string;
+  fork: boolean;
+  private: boolean;
 }
 
 export default function ConnectPage() {
@@ -23,7 +24,6 @@ export default function ConnectPage() {
   const [connected, setConnected] = useState(false);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
-  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -33,7 +33,15 @@ export default function ConnectPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (session?.provider_token) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      // Only fetch repos if user authenticated with GitHub provider
+      // Google OAuth users will have provider === 'google', not 'github'
+      const isGitHubUser = user?.app_metadata?.provider === "github";
+
+      if (session?.provider_token && isGitHubUser) {
         // User is connected to GitHub
         setConnected(true);
         fetchRepositories(session.provider_token);
@@ -112,8 +120,7 @@ export default function ConnectPage() {
 
       if (error) throw error;
 
-      // Navigate to repository-specific dashboard
-      router.push(`/${selectedRepo.full_name}`);
+      alert(`Repository ${selectedRepo.full_name} connected successfully!`);
     } catch (err: any) {
       console.error("Failed to save repository:", err);
       alert("Failed to save repository. Please try again.");
@@ -196,11 +203,16 @@ export default function ConnectPage() {
                           <span className="text-sm font-medium text-black block truncate">
                             {repo.full_name}
                           </span>
-                          {repo.owner.type === "Organization" && (
-                            <span className="text-xs text-[#666666]">
-                              Organization
+                          <div className="flex gap-1.5 mt-1 flex-wrap">
+                            {repo.owner.type === "Organization" && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700">
+                                Organization
+                              </span>
+                            )}
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700">
+                              {repo.private ? "Private" : "Public"}
                             </span>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </button>
@@ -219,17 +231,6 @@ export default function ConnectPage() {
           )}
 
           <OnboardingProgress currentStep={1} totalSteps={2} />
-
-          {/* Skip option */}
-          <p className="text-center text-[#666666] text-sm">
-            Want to do this later?{" "}
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="text-black font-medium hover:text-neutral-700"
-            >
-              Skip for now
-            </button>
-          </p>
         </div>
       </div>
     </div>

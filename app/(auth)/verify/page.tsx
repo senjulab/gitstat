@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import OTPInput from "@/components/otp-input";
 import { createClient } from "@/lib/supabase/client";
+import { getOnboardingRedirect } from "@/lib/auth/redirect";
 import Link from "next/link";
 
 export default function VerifyPage() {
@@ -13,23 +14,31 @@ export default function VerifyPage() {
   const [error, setError] = useState("");
   const [resending, setResending] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   useEffect(() => {
+    const emailParam = searchParams.get("email");
     const storedEmail = sessionStorage.getItem("verification_email");
-    if (!storedEmail) {
+    const finalEmail = emailParam || storedEmail;
+
+    if (!finalEmail) {
       router.push("/register");
     } else {
-      setEmail(storedEmail);
+      setEmail(finalEmail);
     }
-  }, [router]);
+  }, [router, searchParams]);
+
+  const getRedirectPath = async (userId: string) => {
+    return await getOnboardingRedirect(userId);
+  };
 
   const handleVerify = async (otp: string) => {
     setError("");
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const { error, data } = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: "email",
@@ -37,11 +46,10 @@ export default function VerifyPage() {
 
       if (error) throw error;
 
-      // Clear stored email
       sessionStorage.removeItem("verification_email");
 
-      // Redirect to onboarding
-      router.push("/onboard/profile");
+      const redirectPath = await getRedirectPath(data.user?.id || "");
+      router.push(redirectPath);
     } catch (err: any) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -74,24 +82,21 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 font-medium tracking-tight">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md space-y-8">
-        {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-xl font-medium text-black">Sign up to GitStat</h1>
-          <p className="text-[#666666] text-md font-normal">
+          <h1 className="text-xl font-medium text-black">Verify your email</h1>
+          <p className="text-[#666666] text-md">
             Simple, beautiful repository analytics.
           </p>
         </div>
 
-        {/* Verification Message */}
         <div className="text-center space-y-6">
           <p className="text-[#666666] text-sm">
             We sent a verification code to{" "}
             <span className="font-medium text-black">{email}</span>
           </p>
 
-          {/* OTP Input */}
           <OTPInput onComplete={handleVerify} />
 
           {error && (
@@ -100,7 +105,6 @@ export default function VerifyPage() {
             </div>
           )}
 
-          {/* Resend */}
           <p className="text-[#666666] text-sm">
             Didn't get it?{" "}
             <button
@@ -112,7 +116,6 @@ export default function VerifyPage() {
             </button>
           </p>
 
-          {/* Back Button */}
           <Link href="/register">
             <Button
               variant="ghost"
