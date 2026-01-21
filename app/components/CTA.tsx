@@ -13,7 +13,7 @@ export default function CTA() {
             minutes.
           </p>
           <div className="flex items-center gap-4 mt-4">
-            <button className="bg-[#38b000] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
+            <button className="bg-[#9580ff] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
               Start 14 day free trial
             </button>
             <button className="bg-[#00000010] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] items-center justify-center cursor-pointer rounded-full font-medium">

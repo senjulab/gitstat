@@ -26,7 +26,7 @@ export default function Navbar() {
               </span>
             </Link>
             <Link href="/register">
-              <button className="bg-[#F81DE5] hover:opacity-90 transition-colors duration-200 cursor-pointer text-white text-sm px-4 py-1.5 rounded-full font-medium">
+              <button className="bg-[#9580ff] hover:opacity-90 transition-colors duration-200 cursor-pointer text-white text-sm px-4 py-1.5 rounded-full font-medium">
                 Register
               </button>
             </Link>
