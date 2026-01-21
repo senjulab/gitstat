@@ -37,6 +37,32 @@ export default function ConnectPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
+      if (!user) return;
+
+      const { data: connectedRepos } = await supabase
+        .from("connected_repositories")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (connectedRepos && connectedRepos.length > 0) {
+        setConnected(true);
+        setRepositories(
+          connectedRepos.map((repo) => ({
+            id: repo.github_repo_id,
+            name: repo.repo_name,
+            full_name: repo.repo_full_name,
+            owner: {
+              login: repo.repo_owner,
+              type: repo.is_organization ? "Organization" : "User",
+            },
+            default_branch: repo.default_branch,
+            fork: false,
+            private: false,
+          })),
+        );
+        return;
+      }
+
       // Only fetch repos if user authenticated with GitHub provider
       // Google OAuth users will have provider === 'google', not 'github'
       const isGitHubUser = user?.app_metadata?.provider === "github";
@@ -129,7 +155,7 @@ export default function ConnectPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-sm space-y-6">
         {/* Badge */}
         <div className="flex items-center justify-center">
           <span className="text-sm text-[#0006] h-[24px] min-w-[24px] bg-[#00000008] px-3 py-1 rounded-sm font-medium flex items-center justify-center border border-[#00000008]">
@@ -180,7 +206,7 @@ export default function ConnectPage() {
                 <label className="text-sm font-medium text-[#666666]">
                   Select a repository or organization
                 </label>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
                   {repositories.map((repo) => (
                     <button
                       key={repo.id}
@@ -223,7 +249,7 @@ export default function ConnectPage() {
               <Button
                 onClick={handleContinue}
                 disabled={!selectedRepo}
-                className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+                className="w-full h-12 bg-[#14141F] hover:bg-[#14141F] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
               >
                 Continue
               </Button>

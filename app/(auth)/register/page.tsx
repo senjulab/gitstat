@@ -110,8 +110,8 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            disabled={loading}
-            className="w-full h-12 bg-indigo-200 hover:bg-indigo-300 text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+            disabled={loading || !email}
+            className="w-full h-12 bg-[#38b000] hover:bg-[#38b000] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
           >
             {loading ? "Sending code..." : "Continue with email"}
           </Button>
@@ -167,7 +167,7 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-[#38b000] hover:text-[#38b000] font-medium"
             >
               Log in
             </Link>

@@ -14,7 +14,7 @@ export default function OnboardingProgress({
           key={index}
           className={`rounded-full transition-all ${
             index === currentStep
-              ? "w-4 h-2 bg-indigo-400"
+              ? "w-4 h-2 bg-[#38b000]"
               : "w-2 h-2 bg-neutral-300"
           }`}
         />
