@@ -14,6 +14,7 @@ import {
   Plus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 export default function UserHeader() {
   const [user, setUser] = useState<any>(null);
@@ -92,14 +93,11 @@ export default function UserHeader() {
 
   return (
     <header className="w-full">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-3xl mx-auto px-6">
         <div className="flex items-center justify-between py-4">
-          {/* Logo - Simple Circle */}
-          <Link
-            href="/"
-            className="w-8 h-8 bg-black rounded-full flex items-center justify-center"
-          >
-            <div className="w-4 h-4 border-2 border-white rounded-full"></div>
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <Logo size={32} />
           </Link>
 
           {/* User Avatar with Dropdown */}

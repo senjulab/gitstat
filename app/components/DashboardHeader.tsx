@@ -2,8 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, Plus, Settings, BookOpen, FileText, MessageCircle, Globe, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  Plus,
+  Settings,
+  BookOpen,
+  FileText,
+  MessageCircle,
+  Globe,
+  LogOut,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Logo } from "@/components/logo";
 
 export function DashboardHeader() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -14,10 +24,16 @@ export function DashboardHeader() {
   // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     }
@@ -32,9 +48,7 @@ export function DashboardHeader() {
         <div className="flex items-center gap-3">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
-              <div className="w-4 h-4 rounded-full border-2 border-white" />
-            </div>
+            <Logo size={32} />
           </Link>
 
           {/* Divider */}
@@ -42,13 +56,15 @@ export function DashboardHeader() {
 
           {/* Project Selector */}
           <div className="relative" ref={dropdownRef}>
-            <button 
+            <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors"
             >
               <div className="w-5 h-5 rounded bg-[#f0f0f0]" />
               <span className="text-sm font-medium text-[#333]">salim</span>
-              <ChevronDown className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {/* Dropdown Menu */}
@@ -56,9 +72,11 @@ export function DashboardHeader() {
               <div className="absolute top-full left-0 mt-2 w-[220px] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2">
                 {/* Projects Section */}
                 <div className="pb-1">
-                  <p className="text-sm font-medium text-[#999] px-3 py-1">Projects</p>
+                  <p className="text-sm font-medium text-[#999] px-3 py-1">
+                    Projects
+                  </p>
                 </div>
-                <button 
+                <button
                   className="w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
@@ -69,7 +87,7 @@ export function DashboardHeader() {
                 <div className="border-t border-[#f0f0f0] my-2 mx-1" />
 
                 {/* Create Project */}
-                <button 
+                <button
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#181925] cursor-pointer hover:bg-[#f5f5f5] transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
@@ -81,9 +99,8 @@ export function DashboardHeader() {
           </div>
         </div>
 
-
         <div className="flex items-center gap-4 relative" ref={userMenuRef}>
-          <button 
+          <button
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             className="cursor-pointer"
           >
@@ -102,7 +119,9 @@ export function DashboardHeader() {
                   <Plus className="w-4 h-4 text-white rotate-45" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#181925]">rsalimdev</p>
+                  <p className="text-sm font-medium text-[#181925]">
+                    rsalimdev
+                  </p>
                   <p className="text-xs text-[#999]">rsalim.pro@gmail.com</p>
                 </div>
               </div>
