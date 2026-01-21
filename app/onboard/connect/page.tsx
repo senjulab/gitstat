@@ -164,12 +164,14 @@ export default function ConnectPage() {
         </div>
 
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center ">
           <h1 className="text-2xl font-medium text-black">
             Connect your GitHub
           </h1>
           <p className="text-[#666666] text-md">
-            Authorize GitStat to access your repositories
+            {connected
+              ? "Select a repository or organization"
+              : "Authorize GitStat to access your repositories"}
           </p>
         </div>
 
@@ -203,28 +205,18 @@ export default function ConnectPage() {
           {connected && repositories.length > 0 && !fetchingRepos && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#666666]">
-                  Select a repository or organization
-                </label>
                 <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
                   {repositories.map((repo) => (
                     <button
                       key={repo.id}
                       onClick={() => setSelectedRepo(repo)}
-                      className={`w-full p-3 rounded-xl text-left transition-all ${
+                      className={`w-full p-3 rounded-xl text-left transition-all cursor-pointer ${
                         selectedRepo?.id === repo.id
                           ? "bg-indigo-50 border-2 border-indigo-400"
                           : "bg-[#f3f3f3] border-2 border-transparent hover:border-neutral-300"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4 text-neutral-600 flex-shrink-0"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z" />
-                        </svg>
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-medium text-black block truncate">
                             {repo.full_name}
