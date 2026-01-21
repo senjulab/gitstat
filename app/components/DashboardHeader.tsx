@@ -61,7 +61,7 @@ export function DashboardHeader() {
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors"
             >
               <div className="w-5 h-5 rounded bg-[#f0f0f0]" />
-              <span className="text-sm font-medium text-[#333]">salim</span>
+              <span className="text-sm font-medium text-[#333]">heyke</span>
               <ChevronDown
                 className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
