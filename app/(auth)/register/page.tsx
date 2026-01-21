@@ -58,6 +58,25 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGitHubRegister = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "Failed to register with GitHub");
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-sm space-y-8">
@@ -128,7 +147,9 @@ export default function RegisterPage() {
 
             <Button
               type="button"
-              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none"
+              onClick={handleGitHubRegister}
+              disabled={loading}
+              className="h-12 text-black cursor-pointer hover:text-black hover:bg-[#f3f3f3] rounded-full bg-[#f3f3f3] border-none disabled:opacity-50"
             >
               <svg
                 className="w-5 h-5 mr-2"
