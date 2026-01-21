@@ -28,20 +28,6 @@ export async function GET(request: Request) {
     const isGoogleUser = user.app_metadata.provider === 'google'
     
     if (isGoogleUser) {
-      // Google users skip profile onboarding (Google provides name & avatar)
-      // Check if they already have a connected repository
-      const { data: repos } = await supabase
-        .from('connected_repositories')
-        .select('repo_full_name')
-        .eq('user_id', user.id)
-        .limit(1)
-
-      if (repos && repos.length > 0) {
-        // User already has a repo, go to dashboard
-        return NextResponse.redirect(`${origin}/${repos[0].repo_full_name}`)
-      }
-
-      // New Google user, go directly to connect GitHub
       return NextResponse.redirect(`${origin}/onboard/connect`)
     }
 
@@ -52,18 +38,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/onboard/profile`)
     }
 
-    // Check if they have connected repositories
-    const { data: repos } = await supabase
-      .from('connected_repositories')
-      .select('repo_full_name')
-      .eq('user_id', user.id)
-      .limit(1)
-
-    if (!repos || repos.length === 0) {
-      return NextResponse.redirect(`${origin}/onboard/connect`)
-    }
-
-    return NextResponse.redirect(`${origin}/${repos[0].repo_full_name}`)
+    return NextResponse.redirect(`${origin}/onboard/connect`)
   }
 
   // No code present, redirect to login
