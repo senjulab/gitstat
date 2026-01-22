@@ -402,6 +402,7 @@ export default function TrafficPage() {
                   axisLine={false}
                   tickMargin={8}
                   width={40}
+                  domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15)]}
                   tickFormatter={(value) => value.toLocaleString()}
                 />
                 <ChartTooltip
@@ -579,6 +580,7 @@ export default function TrafficPage() {
                     axisLine={false}
                     tickMargin={8}
                     width={40}
+                    domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15)]}
                     tickFormatter={(value) => value.toLocaleString()}
                   />
                   <ChartTooltip
