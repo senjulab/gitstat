@@ -2,11 +2,26 @@
 
 import { useParams } from "next/navigation";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useSpring, useMotionValueEvent } from "motion/react";
-import { Download, ChevronDown, Image, Loader2, ChevronLeft, ChevronRight, Github } from "lucide-react";
+import {
+  Download,
+  ChevronDown,
+  Image,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Github,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,21 +34,6 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
-const chartData = [
-  { month: "January", stars: 245 },
-  { month: "February", stars: 412 },
-  { month: "March", stars: 587 },
-  { month: "April", stars: 721 },
-  { month: "May", stars: 892 },
-  { month: "June", stars: 1098 },
-  { month: "July", stars: 1312 },
-  { month: "August", stars: 1543 },
-  { month: "September", stars: 1789 },
-  { month: "October", stars: 2076 },
-  { month: "November", stars: 2387 },
-  { month: "December", stars: 2698 },
-];
-
 const chartConfig = {
   stars: {
     label: "Stars",
@@ -44,6 +44,13 @@ const chartConfig = {
 interface Stargazer {
   login: string;
   avatar_url: string;
+  starred_at: string;
+}
+
+interface ChartDataPoint {
+  date: string;
+  stars: number;
+  fullDate: string;
 }
 
 export default function StarsPage() {
@@ -54,24 +61,14 @@ export default function StarsPage() {
   const chartRef = useRef<HTMLDivElement>(null);
   const [axis, setAxis] = useState(0);
   const [stargazers, setStargazers] = useState<Stargazer[]>([]);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
   const supabase = createClient();
-
-  // Cache for stargazers data per page
-  const cacheRef = useRef<{
-    [page: number]: {
-      data: Stargazer[];
-    };
-    totalPages?: number;
-    totalCount?: number;
-    owner?: string;
-    repo?: string;
-  }>({});
 
   const springX = useSpring(0, {
     damping: 30,
@@ -86,41 +83,12 @@ export default function StarsPage() {
     setAxis(latest);
   });
 
-  const fetchStargazers = useCallback(async () => {
-    // Clear page data cache if owner or repo changed
-    if (cacheRef.current.owner !== owner || cacheRef.current.repo !== repo) {
-      // Create new cache object for new repo
-      cacheRef.current = {
-        owner,
-        repo,
-      };
-    }
-
-    // Check cache first
-    const cached = cacheRef.current[currentPage];
-    if (cached) {
-      setStargazers(cached.data);
-      // Always set totalPages and totalCount from cache if available
-      // These should be set after the first successful fetch
-      // Use cached values if they exist, otherwise keep current state
-      const cachedTotalPages = cacheRef.current.totalPages;
-      const cachedTotalCount = cacheRef.current.totalCount;
-      
-      if (cachedTotalPages !== undefined) {
-        setTotalPages(cachedTotalPages);
-      }
-      if (cachedTotalCount !== undefined) {
-        setTotalCount(cachedTotalCount);
-      }
-      // If cache doesn't have these values, they should be set from a previous fetch
-      // so current state should be fine
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
+  const fetchAllStargazers = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setProgress(0);
+    setStargazers([]);
+    setChartData([]);
 
     try {
       const {
@@ -132,18 +100,19 @@ export default function StarsPage() {
         throw new Error("GitHub token not found. Please reconnect.");
       }
 
-      const res = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=21&page=${currentPage}`,
+      // Step 1: Fetch first page to get total count
+      const firstPageRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=1`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github.v3+json",
+            Accept: "application/vnd.github.v3.star+json",
           },
         },
       );
 
-      if (!res.ok) {
-        if (res.status === 403) {
+      if (!firstPageRes.ok) {
+        if (firstPageRes.status === 403) {
           throw new Error(
             "GitHub token lacks required permissions. Please reconnect.",
           );
@@ -151,76 +120,145 @@ export default function StarsPage() {
         throw new Error("Failed to fetch stargazers");
       }
 
-      const data = await res.json();
-      setStargazers(data);
-
-      // Get total count from Link header
-      const linkHeader = res.headers.get("Link");
-      let fetchedTotalPages = cacheRef.current.totalPages ?? 1;
-      let fetchedTotalCount = cacheRef.current.totalCount ?? 0;
+      const firstPageData = await firstPageRes.json();
+      const linkHeader = firstPageRes.headers.get("Link");
+      let totalPagesToFetch = 1;
 
       if (linkHeader) {
         const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
         if (lastPageMatch) {
-          fetchedTotalPages = parseInt(lastPageMatch[1], 10);
-          // Calculate total count
-          const lastPage = parseInt(lastPageMatch[1], 10);
-          fetchedTotalCount = (lastPage - 1) * 21 + data.length;
-        }
-      } else {
-        // No Link header means single page - use current data length
-        if (!cacheRef.current.totalCount) {
-          fetchedTotalCount = data.length;
-          fetchedTotalPages = 1;
+          totalPagesToFetch = parseInt(lastPageMatch[1], 10);
         }
       }
 
-      // Always update state and cache
-      setTotalPages(fetchedTotalPages);
-      setTotalCount(fetchedTotalCount);
+      // Initialize Map with first page data for deduplication immediately
+      const uniqueStargazersMap = new Map<string, Stargazer>();
+      if (Array.isArray(firstPageData)) {
+        firstPageData.forEach((s: any) => {
+          if (s && s.login) {
+            uniqueStargazersMap.set(s.login, s);
+          }
+        });
+      }
 
-      // Store in cache
-      cacheRef.current[currentPage] = {
-        data,
-      };
-      // Store totalPages and totalCount at root level (shared across pages)
-      cacheRef.current.totalPages = fetchedTotalPages;
-      cacheRef.current.totalCount = fetchedTotalCount;
-      cacheRef.current.owner = owner;
-      cacheRef.current.repo = repo;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch stargazers");
+      const lastPage = totalPagesToFetch;
+      const totalEstimated =
+        lastPage === 1
+          ? uniqueStargazersMap.size
+          : (lastPage - 1) * 100 + uniqueStargazersMap.size; // rough estimate
+      setTotalCount(totalEstimated);
+
+      setProgress((1 / totalPagesToFetch) * 100);
+
+      // Fetch remaining pages in batches
+      const batchSize = 5;
+      for (let i = 2; i <= totalPagesToFetch; i += batchSize) {
+        const batchPromises = [];
+        for (let j = i; j < i + batchSize && j <= totalPagesToFetch; j++) {
+          batchPromises.push(
+            fetch(
+              `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=${j}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  Accept: "application/vnd.github.v3.star+json",
+                },
+              },
+            ).then((res) => res.json()),
+          );
+        }
+
+        const batchResults = await Promise.all(batchPromises);
+        batchResults.forEach((data) => {
+          if (Array.isArray(data)) {
+            data.forEach((s: any) => {
+              if (s && s.login) {
+                uniqueStargazersMap.set(s.login, s);
+              }
+            });
+          }
+        });
+
+        setProgress(
+          (Math.min(i + batchSize - 1, totalPagesToFetch) / totalPagesToFetch) *
+            100,
+        );
+      }
+
+      // Convert Map to Array
+      let allStargazers = Array.from(uniqueStargazersMap.values());
+
+      // Sort by date for the chart
+      allStargazers.sort(
+        (a, b) =>
+          new Date(a.starred_at).getTime() - new Date(b.starred_at).getTime(),
+      );
+
+      // Process data for chart
+      const processedData: ChartDataPoint[] = [];
+
+      // Group by day
+      const groupedByDay: { [key: string]: number } = {};
+      allStargazers.forEach((stargazer) => {
+        const date = new Date(stargazer.starred_at).toISOString().split("T")[0];
+        groupedByDay[date] = (groupedByDay[date] || 0) + 1;
+      });
+
+      // Transform to cumulative array
+      const sortedDates = Object.keys(groupedByDay).sort();
+      let cumulative = 0;
+
+      if (sortedDates.length > 0) {
+        const firstDate = new Date(sortedDates[0]);
+        firstDate.setDate(firstDate.getDate() - 1);
+        processedData.push({
+          date: firstDate.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          }),
+          fullDate: firstDate.toLocaleDateString(),
+          stars: 0,
+        });
+      }
+
+      sortedDates.forEach((date) => {
+        cumulative += groupedByDay[date];
+        const dateObj = new Date(date);
+        processedData.push({
+          date: dateObj.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          }),
+          fullDate: dateObj.toLocaleDateString(),
+          stars: cumulative,
+        });
+      });
+
+      setStargazers(allStargazers);
+      setTotalCount(allStargazers.length);
+      setChartData(processedData);
+    } catch (err: any) {
+      console.error("Failed to fetch star history:", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, currentPage, supabase]);
+  }, [owner, repo, supabase]);
 
   useEffect(() => {
-    fetchStargazers();
-  }, [fetchStargazers]);
+    fetchAllStargazers();
+  }, [fetchAllStargazers]);
 
   const handleReconnect = () => {
     window.location.href = "/onboard/connect";
   };
 
   const exportStargazersToCSV = () => {
-    // Collect all stargazers from cache
-    const allStargazers: Stargazer[] = [];
-    Object.keys(cacheRef.current).forEach((key) => {
-      const pageNum = parseInt(key, 10);
-      if (!isNaN(pageNum) && cacheRef.current[pageNum]) {
-        allStargazers.push(...cacheRef.current[pageNum].data);
-      }
-    });
-
-    if (allStargazers.length === 0) {
-      // If no cached data, use current stargazers
-      allStargazers.push(...stargazers);
-    }
-
-    const headers = ["Username", "Avatar URL"];
-    const rows = allStargazers.map((s) => [s.login, s.avatar_url]);
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const headers = ["Username", "Avatar URL", "Starred At"];
+    const rows = stargazers.map((s) => [s.login, s.avatar_url, s.starred_at]);
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -231,14 +269,16 @@ export default function StarsPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Month", "Stars"];
-    const rows = chartData.map((d) => [d.month, d.stars]);
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const headers = ["Date", "Total Stars"];
+    const rows = chartData.map((d) => [d.fullDate, d.stars]);
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${owner}-${repo}-stars.csv`;
+    a.download = `${owner}-${repo}-star-history.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -252,18 +292,28 @@ export default function StarsPage() {
       });
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `${owner}-${repo}-stars.png`;
+      a.download = `${owner}-${repo}-star-history.png`;
       a.click();
     } catch (err) {
       console.error("Failed to export PNG:", err);
     }
   };
 
+  // Client-side pagination
+  const itemsPerPage = 21;
+  const paginatedStargazers = stargazers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+  const listTotalPages = Math.ceil(stargazers.length / itemsPerPage);
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
       <div className="text-center mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Stars</h1>
-        <p className="text-[#666] font-normal">Track your project stars.</p>
+        <p className="text-[#666] font-normal">
+          Track your project stars over time.
+        </p>
       </div>
 
       <div className="flex gap-6">
@@ -277,153 +327,168 @@ export default function StarsPage() {
               </h2>
               <p className="text-sm text-[#999]">
                 <span className="font-mono text-[#181925] tabular-nums">
-                  {springY.get().toFixed(0)}
+                  {loading ? "..." : totalCount.toLocaleString()}
                 </span>{" "}
                 total stars
               </p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
-                  title="Export"
-                >
-                  <Download className="h-3 w-3" />
-                  Export
-                  <ChevronDown className="h-3 w-3" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
-                <DropdownMenuItem
-                  onClick={exportToCSV}
-                  className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
-                >
-                  <Download className="h-3 w-3" />
-                  CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={exportToPNG}
-                  className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
-                >
-                  <Image className="h-3 w-3" />
-                  PNG
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!loading && chartData.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
+                    title="Export"
+                  >
+                    <Download className="h-3 w-3" />
+                    Export
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
+                  <DropdownMenuItem
+                    onClick={exportToCSV}
+                    className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
+                  >
+                    <Download className="h-3 w-3" />
+                    CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={exportToPNG}
+                    className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
+                  >
+                    <Image className="h-3 w-3" />
+                    PNG
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          <ChartContainer
-            ref={chartRef}
-            className="h-[300px] w-full"
-            config={chartConfig}
-          >
-            <AreaChart
-              className="overflow-visible"
-              accessibilityLayer
-              data={chartData}
-              onMouseMove={(state) => {
-                const x = state.activeCoordinate?.x;
-                const dataValue = state.activePayload?.[0]?.value;
-                if (x && dataValue !== undefined) {
-                  springX.set(x);
-                  springY.set(dataValue as number);
-                }
-              }}
-              onMouseLeave={() => {
-                springX.set(
-                  chartRef.current?.getBoundingClientRect().width || 0
-                );
-                springY.jump(chartData[chartData.length - 1].stars);
-              }}
-              margin={{
-                top: 10,
-                right: 0,
-                left: 10,
-                bottom: 10,
-              }}
-            >
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 3)}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                width={50}
-                tickFormatter={(value) => value.toLocaleString()}
-              />
-              <Area
-                dataKey="stars"
-                type="monotone"
-                fill="url(#gradient-clipped-area-stars)"
-                fillOpacity={0.4}
-                stroke="var(--color-stars)"
-                clipPath={`inset(0 ${
-                  Number(chartRef.current?.getBoundingClientRect().width) - axis
-                } 0 0)`}
-              />
-              <line
-                x1={axis}
-                y1={0}
-                x2={axis}
-                y2={"85%"}
-                stroke="var(--color-stars)"
-                strokeDasharray="3 3"
-                strokeLinecap="round"
-                strokeOpacity={0.2}
-              />
-              <rect
-                x={axis - 50}
-                y={0}
-                width={50}
-                height={18}
-                fill="var(--color-stars)"
-                rx={4}
-              />
-              <text
-                x={axis - 25}
-                fontWeight={600}
-                y={13}
-                textAnchor="middle"
-                fill="white"
-                fontSize={11}
+
+          <div className="bg-white rounded-xl border border-[#eaeaea] p-4 relative min-h-[300px]">
+            {loading ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 z-10">
+                <Loader2 className="h-8 w-8 animate-spin text-[#999] mb-4" />
+                <p className="text-sm text-[#666]">
+                  Fetching star history... {Math.round(progress)}%
+                </p>
+                <div className="w-48 h-1 bg-[#f0f0f0] rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-black transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            ) : error ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-red-500 text-sm mb-4 max-w-sm text-center">
+                  {error}
+                </p>
+                {(error.toLowerCase().includes("token") ||
+                  error.toLowerCase().includes("permission") ||
+                  error.toLowerCase().includes("reconnect")) && (
+                  <Button onClick={handleReconnect} variant="outline">
+                    Reconnect GitHub
+                  </Button>
+                )}
+              </div>
+            ) : chartData.length > 0 ? (
+              <ChartContainer
+                ref={chartRef}
+                className="h-[300px] w-full"
+                config={chartConfig}
               >
-                {springY.get().toFixed(0)}
-              </text>
-              {/* Ghost line behind graph */}
-              <Area
-                dataKey="stars"
-                type="monotone"
-                fill="none"
-                stroke="var(--color-stars)"
-                strokeOpacity={0.1}
-              />
-              <defs>
-                <linearGradient
-                  id="gradient-clipped-area-stars"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
+                <AreaChart
+                  className="overflow-visible"
+                  accessibilityLayer
+                  data={chartData}
+                  onMouseMove={(state) => {
+                    const x = state.activeCoordinate?.x;
+                    const dataValue = state.activePayload?.[0]?.value;
+                    if (x && dataValue !== undefined) {
+                      springX.set(x);
+                      springY.set(dataValue as number);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    springX.set(
+                      chartRef.current?.getBoundingClientRect().width || 0,
+                    );
+                    springY.jump(chartData[chartData.length - 1].stars);
+                  }}
+                  margin={{
+                    top: 10,
+                    right: 0,
+                    left: 10,
+                    bottom: 10,
+                  }}
                 >
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-stars)"
-                    stopOpacity={0.2}
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={30}
                   />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-stars)"
-                    stopOpacity={0}
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    width={50}
+                    tickFormatter={(value) => value.toLocaleString()}
                   />
-                </linearGradient>
-              </defs>
-            </AreaChart>
-          </ChartContainer>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-white border border-[#eaeaea] p-2 rounded-lg shadow-sm text-xs">
+                            <p className="font-medium">{data.fullDate}</p>
+                            <p className="text-[#666]">
+                              {data.stars.toLocaleString()} stars
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Area
+                    dataKey="stars"
+                    type="monotone"
+                    fill="url(#gradient-clipped-area-stars)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-stars)"
+                    strokeWidth={2}
+                  />
+                  <defs>
+                    <linearGradient
+                      id="gradient-clipped-area-stars"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-stars)"
+                        stopOpacity={0.2}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-stars)"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-[#999]">
+                No stars yet
+              </div>
+            )}
+          </div>
 
           {/* Stargazers List */}
           <div className="mt-8">
@@ -432,14 +497,6 @@ export default function StarsPage() {
                 <h2 className="text-base font-medium text-[#181925]">
                   Stargazers
                 </h2>
-                {totalCount > 0 && (
-                  <p className="text-sm text-[#999]">
-                    <span className="font-mono text-[#181925] tabular-nums">
-                      {totalCount.toLocaleString()}
-                    </span>{" "}
-                    total stargazers
-                  </p>
-                )}
               </div>
               {!loading && !error && stargazers.length > 0 && (
                 <DropdownMenu>
@@ -453,7 +510,10 @@ export default function StarsPage() {
                       <ChevronDown className="h-3 w-3" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
+                  <DropdownMenuContent
+                    align="end"
+                    className="min-w-[80px] p-0.5"
+                  >
                     <DropdownMenuItem
                       onClick={exportStargazersToCSV}
                       className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
@@ -466,40 +526,10 @@ export default function StarsPage() {
               )}
             </div>
 
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
-                <span className="ml-2 text-sm text-[#999]">
-                  Loading stargazers...
-                </span>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <div className="text-red-600 py-4 max-w-md mx-auto">
-                  <p className="text-sm font-medium">{error}</p>
-                </div>
-                <div className="flex gap-3 justify-center">
-                  {(error.toLowerCase().includes("token") ||
-                    error.toLowerCase().includes("permission") ||
-                    error.toLowerCase().includes("reconnect")) && (
-                    <Button
-                      onClick={handleReconnect}
-                      className="bg-black text-white hover:bg-black/90 px-8 py-2 cursor-pointer rounded-lg h-auto"
-                    >
-                      <Github className="h-4 w-4 mr-2" />
-                      Reconnect GitHub
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : stargazers.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-sm text-[#999]">No stargazers found.</p>
-              </div>
-            ) : (
+            {!loading && !error && (
               <>
                 <div className="grid grid-cols-3 gap-3">
-                  {stargazers.map((stargazer) => (
+                  {paginatedStargazers.map((stargazer) => (
                     <Link
                       key={stargazer.login}
                       href={`https://github.com/${stargazer.login}`}
@@ -513,18 +543,23 @@ export default function StarsPage() {
                           alt={stargazer.login}
                         />
                         <AvatarFallback>
-                          {stargazer.login.charAt(0).toUpperCase()}
+                          {(stargazer.login?.charAt(0) || "?").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-[#181925] truncate">
-                        {stargazer.login}
-                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-medium text-[#181925] truncate">
+                          {stargazer.login}
+                        </span>
+                        <span className="text-xs text-[#999]">
+                          {new Date(stargazer.starred_at).toLocaleDateString()}
+                        </span>
+                      </div>
                     </Link>
                   ))}
                 </div>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
+                {listTotalPages > 1 && (
                   <div className="mt-6 flex items-center justify-center gap-4">
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -534,13 +569,13 @@ export default function StarsPage() {
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                     <span className="text-sm text-[#999]">
-                      page {currentPage} of {totalPages}
+                      page {currentPage} of {listTotalPages}
                     </span>
                     <button
                       onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        setCurrentPage((p) => Math.min(listTotalPages, p + 1))
                       }
-                      disabled={currentPage === totalPages}
+                      disabled={currentPage === listTotalPages}
                       className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="h-4 w-4" />
