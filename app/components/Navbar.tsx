@@ -28,7 +28,7 @@ export default function Navbar() {
   }, [supabase]);
 
   return (
-    <header className="dark fixed top-8 left-1/2 -translate-x-1/2 z-[99] w-[400px] bg-[#14141f] backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xl hidden md:block tracking-tight">
+    <header className="dark fixed top-8 left-1/2 -translate-x-1/2 z-[99] w-[420px] bg-[#14141f] backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xl hidden md:block tracking-tight">
       <nav>
         <div className="flex items-center justify-between h-[52px] pl-4 pr-3">
           <div className="flex items-center gap-4">
@@ -48,7 +48,7 @@ export default function Navbar() {
                 />
               </svg>
             </Link>
-            <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
+            {/* <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
               Features
             </span>
             <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
@@ -61,7 +61,7 @@ export default function Navbar() {
             </Link>
             <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
               Docs
-            </span>
+            </span> */}
           </div>
           <div className="flex items-center gap-2">
             {isLoggedIn ? (
