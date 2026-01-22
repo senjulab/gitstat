@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Git Clones data for last 14 days
 const clonesData = [
   { date: "01/08", unique: 42, total: 78 },
   { date: "01/09", unique: 35, total: 65 },
@@ -36,7 +35,6 @@ const clonesData = [
   { date: "01/20", unique: 42, total: 76 },
 ];
 
-// Visitor data for last 14 days
 const visitorData = [
   { date: "01/08", views: 120, unique: 30 },
   { date: "01/09", views: 95, unique: 25 },
@@ -78,47 +76,6 @@ const visitorChartConfig = {
   },
 } satisfies ChartConfig;
 
-type ActiveProperty = keyof typeof chartConfig;
-
-const HatchedBackgroundPattern = ({ config }: { config: ChartConfig }) => {
-  const items = Object.fromEntries(
-    Object.entries(config).map(([key, value]) => [key, value.color]),
-  );
-  return (
-    <>
-      {Object.entries(items).map(([key, value]) => (
-        <pattern
-          key={key}
-          id={`hatched-background-pattern-${key}`}
-          x="0"
-          y="0"
-          width="6.81"
-          height="6.81"
-          patternUnits="userSpaceOnUse"
-          patternTransform="rotate(-45)"
-          overflow="visible"
-        >
-          <g overflow="visible" className="will-change-transform">
-            <animateTransform
-              attributeName="transform"
-              type="translate"
-              from="0 0"
-              to="6 0"
-              dur="1s"
-              repeatCount="indefinite"
-            />
-            <rect width="10" height="10" opacity={0.05} fill={value} />
-            <rect width="1" height="10" fill={value} />
-          </g>
-        </pattern>
-      ))}
-    </>
-  );
-};
-
-type VisitorProperty = keyof typeof visitorChartConfig;
-
-// Animation config for charts
 const animationConfig = {
   glowWidth: 300,
 };
@@ -134,13 +91,18 @@ export default function TrafficPage() {
   const visitorChartRef = useRef<HTMLDivElement>(null);
 
   const totalClones = clonesData.reduce((sum, item) => sum + item.total, 0);
-  const totalUniqueClones = clonesData.reduce((sum, item) => sum + item.unique, 0);
+  const totalUniqueClones = clonesData.reduce(
+    (sum, item) => sum + item.unique,
+    0,
+  );
 
   const exportToCSV = useCallback(() => {
     const headers = ["Date", "Unique", "Total"];
     const rows = clonesData.map((item) => [item.date, item.unique, item.total]);
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
-    
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -166,9 +128,15 @@ export default function TrafficPage() {
 
   const exportVisitorsToCSV = useCallback(() => {
     const headers = ["Date", "Views", "Unique"];
-    const rows = visitorData.map((item) => [item.date, item.views, item.unique]);
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
-    
+    const rows = visitorData.map((item) => [
+      item.date,
+      item.views,
+      item.unique,
+    ]);
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -180,10 +148,12 @@ export default function TrafficPage() {
 
   const exportVisitorsToPNG = useCallback(async () => {
     if (!visitorChartRef.current) return;
-    
+
     const { toPng } = await import("html-to-image");
-    const dataUrl = await toPng(visitorChartRef.current, { backgroundColor: "#ffffff" });
-    
+    const dataUrl = await toPng(visitorChartRef.current, {
+      backgroundColor: "#ffffff",
+    });
+
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `visitors-last-14-days.png`;
@@ -216,44 +186,20 @@ export default function TrafficPage() {
                 </Badge>
               </div>
               <p className="text-sm text-[#999]">
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
-                <span className="font-mono text-[#181925] tabular-nums">{totalClones.toLocaleString()}</span> clones and{" "}
-                <span className="font-mono text-[#181925] tabular-nums">{totalUniqueClones.toLocaleString()}</span> unique clones in the last 14 days
-=======
-                {totalClones.toLocaleString()} clones in the{" "}
-                {rangeLabels[timeRange]}
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
+                <span className="font-mono text-[#181925] tabular-nums">
+                  {totalClones.toLocaleString()}
+                </span>{" "}
+                clones and{" "}
+                <span className="font-mono text-[#181925] tabular-nums">
+                  {totalUniqueClones.toLocaleString()}
+                </span>{" "}
+                unique clones in the last 14 days
               </p>
             </div>
 
             <div className="flex items-center gap-2">
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
-              {/* Export Button */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-=======
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={exportToCSV}
-                  className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
-                  title="Export as CSV"
-                >
-                  <Download className="h-3 w-3" />
-                  CSV
-                </button>
-                <button
-                  onClick={exportToPNG}
-                  className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
-                  title="Export as PNG"
-                >
-                  <Image className="h-3 w-3" />
-                  PNG
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1 bg-[#fafafa] rounded-full p-1">
-                {(["week", "month", "year"] as TimeRange[]).map((range) => (
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                   <button
                     className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
                     title="Export"
@@ -287,15 +233,10 @@ export default function TrafficPage() {
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <AreaChart
                 accessibilityLayer
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                 data={clonesData}
                 margin={{ top: 10, right: 0, bottom: 10, left: 0 }}
                 onMouseMove={(e) => setClonesXAxis(e.chartX as number)}
                 onMouseLeave={() => setClonesXAxis(null)}
-=======
-                data={chartData}
-                margin={{ left: 0, right: 0 }}
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
               >
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
@@ -304,13 +245,7 @@ export default function TrafficPage() {
                   axisLine={false}
                   tickMargin={8}
                   padding={{ left: 20, right: 20 }}
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   tickFormatter={(value) => value}
-=======
-                  tickFormatter={(value) =>
-                    timeRange === "year" ? value.slice(0, 3) : value
-                  }
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                 />
                 <YAxis
                   tickLine={false}
@@ -319,8 +254,10 @@ export default function TrafficPage() {
                   width={40}
                   tickFormatter={(value) => value.toLocaleString()}
                 />
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
                 <defs>
                   <linearGradient
                     id="clones-highlighted-mask-grad"
@@ -335,16 +272,6 @@ export default function TrafficPage() {
                   </linearGradient>
                   <linearGradient
                     id="clones-highlighted-grad-unique"
-=======
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent />}
-                />
-                <defs>
-                  <HatchedBackgroundPattern config={chartConfig} />
-                  <linearGradient
-                    id="hatched-background-pattern-grad-unique"
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                     x1="0"
                     y1="0"
                     x2="0"
@@ -362,11 +289,7 @@ export default function TrafficPage() {
                     />
                   </linearGradient>
                   <linearGradient
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                     id="clones-highlighted-grad-total"
-=======
-                    id="hatched-background-pattern-grad-total"
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                     x1="0"
                     y1="0"
                     x2="0"
@@ -383,7 +306,6 @@ export default function TrafficPage() {
                       stopOpacity={0}
                     />
                   </linearGradient>
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   {clonesXAxis && (
                     <mask id="clones-highlighted-mask">
                       <rect
@@ -400,62 +322,33 @@ export default function TrafficPage() {
                   dataKey="total"
                   type="natural"
                   fill="url(#clones-highlighted-grad-total)"
-=======
-                </defs>
-                <Area
-                  onMouseEnter={() => setActiveProperty("total")}
-                  onMouseLeave={() => setActiveProperty(null)}
-                  dataKey="total"
-                  type="natural"
-                  fill={
-                    activeProperty === "total"
-                      ? "url(#hatched-background-pattern-total)"
-                      : "url(#hatched-background-pattern-grad-total)"
-                  }
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                   fillOpacity={0.4}
                   stroke="var(--color-total)"
                   stackId="a"
                   strokeWidth={0.8}
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   mask="url(#clones-highlighted-mask)"
                 />
                 <Area
                   dataKey="unique"
                   type="natural"
                   fill="url(#clones-highlighted-grad-unique)"
-=======
-                />
-                <Area
-                  onMouseEnter={() => setActiveProperty("unique")}
-                  onMouseLeave={() => setActiveProperty(null)}
-                  dataKey="unique"
-                  type="natural"
-                  fill={
-                    activeProperty === "unique"
-                      ? "url(#hatched-background-pattern-unique)"
-                      : "url(#hatched-background-pattern-grad-unique)"
-                  }
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                   fillOpacity={0.4}
                   stroke="var(--color-unique)"
                   stackId="a"
                   strokeWidth={0.8}
-<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   mask="url(#clones-highlighted-mask)"
-=======
->>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                 />
               </AreaChart>
             </ChartContainer>
           </div>
 
-          {/* Visitors Chart */}
           <div className="mt-8">
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-medium text-[#181925]">Visitors</h2>
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Visitors
+                  </h2>
                   <Badge
                     variant="outline"
                     className="text-green-500 bg-green-500/10 border-none"
@@ -465,13 +358,18 @@ export default function TrafficPage() {
                   </Badge>
                 </div>
                 <p className="text-sm text-[#999]">
-                  <span className="font-mono text-[#181925] tabular-nums">{totalViews.toLocaleString()}</span> views and{" "}
-                  <span className="font-mono text-[#181925] tabular-nums">{totalUnique.toLocaleString()}</span> unique visitors in the last 14 days
+                  <span className="font-mono text-[#181925] tabular-nums">
+                    {totalViews.toLocaleString()}
+                  </span>{" "}
+                  views and{" "}
+                  <span className="font-mono text-[#181925] tabular-nums">
+                    {totalUnique.toLocaleString()}
+                  </span>{" "}
+                  unique visitors in the last 14 days
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Export Button */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -483,7 +381,10 @@ export default function TrafficPage() {
                       <ChevronDown className="h-3 w-3" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
+                  <DropdownMenuContent
+                    align="end"
+                    className="min-w-[80px] p-0.5"
+                  >
                     <DropdownMenuItem
                       onClick={exportVisitorsToCSV}
                       className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
@@ -503,113 +404,119 @@ export default function TrafficPage() {
               </div>
             </div>
             <div ref={visitorChartRef}>
-              <ChartContainer config={visitorChartConfig} className="h-[300px] w-full">
-              <AreaChart
-                accessibilityLayer
-                data={visitorData}
-                margin={{ top: 10, right: 0, bottom: 10, left: 0 }}
-                onMouseMove={(e) => setVisitorXAxis(e.chartX as number)}
-                onMouseLeave={() => setVisitorXAxis(null)}
+              <ChartContainer
+                config={visitorChartConfig}
+                className="h-[300px] w-full"
               >
-                <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  padding={{ left: 20, right: 20 }}
-                  tickFormatter={(value) => value}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  width={40}
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                <defs>
-                  <linearGradient
-                    id="animated-highlighted-mask-grad"
-                    x1="0"
-                    y1="0"
-                    x2="1"
-                    y2="0"
-                  >
-                    <stop offset="0%" stopColor="transparent" />
-                    <stop offset="50%" stopColor="white" />
-                    <stop offset="100%" stopColor="transparent" />
-                  </linearGradient>
-                  <linearGradient
-                    id="animated-highlighted-grad-unique"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-unique)"
-                      stopOpacity={0.4}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-unique)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                  <linearGradient
-                    id="animated-highlighted-grad-views"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-views)"
-                      stopOpacity={0.4}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-views)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                  {visitorXAxis && (
-                    <mask id="animated-highlighted-mask">
-                      <rect
-                        x={visitorXAxis - animationConfig.glowWidth / 2}
-                        y={0}
-                        width={animationConfig.glowWidth}
-                        height="100%"
-                        fill="url(#animated-highlighted-mask-grad)"
+                <AreaChart
+                  accessibilityLayer
+                  data={visitorData}
+                  margin={{ top: 10, right: 0, bottom: 10, left: 0 }}
+                  onMouseMove={(e) => setVisitorXAxis(e.chartX as number)}
+                  onMouseLeave={() => setVisitorXAxis(null)}
+                >
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    padding={{ left: 20, right: 20 }}
+                    tickFormatter={(value) => value}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    width={40}
+                    tickFormatter={(value) => value.toLocaleString()}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
+                  <defs>
+                    <linearGradient
+                      id="animated-highlighted-mask-grad"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor="transparent" />
+                      <stop offset="50%" stopColor="white" />
+                      <stop offset="100%" stopColor="transparent" />
+                    </linearGradient>
+                    <linearGradient
+                      id="animated-highlighted-grad-unique"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-unique)"
+                        stopOpacity={0.4}
                       />
-                    </mask>
-                  )}
-                </defs>
-                <Area
-                  dataKey="unique"
-                  type="natural"
-                  fill="url(#animated-highlighted-grad-unique)"
-                  fillOpacity={0.4}
-                  stroke="var(--color-unique)"
-                  stackId="a"
-                  strokeWidth={0.8}
-                  mask="url(#animated-highlighted-mask)"
-                />
-                <Area
-                  dataKey="views"
-                  type="natural"
-                  fill="url(#animated-highlighted-grad-views)"
-                  fillOpacity={0.4}
-                  stroke="var(--color-views)"
-                  stackId="a"
-                  strokeWidth={0.8}
-                  mask="url(#animated-highlighted-mask)"
-                />
-              </AreaChart>
-            </ChartContainer>
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-unique)"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="animated-highlighted-grad-views"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-views)"
+                        stopOpacity={0.4}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-views)"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    {visitorXAxis && (
+                      <mask id="animated-highlighted-mask">
+                        <rect
+                          x={visitorXAxis - animationConfig.glowWidth / 2}
+                          y={0}
+                          width={animationConfig.glowWidth}
+                          height="100%"
+                          fill="url(#animated-highlighted-mask-grad)"
+                        />
+                      </mask>
+                    )}
+                  </defs>
+                  <Area
+                    dataKey="unique"
+                    type="natural"
+                    fill="url(#animated-highlighted-grad-unique)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-unique)"
+                    stackId="a"
+                    strokeWidth={0.8}
+                    mask="url(#animated-highlighted-mask)"
+                  />
+                  <Area
+                    dataKey="views"
+                    type="natural"
+                    fill="url(#animated-highlighted-grad-views)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-views)"
+                    stackId="a"
+                    strokeWidth={0.8}
+                    mask="url(#animated-highlighted-mask)"
+                  />
+                </AreaChart>
+              </ChartContainer>
             </div>
           </div>
         </div>
