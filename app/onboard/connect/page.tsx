@@ -154,7 +154,7 @@ export default function ConnectPage() {
         if (error) throw error;
       }
 
-      window.location.href = `/dashboard/${selectedRepo.owner.login}/${selectedRepo.name}`;
+      window.location.href = `/dashboard/${selectedRepo.owner.login}/${selectedRepo.name}/traffic`;
     } catch (err: any) {
       console.error("Failed to save repository:", err);
       alert("Failed to save repository. Please try again.");

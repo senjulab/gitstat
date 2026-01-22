@@ -71,7 +71,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
     if (parts.length > 4) {
       return "/" + parts.slice(4).join("/");
     }
-    return "";
+    return "/traffic"; // Default to traffic page
   };
 
   useEffect(() => {
@@ -236,7 +236,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
         <div className="h-full max-w-3xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href={`/dashboard/${owner}/${repo}`}
+              href={`/dashboard/${owner}/${repo}/traffic`}
               className="flex items-center"
             >
               <Logo size={32} />

@@ -27,6 +27,7 @@ export async function getOnboardingRedirect(userId: string): Promise<string> {
     return '/onboard/connect'
   }
 
-  // User has completed onboarding, go to their repo dashboard
-  return `/${repos[0].repo_full_name}`
+  // User has completed onboarding, go to their repo dashboard traffic page
+  const [owner, repo] = repos[0].repo_full_name.split('/')
+  return `/dashboard/${owner}/${repo}/traffic`
 }
