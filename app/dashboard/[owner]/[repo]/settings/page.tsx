@@ -1,17 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { Copy, Check } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon } from "@hugeicons/core-free-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 
 export default function SettingsPage() {
-  const [projectName, setProjectName] = useState("salim");
+  const params = useParams();
+  const owner = params.owner as string;
+  const repo = params.repo as string;
+
+  const [projectName, setProjectName] = useState(repo);
   const [isPublic, setIsPublic] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -21,7 +32,7 @@ export default function SettingsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const projectToken = "4a151b05-4d06-4b29-9592-2e828ebc86f2";
-  const publicUrl = "gitstat.dev/s/salim";
+  const publicUrl = `gitstat.dev/s/${owner}/${repo}`;
 
   const handleCopy = async (text: string, type: "token" | "url") => {
     await navigator.clipboard.writeText(text);
@@ -47,26 +58,23 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Settings</h1>
         <p className="text-[#666] font-normal">Manage your project.</p>
       </div>
 
-      {/* Content */}
       <div className="flex gap-6">
-        {/* Sidebar */}
         <DashboardSidebar />
 
-        {/* Main Content */}
         <div className="flex-1 space-y-4">
-          {/* Project Name Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Project name
               </h2>
-              <p className="text-sm text-[#999] mb-4">The name of your project.</p>
+              <p className="text-sm text-[#999] mb-4">
+                The name of your project.
+              </p>
               <Input
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
@@ -75,16 +83,15 @@ export default function SettingsPage() {
               />
             </div>
             <div className="px-4 py-2 bg-white border-t border-[#f7f7f7] flex items-center justify-between h-12">
-              <span className="text-xs text-[#999]">Maximum of 30 characters</span>
-              <Button
-                className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200"
-              >
+              <span className="text-xs text-[#999]">
+                Maximum of 30 characters
+              </span>
+              <Button className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200">
                 Save
               </Button>
             </div>
           </div>
 
-          {/* Project Token Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
@@ -100,7 +107,9 @@ export default function SettingsPage() {
               />
             </div>
             <div className="px-4 py-2 bg-white border-t border-[#f7f7f7] flex items-center justify-between h-12">
-              <span className="text-xs text-[#999]">Used to identify your project</span>
+              <span className="text-xs text-[#999]">
+                Used to identify your project
+              </span>
               <Button
                 onClick={() => handleCopy(projectToken, "token")}
                 className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200"
@@ -117,7 +126,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Public Toggle Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
@@ -151,7 +159,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Team Management Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
@@ -160,8 +167,7 @@ export default function SettingsPage() {
               <p className="text-sm text-[#999] mb-4">
                 Manage who has access to this project.
               </p>
-              
-              {/* Team Members List */}
+
               {teamMembers.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {teamMembers.map((member) => (
@@ -183,7 +189,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Invite Input */}
               <div className="flex gap-2">
                 <Input
                   value={inviteEmail}
@@ -202,19 +207,19 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Delete Project Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Delete project
               </h2>
               <p className="text-sm text-[#999]">
-                Permanently delete your project. This action is immediate and cannot be undone.
+                Permanently delete your project. This action is immediate and
+                cannot be undone.
               </p>
             </div>
             <div className="px-4 py-2 bg-white border-t border-[#f7f7f7] flex items-center justify-between h-12">
               <span className="text-xs text-[#999]">Proceed with caution</span>
-              <Button 
+              <Button
                 onClick={() => setShowDeleteDialog(true)}
                 className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-[#ff2f00] hover:bg-[#ff2f00] text-white border border-[#ff2f00] hover:border-[#e02a00] active:bg-[#e02a00] active:scale-[0.99] transition-all duration-200"
               >
@@ -225,18 +230,27 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-md tracking-tight rounded-lg" showCloseButton={false}>
+        <DialogContent
+          className="sm:max-w-md tracking-tight rounded-lg"
+          showCloseButton={false}
+        >
           <DialogHeader>
-            <DialogTitle className="text-lg font-medium text-[#181925]">Delete project</DialogTitle>
+            <DialogTitle className="text-lg font-medium text-[#181925]">
+              Delete project
+            </DialogTitle>
             <DialogDescription className="text-sm text-[#666]">
-              This action cannot be undone. This will permanently delete the project and all associated data.
+              This action cannot be undone. This will permanently delete the
+              project and all associated data.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <p className="text-sm text-[#666]">
-              To confirm, type <span className="font-semibold text-[#181925]">{projectName}</span> below:
+              To confirm, type{" "}
+              <span className="font-semibold text-[#181925]">
+                {projectName}
+              </span>{" "}
+              below:
             </p>
             <Input
               value={deleteConfirmText}

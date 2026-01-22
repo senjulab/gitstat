@@ -133,20 +133,28 @@ export default function ConnectPage() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Save selected repository to database
-      const { error } = await supabase.from("connected_repositories").insert({
-        user_id: user.id,
-        github_repo_id: selectedRepo.id,
-        repo_name: selectedRepo.name,
-        repo_full_name: selectedRepo.full_name,
-        repo_owner: selectedRepo.owner.login,
-        is_organization: selectedRepo.owner.type === "Organization",
-        default_branch: selectedRepo.default_branch || "main",
-      });
+      const { data: existing } = await supabase
+        .from("connected_repositories")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("github_repo_id", selectedRepo.id)
+        .single();
 
-      if (error) throw error;
+      if (!existing) {
+        const { error } = await supabase.from("connected_repositories").insert({
+          user_id: user.id,
+          github_repo_id: selectedRepo.id,
+          repo_name: selectedRepo.name,
+          repo_full_name: selectedRepo.full_name,
+          repo_owner: selectedRepo.owner.login,
+          is_organization: selectedRepo.owner.type === "Organization",
+          default_branch: selectedRepo.default_branch || "main",
+        });
 
-      alert(`Repository ${selectedRepo.full_name} connected successfully!`);
+        if (error) throw error;
+      }
+
+      window.location.href = `/dashboard/${selectedRepo.owner.login}/${selectedRepo.name}`;
     } catch (err: any) {
       console.error("Failed to save repository:", err);
       alert("Failed to save repository. Please try again.");

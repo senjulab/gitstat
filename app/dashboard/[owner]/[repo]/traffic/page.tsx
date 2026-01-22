@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 import {
@@ -67,7 +68,7 @@ type ActiveProperty = keyof typeof chartConfig;
 
 const HatchedBackgroundPattern = ({ config }: { config: ChartConfig }) => {
   const items = Object.fromEntries(
-    Object.entries(config).map(([key, value]) => [key, value.color])
+    Object.entries(config).map(([key, value]) => [key, value.color]),
   );
   return (
     <>
@@ -102,6 +103,10 @@ const HatchedBackgroundPattern = ({ config }: { config: ChartConfig }) => {
 };
 
 export default function TrafficPage() {
+  const params = useParams();
+  const owner = params.owner as string;
+  const repo = params.repo as string;
+
   const [activeProperty, setActiveProperty] =
     React.useState<ActiveProperty | null>(null);
   const [timeRange, setTimeRange] = React.useState<TimeRange>("year");
@@ -119,8 +124,10 @@ export default function TrafficPage() {
   const exportToCSV = useCallback(() => {
     const headers = ["Label", "Unique", "Total"];
     const rows = chartData.map((item) => [item.label, item.unique, item.total]);
-    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
-    
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -132,10 +139,12 @@ export default function TrafficPage() {
 
   const exportToPNG = useCallback(async () => {
     if (!chartRef.current) return;
-    
+
     const { toPng } = await import("html-to-image");
-    const dataUrl = await toPng(chartRef.current, { backgroundColor: "#ffffff" });
-    
+    const dataUrl = await toPng(chartRef.current, {
+      backgroundColor: "#ffffff",
+    });
+
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `git-clones-${timeRange}.png`;
@@ -144,24 +153,21 @@ export default function TrafficPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Traffic</h1>
         <p className="text-[#666] font-normal">Monitor your project traffic.</p>
       </div>
 
-      {/* Content */}
       <div className="flex gap-6">
-        {/* Sidebar */}
         <DashboardSidebar />
 
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Chart Header */}
           <div className="mb-4 flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-medium text-[#181925]">Git clones</h2>
+                <h2 className="text-base font-medium text-[#181925]">
+                  Git clones
+                </h2>
                 <Badge
                   variant="outline"
                   className="text-green-500 bg-green-500/10 border-none"
@@ -171,12 +177,12 @@ export default function TrafficPage() {
                 </Badge>
               </div>
               <p className="text-sm text-[#999]">
-                {totalClones.toLocaleString()} clones in the {rangeLabels[timeRange]}
+                {totalClones.toLocaleString()} clones in the{" "}
+                {rangeLabels[timeRange]}
               </p>
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Export Buttons */}
               <div className="flex items-center gap-1">
                 <button
                   onClick={exportToCSV}
@@ -196,7 +202,6 @@ export default function TrafficPage() {
                 </button>
               </div>
 
-              {/* Time Range Toggle */}
               <div className="flex items-center gap-1 bg-[#fafafa] rounded-full p-1">
                 {(["week", "month", "year"] as TimeRange[]).map((range) => (
                   <button
@@ -215,10 +220,13 @@ export default function TrafficPage() {
             </div>
           </div>
 
-          {/* Chart */}
           <div ref={chartRef}>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <AreaChart accessibilityLayer data={chartData} margin={{ left: 0, right: 0 }}>
+              <AreaChart
+                accessibilityLayer
+                data={chartData}
+                margin={{ left: 0, right: 0 }}
+              >
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
                   dataKey="label"
@@ -226,7 +234,9 @@ export default function TrafficPage() {
                   axisLine={false}
                   tickMargin={8}
                   padding={{ left: 20, right: 20 }}
-                  tickFormatter={(value) => timeRange === "year" ? value.slice(0, 3) : value}
+                  tickFormatter={(value) =>
+                    timeRange === "year" ? value.slice(0, 3) : value
+                  }
                 />
                 <YAxis
                   tickLine={false}
@@ -235,76 +245,79 @@ export default function TrafficPage() {
                   width={40}
                   tickFormatter={(value) => value.toLocaleString()}
                 />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-              <defs>
-                <HatchedBackgroundPattern config={chartConfig} />
-                <linearGradient
-                  id="hatched-background-pattern-grad-unique"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-unique)"
-                    stopOpacity={0.4}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-unique)"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-                <linearGradient
-                  id="hatched-background-pattern-grad-total"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-total)"
-                    stopOpacity={0.4}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-total)"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-              </defs>
-              <Area
-                onMouseEnter={() => setActiveProperty("total")}
-                onMouseLeave={() => setActiveProperty(null)}
-                dataKey="total"
-                type="natural"
-                fill={
-                  activeProperty === "total"
-                    ? "url(#hatched-background-pattern-total)"
-                    : "url(#hatched-background-pattern-grad-total)"
-                }
-                fillOpacity={0.4}
-                stroke="var(--color-total)"
-                stackId="a"
-                strokeWidth={0.8}
-              />
-              <Area
-                onMouseEnter={() => setActiveProperty("unique")}
-                onMouseLeave={() => setActiveProperty(null)}
-                dataKey="unique"
-                type="natural"
-                fill={
-                  activeProperty === "unique"
-                    ? "url(#hatched-background-pattern-unique)"
-                    : "url(#hatched-background-pattern-grad-unique)"
-                }
-                fillOpacity={0.4}
-                stroke="var(--color-unique)"
-                stackId="a"
-                strokeWidth={0.8}
-              />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
+                <defs>
+                  <HatchedBackgroundPattern config={chartConfig} />
+                  <linearGradient
+                    id="hatched-background-pattern-grad-unique"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-unique)"
+                      stopOpacity={0.4}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-unique)"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                  <linearGradient
+                    id="hatched-background-pattern-grad-total"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-total)"
+                      stopOpacity={0.4}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-total)"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <Area
+                  onMouseEnter={() => setActiveProperty("total")}
+                  onMouseLeave={() => setActiveProperty(null)}
+                  dataKey="total"
+                  type="natural"
+                  fill={
+                    activeProperty === "total"
+                      ? "url(#hatched-background-pattern-total)"
+                      : "url(#hatched-background-pattern-grad-total)"
+                  }
+                  fillOpacity={0.4}
+                  stroke="var(--color-total)"
+                  stackId="a"
+                  strokeWidth={0.8}
+                />
+                <Area
+                  onMouseEnter={() => setActiveProperty("unique")}
+                  onMouseLeave={() => setActiveProperty(null)}
+                  dataKey="unique"
+                  type="natural"
+                  fill={
+                    activeProperty === "unique"
+                      ? "url(#hatched-background-pattern-unique)"
+                      : "url(#hatched-background-pattern-grad-unique)"
+                  }
+                  fillOpacity={0.4}
+                  stroke="var(--color-unique)"
+                  stackId="a"
+                  strokeWidth={0.8}
+                />
               </AreaChart>
             </ChartContainer>
           </div>

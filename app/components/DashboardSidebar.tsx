@@ -1,20 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { CursorMagicSelection04Icon, FallingStarIcon, User03Icon, Bug02Icon, Settings01Icon } from "@hugeicons/core-free-icons";
-
-const sidebarItems = [
-  { id: "traffic", label: "Traffic", icon: CursorMagicSelection04Icon, href: "/dashboard/traffic" },
-  { id: "stars", label: "Stars", icon: FallingStarIcon, href: "/dashboard/stars" },
-  { id: "contributors", label: "Contributors", icon: User03Icon, href: "/dashboard/contributors" },
-  { id: "issues", label: "Issues & PRs", icon: Bug02Icon, href: "/dashboard/issues" },
-  { id: "settings", label: "Settings", icon: Settings01Icon, href: "/dashboard/settings" },
-];
+import {
+  CursorMagicSelection04Icon,
+  FallingStarIcon,
+  User03Icon,
+  Bug02Icon,
+  Settings01Icon,
+} from "@hugeicons/core-free-icons";
 
 export function DashboardSidebar() {
+  const params = useParams();
   const pathname = usePathname();
+  const owner = params.owner as string;
+  const repo = params.repo as string;
+
+  const sidebarItems = [
+    {
+      id: "traffic",
+      label: "Traffic",
+      icon: CursorMagicSelection04Icon,
+      href: `/dashboard/${owner}/${repo}/traffic`,
+    },
+    {
+      id: "stars",
+      label: "Stars",
+      icon: FallingStarIcon,
+      href: `/dashboard/${owner}/${repo}/stars`,
+    },
+    {
+      id: "contributors",
+      label: "Contributors",
+      icon: User03Icon,
+      href: `/dashboard/${owner}/${repo}/contributors`,
+    },
+    {
+      id: "issues",
+      label: "Issues & PRs",
+      icon: Bug02Icon,
+      href: `/dashboard/${owner}/${repo}/issues`,
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: Settings01Icon,
+      href: `/dashboard/${owner}/${repo}/settings`,
+    },
+  ];
 
   return (
     <nav className="w-40 shrink-0">
@@ -26,9 +60,7 @@ export function DashboardSidebar() {
               <Link
                 href={item.href}
                 className={`w-full flex items-center cursor-pointer gap-2 px-3 py-1 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "text-[#181925]"
-                    : "text-[#999] hover:text-[#666]"
+                  isActive ? "text-[#181925]" : "text-[#999] hover:text-[#666]"
                 }`}
               >
                 <HugeiconsIcon icon={item.icon} size={16} />
