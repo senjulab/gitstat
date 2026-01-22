@@ -469,6 +469,13 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                     "Add project"
                   )}
                 </Button>
+
+                <button
+                  onClick={handleConnectGitHub}
+                  className="w-full mt-3 text-sm text-[#666] hover:text-[#181925] transition-colors cursor-pointer"
+                >
+                  Refresh repositories
+                </button>
               </>
             )}
           </div>
