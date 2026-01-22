@@ -10,49 +10,34 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Download, Image, ChevronDown } from "lucide-react";
-import React, { useRef, useCallback } from "react";
+import {
+  TrendingUp,
+  Download,
+  Image,
+  ChevronDown,
+  Loader2,
+} from "lucide-react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 
-const clonesData = [
-  { date: "01/08", unique: 42, total: 78 },
-  { date: "01/09", unique: 35, total: 65 },
-  { date: "01/10", unique: 58, total: 102 },
-  { date: "01/11", unique: 72, total: 128 },
-  { date: "01/12", unique: 95, total: 168 },
-  { date: "01/13", unique: 112, total: 198 },
-  { date: "01/14", unique: 134, total: 245 },
-  { date: "01/15", unique: 88, total: 156 },
-  { date: "01/16", unique: 62, total: 112 },
-  { date: "01/17", unique: 48, total: 89 },
-  { date: "01/18", unique: 45, total: 82 },
-  { date: "01/19", unique: 38, total: 71 },
-  { date: "01/20", unique: 42, total: 76 },
-];
+interface TrafficData {
+  date: string;
+  unique: number;
+  total: number;
+}
 
-const visitorData = [
-  { date: "01/08", views: 120, unique: 30 },
-  { date: "01/09", views: 95, unique: 25 },
-  { date: "01/10", views: 180, unique: 45 },
-  { date: "01/11", views: 220, unique: 65 },
-  { date: "01/12", views: 350, unique: 120 },
-  { date: "01/13", views: 420, unique: 180 },
-  { date: "01/14", views: 488, unique: 224 },
-  { date: "01/15", views: 280, unique: 95 },
-  { date: "01/16", views: 150, unique: 55 },
-  { date: "01/17", views: 110, unique: 40 },
-  { date: "01/18", views: 105, unique: 42 },
-  { date: "01/19", views: 98, unique: 38 },
-  { date: "01/20", views: 102, unique: 45 },
-];
-
-const totalViews = visitorData.reduce((sum, item) => sum + item.views, 0);
-const totalUnique = visitorData.reduce((sum, item) => sum + item.unique, 0);
+interface VisitorData {
+  date: string;
+  views: number;
+  unique: number;
+}
 
 const chartConfig = {
   unique: {
@@ -85,16 +70,99 @@ export default function TrafficPage() {
   const owner = params.owner as string;
   const repo = params.repo as string;
 
-  const [clonesXAxis, setClonesXAxis] = React.useState<number | null>(null);
-  const [visitorXAxis, setVisitorXAxis] = React.useState<number | null>(null);
+  const [clonesData, setClonesData] = useState<TrafficData[]>([]);
+  const [visitorData, setVisitorData] = useState<VisitorData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [clonesXAxis, setClonesXAxis] = useState<number | null>(null);
+  const [visitorXAxis, setVisitorXAxis] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const visitorChartRef = useRef<HTMLDivElement>(null);
+
+  const supabase = createClient();
+
+  const fetchTrafficData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
+
+      if (!token) {
+        throw new Error("GitHub token not found. Please reconnect.");
+      }
+
+      // Fetch Clones
+      const clonesRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/traffic/clones`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      if (!clonesRes.ok) throw new Error("Failed to fetch clones data");
+      const clonesJson = await clonesRes.json();
+
+      const formattedClones = clonesJson.clones.map((item: any) => ({
+        date: new Date(item.timestamp).toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        unique: item.uniques,
+        total: item.count,
+      }));
+
+      // Fetch Views
+      const viewsRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/traffic/views`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      if (!viewsRes.ok) throw new Error("Failed to fetch views data");
+      const viewsJson = await viewsRes.json();
+
+      const formattedViews = viewsJson.views.map((item: any) => ({
+        date: new Date(item.timestamp).toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        views: item.count,
+        unique: item.uniques,
+      }));
+
+      setClonesData(formattedClones);
+      setVisitorData(formattedViews);
+    } catch (err: any) {
+      console.error("Traffic fetch error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [owner, repo, supabase]);
+
+  useEffect(() => {
+    fetchTrafficData();
+  }, [fetchTrafficData]);
 
   const totalClones = clonesData.reduce((sum, item) => sum + item.total, 0);
   const totalUniqueClones = clonesData.reduce(
     (sum, item) => sum + item.unique,
     0,
   );
+  const totalViews = visitorData.reduce((sum, item) => sum + item.views, 0);
+  const totalUnique = visitorData.reduce((sum, item) => sum + item.unique, 0);
 
   const exportToCSV = useCallback(() => {
     const headers = ["Date", "Unique", "Total"];
@@ -107,10 +175,10 @@ export default function TrafficPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `git-clones-last-14-days.csv`;
+    link.download = `git-clones-${owner}-${repo}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-  }, []);
+  }, [clonesData, owner, repo]);
 
   const exportToPNG = useCallback(async () => {
     if (!chartRef.current) return;
@@ -122,9 +190,9 @@ export default function TrafficPage() {
 
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = `git-clones-last-14-days.png`;
+    link.download = `git-clones-${owner}-${repo}.png`;
     link.click();
-  }, []);
+  }, [owner, repo]);
 
   const exportVisitorsToCSV = useCallback(() => {
     const headers = ["Date", "Views", "Unique"];
@@ -141,10 +209,10 @@ export default function TrafficPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `visitors-last-14-days.csv`;
+    link.download = `visitors-${owner}-${repo}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-  }, []);
+  }, [visitorData, owner, repo]);
 
   const exportVisitorsToPNG = useCallback(async () => {
     if (!visitorChartRef.current) return;
@@ -156,9 +224,29 @@ export default function TrafficPage() {
 
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = `visitors-last-14-days.png`;
+    link.download = `visitors-${owner}-${repo}.png`;
     link.click();
-  }, []);
+  }, [owner, repo]);
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#999] mb-4" />
+        <p className="text-[#666]">Loading analytics...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-12 text-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={fetchTrafficData} variant="outline">
+          Try again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
