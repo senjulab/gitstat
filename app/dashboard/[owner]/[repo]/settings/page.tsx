@@ -177,7 +177,9 @@ export default function SettingsPage() {
             </div>
           </div> */}
 
-          <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
+          {/* will make it in public after launch */}
+
+          {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Team
@@ -223,7 +225,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">

@@ -10,6 +10,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
+import { Github } from "lucide-react";
 import {
   TrendingUp,
   Download,
@@ -267,14 +268,14 @@ export default function TrafficPage() {
 
     return (
       <div className="max-w-3xl mx-auto px-6 py-12 text-center min-h-[400px] flex flex-col items-center justify-center">
-        <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 max-w-md">
+        <div className=" text-red-600  py-4 max-w-md">
           <p className="text-sm font-medium">{error}</p>
         </div>
         <div className="flex gap-3">
           {isTokenError ? (
             <Button
               onClick={handleReconnect}
-              className="bg-black text-white hover:bg-black/90 px-8 py-2 rounded-full h-auto"
+              className="bg-black text-white hover:bg-black/90 px-8 py-2 cursor-pointer rounded-lg h-auto"
             >
               Reconnect GitHub
             </Button>
