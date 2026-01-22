@@ -27,6 +27,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
+  const [userAvatar, setUserAvatar] = useState("");
   const [connectedRepos, setConnectedRepos] = useState<
     { owner: string; name: string }[]
   >([]);
@@ -45,6 +46,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
         setUserName(
           user.user_metadata?.user_name || user.email?.split("@")[0] || "User",
         );
+        setUserAvatar(user.user_metadata?.avatar_url || "");
 
         const { data: repos } = await supabase
           .from("connected_repositories")
@@ -157,9 +159,9 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
             className="cursor-pointer"
           >
             <Avatar className="w-[30px] h-[30px]">
-              <AvatarImage src="/avatars/01.png" alt="User avatar" />
-              <AvatarFallback className="text-sm">
-                {userName.slice(0, 2).toUpperCase()}
+              {userAvatar && <AvatarImage src={userAvatar} alt="User avatar" />}
+              <AvatarFallback className="text-sm bg-[#f0f0f0] text-[#666]">
+                {userName.slice(0, 1).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </button>
@@ -168,8 +170,11 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
             <div className="absolute top-full right-0 mt-2 w-[240px] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2">
               <div className="flex items-center gap-2 mb-2 px-2">
                 <Avatar className="w-[30px] h-[30px]">
+                  {userAvatar && (
+                    <AvatarImage src={userAvatar} alt="User avatar" />
+                  )}
                   <AvatarFallback className="text-sm bg-[#c8d96f] text-white">
-                    {userName.slice(0, 2).toUpperCase()}
+                    {userName.slice(0, 1).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
