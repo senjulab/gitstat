@@ -1,13 +1,90 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Settings, BarChart3, Users, Zap } from "lucide-react";
+import { Settings, BarChart3, Users, Star, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function DashboardPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+  const supabase = createClient();
+
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalViews: 0,
+    uniqueVisitors: 0,
+    stars: 0,
+  });
+
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
+
+      if (!token) {
+        throw new Error("GitHub token not found");
+      }
+
+      // Fetch Views
+      const viewsRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/traffic/views`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      // Fetch Repository Info (for stars)
+      const repoRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      if (!viewsRes.ok || !repoRes.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const viewsJson = await viewsRes.json();
+      const repoJson = await repoRes.json();
+
+      setStats({
+        totalViews: viewsJson.count || 0,
+        uniqueVisitors: viewsJson.uniques || 0,
+        stars: repoJson.stargazers_count || 0,
+      });
+    } catch (err: any) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [owner, repo, supabase]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#999] mb-4" />
+        <p className="text-[#666]">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
@@ -25,7 +102,9 @@ export default function DashboardPage() {
               <BarChart3 className="w-5 h-5 text-[#918df6]" />
             </div>
           </div>
-          <p className="text-2xl font-semibold text-black">1,234</p>
+          <p className="text-2xl font-semibold text-black tabular-nums">
+            {stats.totalViews.toLocaleString()}
+          </p>
           <p className="text-sm text-[#666]">Total views</p>
         </div>
 
@@ -35,18 +114,22 @@ export default function DashboardPage() {
               <Users className="w-5 h-5 text-[#22c55e]" />
             </div>
           </div>
-          <p className="text-2xl font-semibold text-black">89</p>
+          <p className="text-2xl font-semibold text-black tabular-nums">
+            {stats.uniqueVisitors.toLocaleString()}
+          </p>
           <p className="text-sm text-[#666]">Unique visitors</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-[#eaeaea] p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-[#fef9c3] flex items-center justify-center">
-              <Zap className="w-5 h-5 text-[#eab308]" />
+              <Star className="w-5 h-5 text-[#eab308]" />
             </div>
           </div>
-          <p className="text-2xl font-semibold text-black">42</p>
-          <p className="text-sm text-[#666]">Stars this week</p>
+          <p className="text-2xl font-semibold text-black tabular-nums">
+            {stats.stars.toLocaleString()}
+          </p>
+          <p className="text-sm text-[#666]">Total stars</p>
         </div>
       </div>
 

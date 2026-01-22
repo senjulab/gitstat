@@ -18,6 +18,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
 
 interface DashboardHeaderProps {
@@ -339,14 +346,16 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
 
                 <div className="border-t border-[#f0f0f0] my-1 -mx-2" />
 
-                <Link
+                {/* we dont need it for now */}
+
+                {/* <Link
                   href="/docs"
                   onClick={() => setIsUserMenuOpen(false)}
                   className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
                 >
                   Docs
                   <BookOpen className="w-[16px] h-[16px] text-[#999]" />
-                </Link>
+                </Link> */}
                 <Link
                   href="/blog"
                   onClick={() => setIsUserMenuOpen(false)}
@@ -388,37 +397,31 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
       </header>
 
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={() => setIsAddModalOpen(false)}
-          />
-          <div className="relative bg-white rounded-2xl w-full max-w-md mx-4 p-6 shadow-xl">
-            <button
-              onClick={() => setIsAddModalOpen(false)}
-              className="absolute top-4 right-4 text-[#999] hover:text-[#666] cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h2 className="text-xl font-medium text-[#181925] mb-2">
-              Add project
-            </h2>
-            <p className="text-sm text-[#666] mb-6">
-              Select a repository to add to your dashboard.
-            </p>
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogContent
+            className="sm:max-w-md tracking-tight rounded-lg"
+            showCloseButton={false}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-lg font-medium text-[#181925]">
+                Add project
+              </DialogTitle>
+              <DialogDescription className="text-sm text-[#666]">
+                Select a repository to add to your dashboard.
+              </DialogDescription>
+            </DialogHeader>
 
             {!hasGitHubToken ? (
-              <div className="text-center py-8">
+              <div className="text-center py-6">
                 <p className="text-sm text-[#666] mb-4">
                   Connect your GitHub account to see your repositories.
                 </p>
                 <Button
                   onClick={handleConnectGitHub}
-                  className="h-11 bg-[#181925] hover:bg-[#2a2b3a] text-white rounded-full px-6 font-medium"
+                  className="cursor-pointer select-none h-10 px-6 text-sm rounded-full font-medium bg-[#181925] hover:bg-[#2a2b3a] text-white transition-all duration-200"
                 >
                   <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-4 h-4 mr-2"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -428,27 +431,33 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                 </Button>
               </div>
             ) : fetchingRepos ? (
-              <div className="text-center py-8">
+              <div className="text-center py-6">
                 <Loader2 className="w-8 h-8 animate-spin text-[#999] mx-auto mb-4" />
                 <p className="text-sm text-[#666]">Loading repositories...</p>
               </div>
             ) : availableRepos.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-[#666]">
+              <div className="text-center py-6">
+                <p className="text-sm text-[#666] mb-4">
                   No new repositories available to add.
                 </p>
+                <Button
+                  onClick={handleConnectGitHub}
+                  className="cursor-pointer select-none h-10 px-4 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200"
+                >
+                  Refresh repositories
+                </Button>
               </div>
             ) : (
-              <>
-                <div className="space-y-2 max-h-64 overflow-y-auto mb-6">
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
                   {availableRepos.map((r) => (
                     <button
                       key={r.id}
                       onClick={() => setSelectedRepo(r)}
                       className={`w-full p-3 rounded-xl text-left transition-all cursor-pointer ${
                         selectedRepo?.id === r.id
-                          ? "bg-indigo-50 border-2 border-indigo-400"
-                          : "bg-[#f5f5f5] border-2 border-transparent hover:border-neutral-300"
+                          ? "bg-[#f5f3ff] border-2 border-[#918df6]"
+                          : "bg-[#fafafa] border-2 border-transparent hover:border-[#e0e0e0]"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -458,11 +467,11 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                           className="w-6 h-6 rounded"
                         />
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-black block truncate">
+                          <span className="text-sm font-medium text-[#181925] block truncate">
                             {r.full_name}
                           </span>
                           <div className="flex gap-1.5 mt-1">
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-[#f0f0f0] text-[#666]">
                               {r.private ? "Private" : "Public"}
                             </span>
                           </div>
@@ -472,31 +481,39 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                   ))}
                 </div>
 
-                <Button
-                  onClick={handleAddProject}
-                  disabled={!selectedRepo || addingRepo}
-                  className="w-full h-11 bg-[#181925] hover:bg-[#2a2b3a] text-white rounded-full font-medium disabled:opacity-50"
-                >
-                  {addingRepo ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Adding...
-                    </>
-                  ) : (
-                    "Add project"
-                  )}
-                </Button>
+                <div className="flex gap-2 justify-end pt-2">
+                  <Button
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="cursor-pointer select-none h-10 px-4 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddProject}
+                    disabled={!selectedRepo || addingRepo}
+                    className="cursor-pointer select-none h-10 px-6 text-sm rounded-full font-medium bg-[#181925] hover:bg-[#2a2b3a] text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {addingRepo ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      "Add project"
+                    )}
+                  </Button>
+                </div>
 
                 <button
                   onClick={handleConnectGitHub}
-                  className="w-full mt-3 text-sm text-[#666] hover:text-[#181925] transition-colors cursor-pointer"
+                  className="w-full text-center text-xs text-[#999] hover:text-[#666] transition-colors cursor-pointer pt-1"
                 >
                   Refresh repositories
                 </button>
-              </>
+              </div>
             )}
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
