@@ -164,6 +164,22 @@ export default function TrafficPage() {
     }
   }, [owner, repo, supabase]);
 
+  const handleReconnect = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(window.location.pathname)}`,
+        scopes: "read:user user:email read:org repo",
+      },
+    });
+    if (error) {
+      console.error("Reconnect error:", error);
+      setError(
+        "Failed to start reconnect flow. Please try logging out and in again.",
+      );
+    }
+  }, [supabase]);
+
   useEffect(() => {
     fetchTrafficData();
   }, [fetchTrafficData]);
@@ -247,12 +263,31 @@ export default function TrafficPage() {
   }
 
   if (error) {
+    const isTokenError = error.toLowerCase().includes("token");
+
     return (
-      <div className="max-w-3xl mx-auto px-6 py-12 text-center">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={fetchTrafficData} variant="outline">
-          Try again
-        </Button>
+      <div className="max-w-3xl mx-auto px-6 py-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 max-w-md">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+        <div className="flex gap-3">
+          {isTokenError ? (
+            <Button
+              onClick={handleReconnect}
+              className="bg-black text-white hover:bg-black/90 px-8 py-2 rounded-full h-auto"
+            >
+              Reconnect GitHub
+            </Button>
+          ) : (
+            <Button
+              onClick={fetchTrafficData}
+              variant="outline"
+              className="px-8 py-2 rounded-full h-auto"
+            >
+              Try again
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
@@ -274,13 +309,13 @@ export default function TrafficPage() {
                 <h2 className="text-base font-medium text-[#181925]">
                   Git clones
                 </h2>
-                <Badge
+                {/* <Badge
                   variant="outline"
                   className="text-green-500 bg-green-500/10 border-none"
                 >
                   <TrendingUp className="h-3 w-3 mr-1" />
                   <span>12.4%</span>
-                </Badge>
+                </Badge> */}
               </div>
               <p className="text-sm text-[#999]">
                 <span className="font-mono text-[#181925] tabular-nums">
@@ -446,13 +481,13 @@ export default function TrafficPage() {
                   <h2 className="text-base font-medium text-[#181925]">
                     Visitors
                   </h2>
-                  <Badge
+                  {/* <Badge
                     variant="outline"
                     className="text-green-500 bg-green-500/10 border-none"
                   >
                     <TrendingUp className="h-3 w-3 mr-1" />
                     <span>12.4%</span>
-                  </Badge>
+                  </Badge> */}
                 </div>
                 <p className="text-sm text-[#999]">
                   <span className="font-mono text-[#181925] tabular-nums">
