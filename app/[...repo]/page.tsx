@@ -60,7 +60,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-neutral-50 tracking-tight">
       <UserHeader />
 
       <div className="max-w-4xl mx-auto px-6 py-12">

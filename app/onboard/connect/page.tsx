@@ -162,7 +162,7 @@ export default function ConnectPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 tracking-tight">
       <div className="w-full max-w-sm space-y-6">
         {/* Badge */}
         <div className="flex items-center justify-center">

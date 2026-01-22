@@ -88,7 +88,7 @@ function VerifyContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 tracking-tight">
       <div className="w-full max-w-md space-y-8">
         <div className="flex justify-center">
           <Logo size={48} />

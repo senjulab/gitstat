@@ -79,7 +79,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 tracking-tight">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex justify-center">
           <Logo size={48} />
