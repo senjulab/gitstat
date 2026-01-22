@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const returnTo = requestUrl.searchParams.get('returnTo')
   const origin = requestUrl.origin
 
   if (code) {
@@ -20,6 +21,10 @@ export async function GET(request: Request) {
     
     if (!user) {
       return NextResponse.redirect(`${origin}/login?error=no_user`)
+    }
+
+    if (returnTo) {
+      return NextResponse.redirect(`${origin}${returnTo}?openAddModal=true`)
     }
 
     const isGoogleUser = user.app_metadata.provider === 'google'
@@ -40,3 +45,4 @@ export async function GET(request: Request) {
 
   return NextResponse.redirect(`${origin}/login`)
 }
+
