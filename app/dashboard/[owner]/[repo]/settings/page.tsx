@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Copy, Check } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete02Icon } from "@hugeicons/core-free-icons";
@@ -21,6 +22,8 @@ export default function SettingsPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+  const router = useRouter();
+  const supabase = createClient();
 
   const [projectName, setProjectName] = useState(repo);
   const [isPublic, setIsPublic] = useState(false);
@@ -30,6 +33,7 @@ export default function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const projectToken = "4a151b05-4d06-4b29-9592-2e828ebc86f2";
   const publicUrl = `gitstat.dev/s/${owner}/${repo}`;
@@ -56,6 +60,51 @@ export default function SettingsPage() {
     setTeamMembers(teamMembers.filter((m) => m !== username));
   };
 
+  const handleDeleteProject = async () => {
+    if (deleteConfirmText !== projectName) return;
+
+    setIsDeleting(true);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Delete from connected_repositories
+      const { error } = await supabase
+        .from("connected_repositories")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("repo_owner", owner)
+        .eq("repo_name", repo);
+
+      if (error) throw error;
+
+      // Get remaining repositories to redirect
+      const { data: remainingRepos } = await supabase
+        .from("connected_repositories")
+        .select("repo_owner, repo_name")
+        .eq("user_id", user.id)
+        .limit(1);
+
+      // Redirect to first available repo or onboard page
+      if (remainingRepos && remainingRepos.length > 0) {
+        router.push(
+          `/dashboard/${remainingRepos[0].repo_owner}/${remainingRepos[0].repo_name}`,
+        );
+      } else {
+        router.push("/onboard/connect");
+      }
+    } catch (err: any) {
+      console.error("Failed to delete project:", err);
+      alert("Failed to delete project. Please try again.");
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmText("");
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
       <div className="text-center mb-12">
@@ -67,7 +116,8 @@ export default function SettingsPage() {
         <DashboardSidebar />
 
         <div className="flex-1 space-y-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
+          {/* will make it in public after launch */}
+          {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Project name
@@ -90,43 +140,11 @@ export default function SettingsPage() {
                 Save
               </Button>
             </div>
-          </div>
+          </div> */}
 
-          <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
-            <div className="px-4 py-4">
-              <h2 className="text-base font-medium text-[#181925] mb-1">
-                Project token
-              </h2>
-              <p className="text-sm text-[#999] mb-4">
-                A unique token assigned to your project.
-              </p>
-              <Input
-                value={projectToken}
-                readOnly
-                className="border-none rounded-xl h-11 bg-[#fafafa] text-base font-medium text-[#666] cursor-default focus:ring-0"
-              />
-            </div>
-            <div className="px-4 py-2 bg-white border-t border-[#f7f7f7] flex items-center justify-between h-12">
-              <span className="text-xs text-[#999]">
-                Used to identify your project
-              </span>
-              <Button
-                onClick={() => handleCopy(projectToken, "token")}
-                className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200"
-              >
-                {copiedToken ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    Copied
-                  </>
-                ) : (
-                  "Copy"
-                )}
-              </Button>
-            </div>
-          </div>
+          {/* will make it in public after launch */}
 
-          <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
+          {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Public stats
@@ -157,7 +175,7 @@ export default function SettingsPage() {
                 )}
               </Button>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
@@ -269,10 +287,11 @@ export default function SettingsPage() {
                 Cancel
               </Button>
               <Button
-                disabled={deleteConfirmText !== projectName}
+                onClick={handleDeleteProject}
+                disabled={deleteConfirmText !== projectName || isDeleting}
                 className="cursor-pointer select-none h-10 px-4 text-sm rounded-full font-medium bg-[#ff2f00] hover:bg-[#e02a00] text-white border border-[#ff2f00] hover:border-[#e02a00] active:bg-[#cc2600] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete project
+                {isDeleting ? "Deleting..." : "Delete project"}
               </Button>
             </div>
           </div>
