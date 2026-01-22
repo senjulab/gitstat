@@ -133,7 +133,7 @@ export default function StarsPage() {
       }
 
       const res = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=20&page=${currentPage}`,
+        `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=21&page=${currentPage}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -165,7 +165,7 @@ export default function StarsPage() {
           fetchedTotalPages = parseInt(lastPageMatch[1], 10);
           // Calculate total count
           const lastPage = parseInt(lastPageMatch[1], 10);
-          fetchedTotalCount = (lastPage - 1) * 20 + data.length;
+          fetchedTotalCount = (lastPage - 1) * 21 + data.length;
         }
       } else {
         // No Link header means single page - use current data length
