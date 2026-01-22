@@ -77,6 +77,12 @@ export default function TrafficPage() {
 
   const [clonesXAxis, setClonesXAxis] = useState<number | null>(null);
   const [visitorXAxis, setVisitorXAxis] = useState<number | null>(null);
+  const [totals, setTotals] = useState({
+    clones: 0,
+    uniqueClones: 0,
+    views: 0,
+    uniqueVisitors: 0,
+  });
   const chartRef = useRef<HTMLDivElement>(null);
   const visitorChartRef = useRef<HTMLDivElement>(null);
 
@@ -144,6 +150,12 @@ export default function TrafficPage() {
 
       setClonesData(formattedClones);
       setVisitorData(formattedViews);
+      setTotals({
+        clones: clonesJson.count,
+        uniqueClones: clonesJson.uniques,
+        views: viewsJson.count,
+        uniqueVisitors: viewsJson.uniques,
+      });
     } catch (err: any) {
       console.error("Traffic fetch error:", err);
       setError(err.message);
@@ -156,13 +168,10 @@ export default function TrafficPage() {
     fetchTrafficData();
   }, [fetchTrafficData]);
 
-  const totalClones = clonesData.reduce((sum, item) => sum + item.total, 0);
-  const totalUniqueClones = clonesData.reduce(
-    (sum, item) => sum + item.unique,
-    0,
-  );
-  const totalViews = visitorData.reduce((sum, item) => sum + item.views, 0);
-  const totalUnique = visitorData.reduce((sum, item) => sum + item.unique, 0);
+  const totalClones = totals.clones;
+  const totalUniqueClones = totals.uniqueClones;
+  const totalViews = totals.views;
+  const totalUnique = totals.uniqueVisitors;
 
   const exportToCSV = useCallback(() => {
     const headers = ["Date", "Unique", "Total"];
