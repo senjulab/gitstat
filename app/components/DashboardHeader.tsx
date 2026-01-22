@@ -381,7 +381,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setIsAddModalOpen(false)}
           />
           <div className="relative bg-white rounded-2xl w-full max-w-md mx-4 p-6 shadow-xl">
