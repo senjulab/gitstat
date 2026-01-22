@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 import {
@@ -81,7 +82,7 @@ type ActiveProperty = keyof typeof chartConfig;
 
 const HatchedBackgroundPattern = ({ config }: { config: ChartConfig }) => {
   const items = Object.fromEntries(
-    Object.entries(config).map(([key, value]) => [key, value.color])
+    Object.entries(config).map(([key, value]) => [key, value.color]),
   );
   return (
     <>
@@ -123,6 +124,10 @@ const animationConfig = {
 };
 
 export default function TrafficPage() {
+  const params = useParams();
+  const owner = params.owner as string;
+  const repo = params.repo as string;
+
   const [clonesXAxis, setClonesXAxis] = React.useState<number | null>(null);
   const [visitorXAxis, setVisitorXAxis] = React.useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -147,10 +152,12 @@ export default function TrafficPage() {
 
   const exportToPNG = useCallback(async () => {
     if (!chartRef.current) return;
-    
+
     const { toPng } = await import("html-to-image");
-    const dataUrl = await toPng(chartRef.current, { backgroundColor: "#ffffff" });
-    
+    const dataUrl = await toPng(chartRef.current, {
+      backgroundColor: "#ffffff",
+    });
+
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `git-clones-last-14-days.png`;
@@ -185,24 +192,21 @@ export default function TrafficPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Traffic</h1>
         <p className="text-[#666] font-normal">Monitor your project traffic.</p>
       </div>
 
-      {/* Content */}
       <div className="flex gap-6">
-        {/* Sidebar */}
         <DashboardSidebar />
 
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Chart Header */}
           <div className="mb-4 flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-medium text-[#181925]">Git clones</h2>
+                <h2 className="text-base font-medium text-[#181925]">
+                  Git clones
+                </h2>
                 <Badge
                   variant="outline"
                   className="text-green-500 bg-green-500/10 border-none"
@@ -212,15 +216,44 @@ export default function TrafficPage() {
                 </Badge>
               </div>
               <p className="text-sm text-[#999]">
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                 <span className="font-mono text-[#181925] tabular-nums">{totalClones.toLocaleString()}</span> clones and{" "}
                 <span className="font-mono text-[#181925] tabular-nums">{totalUniqueClones.toLocaleString()}</span> unique clones in the last 14 days
+=======
+                {totalClones.toLocaleString()} clones in the{" "}
+                {rangeLabels[timeRange]}
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
               </p>
             </div>
 
             <div className="flex items-center gap-2">
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
               {/* Export Button */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
+=======
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={exportToCSV}
+                  className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
+                  title="Export as CSV"
+                >
+                  <Download className="h-3 w-3" />
+                  CSV
+                </button>
+                <button
+                  onClick={exportToPNG}
+                  className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
+                  title="Export as PNG"
+                >
+                  <Image className="h-3 w-3" />
+                  PNG
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1 bg-[#fafafa] rounded-full p-1">
+                {(["week", "month", "year"] as TimeRange[]).map((range) => (
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                   <button
                     className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
                     title="Export"
@@ -250,15 +283,19 @@ export default function TrafficPage() {
             </div>
           </div>
 
-          {/* Chart */}
           <div ref={chartRef}>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <AreaChart
                 accessibilityLayer
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                 data={clonesData}
                 margin={{ top: 10, right: 0, bottom: 10, left: 0 }}
                 onMouseMove={(e) => setClonesXAxis(e.chartX as number)}
                 onMouseLeave={() => setClonesXAxis(null)}
+=======
+                data={chartData}
+                margin={{ left: 0, right: 0 }}
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
               >
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
@@ -267,7 +304,13 @@ export default function TrafficPage() {
                   axisLine={false}
                   tickMargin={8}
                   padding={{ left: 20, right: 20 }}
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   tickFormatter={(value) => value}
+=======
+                  tickFormatter={(value) =>
+                    timeRange === "year" ? value.slice(0, 3) : value
+                  }
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                 />
                 <YAxis
                   tickLine={false}
@@ -276,6 +319,7 @@ export default function TrafficPage() {
                   width={40}
                   tickFormatter={(value) => value.toLocaleString()}
                 />
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                 <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                 <defs>
                   <linearGradient
@@ -291,6 +335,16 @@ export default function TrafficPage() {
                   </linearGradient>
                   <linearGradient
                     id="clones-highlighted-grad-unique"
+=======
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
+                <defs>
+                  <HatchedBackgroundPattern config={chartConfig} />
+                  <linearGradient
+                    id="hatched-background-pattern-grad-unique"
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                     x1="0"
                     y1="0"
                     x2="0"
@@ -308,7 +362,11 @@ export default function TrafficPage() {
                     />
                   </linearGradient>
                   <linearGradient
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                     id="clones-highlighted-grad-total"
+=======
+                    id="hatched-background-pattern-grad-total"
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                     x1="0"
                     y1="0"
                     x2="0"
@@ -325,6 +383,7 @@ export default function TrafficPage() {
                       stopOpacity={0}
                     />
                   </linearGradient>
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   {clonesXAxis && (
                     <mask id="clones-highlighted-mask">
                       <rect
@@ -341,21 +400,51 @@ export default function TrafficPage() {
                   dataKey="total"
                   type="natural"
                   fill="url(#clones-highlighted-grad-total)"
+=======
+                </defs>
+                <Area
+                  onMouseEnter={() => setActiveProperty("total")}
+                  onMouseLeave={() => setActiveProperty(null)}
+                  dataKey="total"
+                  type="natural"
+                  fill={
+                    activeProperty === "total"
+                      ? "url(#hatched-background-pattern-total)"
+                      : "url(#hatched-background-pattern-grad-total)"
+                  }
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                   fillOpacity={0.4}
                   stroke="var(--color-total)"
                   stackId="a"
                   strokeWidth={0.8}
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   mask="url(#clones-highlighted-mask)"
                 />
                 <Area
                   dataKey="unique"
                   type="natural"
                   fill="url(#clones-highlighted-grad-unique)"
+=======
+                />
+                <Area
+                  onMouseEnter={() => setActiveProperty("unique")}
+                  onMouseLeave={() => setActiveProperty(null)}
+                  dataKey="unique"
+                  type="natural"
+                  fill={
+                    activeProperty === "unique"
+                      ? "url(#hatched-background-pattern-unique)"
+                      : "url(#hatched-background-pattern-grad-unique)"
+                  }
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                   fillOpacity={0.4}
                   stroke="var(--color-unique)"
                   stackId="a"
                   strokeWidth={0.8}
+<<<<<<< HEAD:app/dashboard/traffic/page.tsx
                   mask="url(#clones-highlighted-mask)"
+=======
+>>>>>>> 02685f8e3bc876f834771c79ca96be06334521ff:app/dashboard/[owner]/[repo]/traffic/page.tsx
                 />
               </AreaChart>
             </ChartContainer>
