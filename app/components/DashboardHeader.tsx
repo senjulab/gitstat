@@ -103,7 +103,11 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors"
             >
-              <div className="w-5 h-5 rounded bg-[#f0f0f0]" />
+              <img
+                src={`https://github.com/${owner}.png?size=40`}
+                alt={owner}
+                className="w-5 h-5 rounded"
+              />
               <span className="text-sm font-medium text-[#333]">{repo}</span>
               <ChevronDown
                 className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
