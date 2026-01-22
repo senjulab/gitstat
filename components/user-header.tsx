@@ -1,23 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Settings,
+  BookOpen,
+  FileText,
+  MessageCircle,
+  Globe,
+  LogOut,
+  Plus,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 export default function UserHeader() {
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [initials, setInitials] = useState("?");
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -67,6 +72,20 @@ export default function UserHeader() {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -74,115 +93,109 @@ export default function UserHeader() {
 
   return (
     <header className="w-full">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-3xl mx-auto px-6">
         <div className="flex items-center justify-between py-4">
-          {/* Logo - Simple Circle */}
-          <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 border-2 rounded-full"></div>
-          </div>
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <Logo size={32} />
+          </Link>
 
           {/* User Avatar with Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-neutral-300 transition-all">
+          <div className="flex items-center gap-4 relative" ref={userMenuRef}>
+            <button
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="cursor-pointer"
+            >
+              <Avatar className="w-[30px] h-[30px]">
                 <AvatarImage src={avatarUrl} alt={displayName} />
-                <AvatarFallback className="bg-neutral-800 text-white text-sm font-medium">
+                <AvatarFallback className="text-sm bg-[#f3f3f3] text-[#666]">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              {/* User Info */}
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex items-center gap-3 py-2">
-                  <Avatar className="h-10 w-10">
+            </button>
+
+            {/* User Menu Dropdown */}
+            {isUserMenuOpen && (
+              <div className="absolute top-full right-0 mt-2 w-[240px] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
+                {/* User Info */}
+                <div className="flex items-center gap-2 mb-2 px-2 py-1">
+                  <Avatar className="w-[30px] h-[30px]">
                     <AvatarImage src={avatarUrl} alt={displayName} />
-                    <AvatarFallback className="bg-neutral-800 text-white">
+                    <AvatarFallback className="text-sm bg-[#c8d96f] text-white">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#181925] truncate">
                       {displayName}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="text-xs text-[#999] truncate">
                       {user?.email}
                     </p>
                   </div>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
 
-              {/* Menu Items */}
-              <DropdownMenuItem
-                onClick={() => router.push("/account")}
-                className="cursor-pointer"
-              >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                {/* Account */}
+                <Link
+                  href="/dashboard/settings"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Account
-              </DropdownMenuItem>
+                  Account
+                  <Settings className="w-[16px] h-[16px] text-[#999]" />
+                </Link>
 
-              <DropdownMenuItem
-                onClick={() => router.push("/docs")}
-                className="cursor-pointer"
-              >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                {/* Divider */}
+                <div className="border-t border-[#f0f0f0] my-1 mx-1" />
+
+                {/* Links */}
+                <Link
+                  href="/docs"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
-                Docs
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="cursor-pointer text-red-600 focus:text-red-600"
-              >
-                <svg
-                  className="mr-2 h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  Docs
+                  <BookOpen className="w-[16px] h-[16px] text-[#999]" />
+                </Link>
+                <Link
+                  href="/blog"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  Blog
+                  <FileText className="w-[16px] h-[16px] text-[#999]" />
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                >
+                  Contact
+                  <MessageCircle className="w-[16px] h-[16px] text-[#999]" />
+                </Link>
+
+                {/* Divider */}
+                <div className="border-t border-[#f0f0f0] my-1 mx-1" />
+
+                {/* Bottom Links */}
+                <Link
+                  href="/"
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-md text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                >
+                  Homepage
+                  <Globe className="w-[16px] h-[16px] text-[#999]" />
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-md text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                >
+                  Log out
+                  <LogOut className="w-[16px] h-[16px] text-[#999]" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -78,6 +79,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fff] px-4">
       <div className="w-full max-w-sm space-y-8">
+        <div className="flex justify-center">
+          <Logo size={48} />
+        </div>
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Log in to GitStat</h1>
           <p className="text-[#666666] text-md">
@@ -99,13 +103,13 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className="border-none rounded-xl h-12 w-full bg-[#f5f5f5] text-base placeholder:text-[#b3b3b3] placeholder:font-semibold"
+            className="border-none font-semibold rounded-xl h-12 w-full bg-[#f5f5f5] text-base placeholder:text-[#b3b3b3] placeholder:font-semibold"
           />
 
           <Button
             type="submit"
             disabled={loading || !email}
-            className="w-full h-12 bg-[#38b000] hover:bg-[#38b000] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+            className="w-full h-12 bg-[#9580ff] hover:bg-[#9580ff] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
           >
             {loading ? "Sending code..." : "Continue with email"}
           </Button>
@@ -159,7 +163,7 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <Link
               href="/register"
-              className="text-[#38b000] hover:text-[#38b000] font-medium"
+              className="text-[#9580ff] hover:text-[#9580ff] font-medium"
             >
               Register
             </Link>

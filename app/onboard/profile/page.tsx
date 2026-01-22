@@ -111,67 +111,69 @@ export default function ProfilePage() {
         </div>
 
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center ">
           <h1 className="text-2xl font-medium text-black">
             Welcome to GitStat
           </h1>
           <p className="text-[#666666] text-md">Let's set up your profile</p>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-center ">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="cursor-pointer hover:opacity-80 transition-opacity"
-            >
-              <Avatar className="w-20 h-20">
-                <AvatarImage src={avatarPreview} alt="Profile" />
-                <AvatarFallback className="bg-[#f5f5f5] text-2xl font-medium text-[#b3b3b3]">
-                  {name ? name[0].toUpperCase() : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <p className="text-[#666666] text-xs text-center">optional</p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
           <div className="space-y-2">
-            <label
-              htmlFor="name"
-              className="text-sm font-medium text-[#666666]"
-            >
-              Your name
-            </label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
-            />
+            <div className="flex items-center justify-center ">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                <Avatar className="w-25 h-25">
+                  <AvatarImage src={avatarPreview} alt="Profile" />
+                  <AvatarFallback className="bg-[#f5f5f5] text-2xl font-medium text-[#b3b3b3]">
+                    {name ? name[0].toUpperCase() : "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-[#666666] text-xs text-center">optional</p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={!name}
-            className="w-full h-12 bg-[#14141F] hover:bg-[#14141F99] text-white rounded-full text-base font-medium cursor-pointer"
-          >
-            Continue
-          </Button>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="name"
+                className="text-sm font-medium text-[#666666]"
+              >
+                Name
+              </label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
+              />
+            </div>
 
-          <OnboardingProgress currentStep={0} totalSteps={2} />
-        </form>
+            <Button
+              type="submit"
+              disabled={!name}
+              className="w-full h-12 bg-[#14141F] hover:bg-[#14141F99] text-white rounded-full text-base font-medium cursor-pointer"
+            >
+              Continue
+            </Button>
+
+            <OnboardingProgress currentStep={0} totalSteps={2} />
+          </form>
+        </div>
       </div>
     </div>
   );

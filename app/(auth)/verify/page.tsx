@@ -3,16 +3,22 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import OTPInput from "@/components/otp-input";
 import { createClient } from "@/lib/supabase/client";
 import { getOnboardingRedirect } from "@/lib/auth/redirect";
 import Link from "next/link";
+import { Logo } from "@/components/logo";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 function VerifyContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resending, setResending] = useState(false);
+  const [otp, setOtp] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -84,6 +90,9 @@ function VerifyContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md space-y-8">
+        <div className="flex justify-center">
+          <Logo size={48} />
+        </div>
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Verify your email</h1>
           <p className="text-[#666666] text-md">
@@ -97,13 +106,29 @@ function VerifyContent() {
             <span className="font-medium text-black">{email}</span>
           </p>
 
-          <OTPInput onComplete={handleVerify} />
+          <div className="flex items-center justify-center">
+            <InputOTP
+              maxLength={6}
+              value={otp}
+              onChange={(value) => {
+                setOtp(value);
+                if (value.length === 6) {
+                  handleVerify(value);
+                }
+              }}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-red-600 text-sm">{error}</div>}
 
           <p className="text-[#666666] text-sm">
             Didn't get it?{" "}
