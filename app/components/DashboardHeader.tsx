@@ -449,7 +449,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
               </div>
             ) : (
               <div className="space-y-4 pt-2">
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
                   {availableRepos.map((r) => (
                     <button
                       key={r.id}
