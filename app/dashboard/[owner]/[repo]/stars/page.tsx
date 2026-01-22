@@ -203,6 +203,33 @@ export default function StarsPage() {
     window.location.href = "/onboard/connect";
   };
 
+  const exportStargazersToCSV = () => {
+    // Collect all stargazers from cache
+    const allStargazers: Stargazer[] = [];
+    Object.keys(cacheRef.current).forEach((key) => {
+      const pageNum = parseInt(key, 10);
+      if (!isNaN(pageNum) && cacheRef.current[pageNum]) {
+        allStargazers.push(...cacheRef.current[pageNum].data);
+      }
+    });
+
+    if (allStargazers.length === 0) {
+      // If no cached data, use current stargazers
+      allStargazers.push(...stargazers);
+    }
+
+    const headers = ["Username", "Avatar URL"];
+    const rows = allStargazers.map((s) => [s.login, s.avatar_url]);
+    const csvContent = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${owner}-${repo}-stargazers.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportToCSV = () => {
     const headers = ["Month", "Stars"];
     const rows = chartData.map((d) => [d.month, d.stars]);
@@ -414,6 +441,29 @@ export default function StarsPage() {
                   </p>
                 )}
               </div>
+              {!loading && !error && stargazers.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
+                      title="Export"
+                    >
+                      <Download className="h-3 w-3" />
+                      Export
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
+                    <DropdownMenuItem
+                      onClick={exportStargazersToCSV}
+                      className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
+                    >
+                      <Download className="h-3 w-3" />
+                      CSV
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {loading ? (
