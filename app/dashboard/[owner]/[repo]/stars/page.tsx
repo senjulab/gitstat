@@ -62,6 +62,17 @@ export default function StarsPage() {
 
   const supabase = createClient();
 
+  // Cache for stargazers data per page
+  const cacheRef = useRef<{
+    [page: number]: {
+      data: Stargazer[];
+    };
+    totalPages?: number;
+    totalCount?: number;
+    owner?: string;
+    repo?: string;
+  }>({});
+
   const springX = useSpring(0, {
     damping: 30,
     stiffness: 100,
@@ -76,6 +87,38 @@ export default function StarsPage() {
   });
 
   const fetchStargazers = useCallback(async () => {
+    // Clear page data cache if owner or repo changed
+    if (cacheRef.current.owner !== owner || cacheRef.current.repo !== repo) {
+      // Create new cache object for new repo
+      cacheRef.current = {
+        owner,
+        repo,
+      };
+    }
+
+    // Check cache first
+    const cached = cacheRef.current[currentPage];
+    if (cached) {
+      setStargazers(cached.data);
+      // Always set totalPages and totalCount from cache if available
+      // These should be set after the first successful fetch
+      // Use cached values if they exist, otherwise keep current state
+      const cachedTotalPages = cacheRef.current.totalPages;
+      const cachedTotalCount = cacheRef.current.totalCount;
+      
+      if (cachedTotalPages !== undefined) {
+        setTotalPages(cachedTotalPages);
+      }
+      if (cachedTotalCount !== undefined) {
+        setTotalCount(cachedTotalCount);
+      }
+      // If cache doesn't have these values, they should be set from a previous fetch
+      // so current state should be fine
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -113,23 +156,38 @@ export default function StarsPage() {
 
       // Get total count from Link header
       const linkHeader = res.headers.get("Link");
+      let fetchedTotalPages = cacheRef.current.totalPages ?? 1;
+      let fetchedTotalCount = cacheRef.current.totalCount ?? 0;
+
       if (linkHeader) {
         const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
         if (lastPageMatch) {
-          setTotalPages(parseInt(lastPageMatch[1], 10));
+          fetchedTotalPages = parseInt(lastPageMatch[1], 10);
+          // Calculate total count
+          const lastPage = parseInt(lastPageMatch[1], 10);
+          fetchedTotalCount = (lastPage - 1) * 20 + data.length;
+        }
+      } else {
+        // No Link header means single page - use current data length
+        if (!cacheRef.current.totalCount) {
+          fetchedTotalCount = data.length;
+          fetchedTotalPages = 1;
         }
       }
 
-      // Get total count from X-GitHub-Media-Type or calculate from pages
-      // GitHub API doesn't provide total count directly, so we estimate
-      // If we have last page, total is approximately (lastPage - 1) * 20 + current page items
-      if (linkHeader) {
-        const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
-        if (lastPageMatch) {
-          const lastPage = parseInt(lastPageMatch[1], 10);
-          setTotalCount((lastPage - 1) * 20 + data.length);
-        }
-      }
+      // Always update state and cache
+      setTotalPages(fetchedTotalPages);
+      setTotalCount(fetchedTotalCount);
+
+      // Store in cache
+      cacheRef.current[currentPage] = {
+        data,
+      };
+      // Store totalPages and totalCount at root level (shared across pages)
+      cacheRef.current.totalPages = fetchedTotalPages;
+      cacheRef.current.totalCount = fetchedTotalCount;
+      cacheRef.current.owner = owner;
+      cacheRef.current.repo = repo;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch stargazers");
     } finally {
