@@ -114,7 +114,14 @@ export default function TrafficPage() {
         },
       );
 
-      if (!clonesRes.ok) throw new Error("Failed to fetch clones data");
+      if (!clonesRes.ok) {
+        if (clonesRes.status === 403) {
+          throw new Error(
+            "GitHub token lacks required permissions. Please reconnect.",
+          );
+        }
+        throw new Error("Failed to fetch clones data");
+      }
       const clonesJson = await clonesRes.json();
 
       const formattedClones = clonesJson.clones.map((item: any) => ({
@@ -137,7 +144,14 @@ export default function TrafficPage() {
         },
       );
 
-      if (!viewsRes.ok) throw new Error("Failed to fetch views data");
+      if (!viewsRes.ok) {
+        if (viewsRes.status === 403) {
+          throw new Error(
+            "GitHub token lacks required permissions. Please reconnect.",
+          );
+        }
+        throw new Error("Failed to fetch views data");
+      }
       const viewsJson = await viewsRes.json();
 
       const formattedViews = viewsJson.views.map((item: any) => ({
@@ -264,7 +278,10 @@ export default function TrafficPage() {
   }
 
   if (error) {
-    const isTokenError = error.toLowerCase().includes("token");
+    const needsReconnect =
+      error.toLowerCase().includes("token") ||
+      error.toLowerCase().includes("permission") ||
+      error.toLowerCase().includes("reconnect");
 
     return (
       <div className="max-w-3xl mx-auto px-6 py-12 text-center min-h-[400px] flex flex-col items-center justify-center">
@@ -272,7 +289,7 @@ export default function TrafficPage() {
           <p className="text-sm font-medium">{error}</p>
         </div>
         <div className="flex gap-3">
-          {isTokenError ? (
+          {needsReconnect ? (
             <Button
               onClick={handleReconnect}
               className="bg-black text-white hover:bg-black/90 px-8 py-2 cursor-pointer rounded-lg h-auto"
