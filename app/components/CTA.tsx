@@ -9,8 +9,7 @@ export default function CTA() {
             repo analytics
           </h2>
           <p className="text-[#666] text-center tracking-tight text-lg/6 w-full max-w-md font-medium">
-            Start your 14 day free trial today and track your repositories in
-            minutes.
+            Start today and track your repositories in minutes.
           </p>
           <div className="flex items-center gap-4 mt-4">
             <button className="bg-[#9580ff] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">

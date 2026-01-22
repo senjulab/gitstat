@@ -3,8 +3,8 @@ export default function Hero() {
     <div className="pt-40 pb-16 md:pb-24 bg-background flex flex-col gap-16 relative overflow-hidden tracking-tight">
       <div className="w-full max-w-3xl mx-auto px-5 flex flex-col items-center text-center gap-4">
         <span className="text-[#999]">
-          An alternative to{" "}
-          <span className="font-medium text-[#181925]">Plausible</span>
+          The #1 GitHub Analytics tool
+          {/* <span className="font-medium text-[#181925]">Tracking</span> */}
         </span>
 
         <h1 className="text-6xl/17 tracking-tighter text-[#181925] font-medium md:text-balance">

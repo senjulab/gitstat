@@ -115,12 +115,16 @@ export default function TrafficPage() {
       );
 
       if (!clonesRes.ok) {
-        if (clonesRes.status === 403) {
+        if (
+          clonesRes.status === 403 ||
+          clonesRes.status === 401 ||
+          clonesRes.status === 404
+        ) {
           throw new Error(
-            "GitHub token lacks required permissions. Please reconnect.",
+            "Access denied or repository not found. Please reconnect to upgrade permissions.",
           );
         }
-        throw new Error("Failed to fetch clones data");
+        throw new Error(`Failed to fetch clones data (${clonesRes.status})`);
       }
       const clonesJson = await clonesRes.json();
 
@@ -145,12 +149,16 @@ export default function TrafficPage() {
       );
 
       if (!viewsRes.ok) {
-        if (viewsRes.status === 403) {
+        if (
+          viewsRes.status === 403 ||
+          viewsRes.status === 401 ||
+          viewsRes.status === 404
+        ) {
           throw new Error(
-            "GitHub token lacks required permissions. Please reconnect.",
+            "Access denied or repository not found. Please reconnect to upgrade permissions.",
           );
         }
-        throw new Error("Failed to fetch views data");
+        throw new Error(`Failed to fetch views data (${viewsRes.status})`);
       }
       const viewsJson = await viewsRes.json();
 
