@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -78,6 +79,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fff] px-4">
       <div className="w-full max-w-sm space-y-8">
+        <div className="flex justify-center">
+          <Logo size={48} />
+        </div>
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Log in to GitStat</h1>
           <p className="text-[#666666] text-md">
@@ -99,7 +103,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className="border-none rounded-xl h-12 w-full bg-[#f5f5f5] text-base placeholder:text-[#b3b3b3] placeholder:font-semibold"
+            className="border-none font-semibold rounded-xl h-12 w-full bg-[#f5f5f5] text-base placeholder:text-[#b3b3b3] placeholder:font-semibold"
           />
 
           <Button

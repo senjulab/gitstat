@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { getOnboardingRedirect } from "@/lib/auth/redirect";
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import {
   InputOTP,
   InputOTPGroup,
@@ -89,6 +90,9 @@ function VerifyContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md space-y-8">
+        <div className="flex justify-center">
+          <Logo size={48} />
+        </div>
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">Verify your email</h1>
           <p className="text-[#666666] text-md">
@@ -124,11 +128,7 @@ function VerifyContent() {
             </InputOTP>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-              {error}
-            </div>
-          )}
+          {error && <div className="text-red-600 text-sm">{error}</div>}
 
           <p className="text-[#666666] text-sm">
             Didn't get it?{" "}

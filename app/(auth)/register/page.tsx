@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -80,6 +81,9 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-sm space-y-8">
+        <div className="flex justify-center">
+          <Logo size={48} />
+        </div>
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-xl font-medium text-black">
@@ -105,7 +109,7 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium"
+            className="border-none rounded-xl h-12 w-full bg-[#f3f3f3] text-base placeholder:text-[#b3b3b3] placeholder:font-medium font-semibold"
           />
 
           <Button
