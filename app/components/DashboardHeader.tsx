@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   ChevronDown,
   Plus,
@@ -56,7 +56,16 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const supabase = createClient();
+
+  const getCurrentSubRoute = () => {
+    const parts = pathname.split("/");
+    if (parts.length > 4) {
+      return "/" + parts.slice(4).join("/");
+    }
+    return "";
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -254,7 +263,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                   {connectedRepos.map((r) => (
                     <Link
                       key={`${r.owner}/${r.name}`}
-                      href={`/dashboard/${r.owner}/${r.name}`}
+                      href={`/dashboard/${r.owner}/${r.name}${getCurrentSubRoute()}`}
                       onClick={() => setIsDropdownOpen(false)}
                       className={`w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         r.owner === owner && r.name === repo
