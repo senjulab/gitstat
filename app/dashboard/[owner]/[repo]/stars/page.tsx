@@ -100,6 +100,26 @@ export default function StarsPage() {
         throw new Error("GitHub token not found. Please reconnect.");
       }
 
+      // Helper to transform API response to flat Stargazer object
+      const mapStargazers = (data: any[]): Stargazer[] => {
+        return data
+          .map((item) => {
+            if (item.user && item.starred_at) {
+              return {
+                login: item.user.login,
+                avatar_url: item.user.avatar_url,
+                starred_at: item.starred_at,
+              };
+            }
+            return {
+              login: item.login,
+              avatar_url: item.avatar_url,
+              starred_at: item.starred_at || new Date().toISOString(),
+            };
+          })
+          .filter((s) => s.login);
+      };
+
       // Step 1: Fetch first page to get total count
       const firstPageRes = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=1`,
@@ -120,7 +140,11 @@ export default function StarsPage() {
         throw new Error("Failed to fetch stargazers");
       }
 
-      const firstPageData = await firstPageRes.json();
+      const firstPageRawData = await firstPageRes.json();
+      const firstPageData = mapStargazers(
+        Array.isArray(firstPageRawData) ? firstPageRawData : [],
+      );
+
       const linkHeader = firstPageRes.headers.get("Link");
       let totalPagesToFetch = 1;
 
@@ -131,21 +155,17 @@ export default function StarsPage() {
         }
       }
 
-      // Initialize Map with first page data for deduplication immediately
+      // Initialize Map with mapped first page data
       const uniqueStargazersMap = new Map<string, Stargazer>();
-      if (Array.isArray(firstPageData)) {
-        firstPageData.forEach((s: any) => {
-          if (s && s.login) {
-            uniqueStargazersMap.set(s.login, s);
-          }
-        });
-      }
+      firstPageData.forEach((s) => {
+        uniqueStargazersMap.set(s.login, s);
+      });
 
       const lastPage = totalPagesToFetch;
       const totalEstimated =
         lastPage === 1
           ? uniqueStargazersMap.size
-          : (lastPage - 1) * 100 + uniqueStargazersMap.size; // rough estimate
+          : (lastPage - 1) * 100 + uniqueStargazersMap.size;
       setTotalCount(totalEstimated);
 
       setProgress((1 / totalPagesToFetch) * 100);
@@ -169,12 +189,11 @@ export default function StarsPage() {
         }
 
         const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach((data) => {
-          if (Array.isArray(data)) {
-            data.forEach((s: any) => {
-              if (s && s.login) {
-                uniqueStargazersMap.set(s.login, s);
-              }
+        batchResults.forEach((rawData) => {
+          if (Array.isArray(rawData)) {
+            const mappedData = mapStargazers(rawData);
+            mappedData.forEach((s) => {
+              uniqueStargazersMap.set(s.login, s);
             });
           }
         });
@@ -196,15 +215,13 @@ export default function StarsPage() {
 
       // Process data for chart
       const processedData: ChartDataPoint[] = [];
-
-      // Group by day
       const groupedByDay: { [key: string]: number } = {};
+
       allStargazers.forEach((stargazer) => {
         const date = new Date(stargazer.starred_at).toISOString().split("T")[0];
         groupedByDay[date] = (groupedByDay[date] || 0) + 1;
       });
 
-      // Transform to cumulative array
       const sortedDates = Object.keys(groupedByDay).sort();
       let cumulative = 0;
 
@@ -364,8 +381,8 @@ export default function StarsPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-[#eaeaea] p-4 relative min-h-[300px]">
-            {loading ? (
+          <div className="relative min-h-[300px]">
+            {loading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 z-10">
                 <Loader2 className="h-8 w-8 animate-spin text-[#999] mb-4" />
                 <p className="text-sm text-[#666]">
@@ -378,8 +395,10 @@ export default function StarsPage() {
                   />
                 </div>
               </div>
-            ) : error ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+            )}
+
+            {error && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
                 <p className="text-red-500 text-sm mb-4 max-w-sm text-center">
                   {error}
                 </p>
@@ -391,7 +410,9 @@ export default function StarsPage() {
                   </Button>
                 )}
               </div>
-            ) : chartData.length > 0 ? (
+            )}
+
+            {chartData.length > 0 ? (
               <ChartContainer
                 ref={chartRef}
                 className="h-[300px] w-full"
@@ -484,9 +505,12 @@ export default function StarsPage() {
                 </AreaChart>
               </ChartContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-[#999]">
-                No stars yet
-              </div>
+              !loading &&
+              !error && (
+                <div className="flex items-center justify-center h-[300px] text-[#999]">
+                  No stars yet
+                </div>
+              )
             )}
           </div>
 
