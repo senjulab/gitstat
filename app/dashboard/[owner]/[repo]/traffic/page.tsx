@@ -278,7 +278,7 @@ export default function TrafficPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[400px]">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col items-center justify-center min-h-[400px]">
         <Spinner />
       </div>
     );
@@ -291,7 +291,7 @@ export default function TrafficPage() {
       error.toLowerCase().includes("reconnect");
 
     return (
-      <div className="max-w-3xl mx-auto px-6 py-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 text-center min-h-[400px] flex flex-col items-center justify-center">
         <div className=" text-red-600  py-4 max-w-md">
           <p className="text-sm font-medium">{error}</p>
         </div>
@@ -318,17 +318,17 @@ export default function TrafficPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      <div className="text-center mb-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 tracking-tight">
+      <div className="text-center mb-8 sm:mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Traffic</h1>
         <p className="text-[#666] font-normal">Monitor your project traffic.</p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <DashboardSidebar />
 
-        <div className="flex-1">
-          <div className="mb-4 flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-medium text-[#181925]">
@@ -501,7 +501,7 @@ export default function TrafficPage() {
           </div>
 
           <div className="mt-8">
-            <div className="mb-4 flex items-start justify-between">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-medium text-[#181925]">

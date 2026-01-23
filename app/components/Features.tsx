@@ -22,8 +22,8 @@ export default function Features() {
 
   return (
     <div id="features" className="py-16 md:py-24 bg-background tracking-tight">
-      <div className="w-full max-w-5xl mx-auto px-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <div key={index} className="flex flex-col items-center gap-3">
               <div className="w-10 h-9 rounded-full corner-superellipse/1.125 border border-[#2c78fc29] flex items-center justify-center">

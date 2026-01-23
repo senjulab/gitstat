@@ -433,18 +433,18 @@ export default function ContributorsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      <div className="text-center mb-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 tracking-tight">
+      <div className="text-center mb-8 sm:mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Contributors</h1>
         <p className="text-[#666] font-normal">
           See who's contributing to your project.
         </p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <DashboardSidebar />
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="mb-4">
             <h2 className="text-base font-medium text-[#181925]">
               Contributors
@@ -552,7 +552,7 @@ export default function ContributorsPage() {
                     {/* Remaining Contributors - Two per row with pagination */}
                     {remainingContributors.length > 0 && (
                       <>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
                           {paginatedRemaining.map((contributor) => (
                             <Link
                               key={contributor.login}
@@ -618,7 +618,7 @@ export default function ContributorsPage() {
                 })()}
                 </>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
                   {contributors.map((contributor) => (
                     <Link
                       key={contributor.login}

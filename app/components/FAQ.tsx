@@ -61,7 +61,7 @@ const faqs = [
 export default function FAQ() {
   return (
     <div className="py-16 md:py-24 bg-background tracking-tight">
-      <div className="w-full max-w-3xl mx-auto px-5 flex flex-col items-center gap-8">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-5 flex flex-col items-center gap-8">
         <span className="text-sm text-[#0006] border-transparent h-[24px] min-w-[24px] bg-[#00000008] px-3 py-1 pl-2 pr-2 gap-1 rounded-sm font-medium flex items-center justify-center border border-[#00000008]">
           FAQ
         </span>
@@ -74,7 +74,7 @@ export default function FAQ() {
           Got questions? We've got answers about tracking your GitHub repos.
         </p>
 
-        <Accordion className="w-full max-w-xl flex flex-col gap-2 mt-4">
+        <Accordion className="w-full max-w-xl flex flex-col gap-2 mt-4 min-w-0">
           {faqs.map((faq, index) => (
             <AccordionItem
               key={index}

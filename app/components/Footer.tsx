@@ -26,8 +26,8 @@ export default function Footer() {
 
   return (
     <footer className="py-16 md:py-24 bg-background tracking-tight font-medium">
-      <div className="w-full max-w-5xl mx-auto px-5">
-        <div className="flex flex-col md:flex-row justify-between gap-12">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-5">
+        <div className="flex flex-col md:flex-row justify-between gap-8 md:gap-12">
           {/* Left side - Description */}
           <div className="flex flex-col gap-6 max-w-sm">
             <p className="text-[#999] text-sm leading-relaxed">

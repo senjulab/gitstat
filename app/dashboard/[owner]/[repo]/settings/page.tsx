@@ -106,16 +106,16 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      <div className="text-center mb-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 tracking-tight">
+      <div className="text-center mb-8 sm:mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Settings</h1>
         <p className="text-[#666] font-normal">Manage your project.</p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <DashboardSidebar />
 
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 min-w-0 space-y-4">
           {/* will make it in public after launch */}
           {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">

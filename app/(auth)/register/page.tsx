@@ -121,7 +121,7 @@ export default function RegisterPage() {
           </Button>
 
           {/* OAuth Buttons */}
-          <div className="grid grid-cols-2 gap-3 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
             <Button
               type="button"
               onClick={handleGoogleRegister}

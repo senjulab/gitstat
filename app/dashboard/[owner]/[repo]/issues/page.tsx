@@ -325,18 +325,18 @@ export default function IssuesPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-12 tracking-tight">
-      <div className="text-center mb-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 tracking-tight">
+      <div className="text-center mb-8 sm:mb-12">
         <h1 className="text-2xl font-medium text-black mb-2">Issues & PRs</h1>
         <p className="text-[#666] font-normal">
           Track issues and pull requests
         </p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <DashboardSidebar />
 
-        <div className="flex-1 space-y-8">
+        <div className="flex-1 min-w-0 space-y-8">
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Spinner />
@@ -358,7 +358,7 @@ export default function IssuesPage() {
           ) : (
             <>
               {/* Section 1: Stats */}
-              <div className="grid grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 <div>
                   <p className="text-sm text-[#999] mb-1">Open Issues</p>
                   <p className="text-2xl font-semibold text-[#181925] font-mono">
@@ -433,7 +433,7 @@ export default function IssuesPage() {
 
               {/* Section 3: Tables with Filters */}
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
                   <div>
                     <h2 className="text-base font-medium text-[#181925] mb-1">
                       All Items
@@ -446,7 +446,7 @@ export default function IssuesPage() {
                     value={activeFilter}
                     onValueChange={(v) => setActiveFilter(v as FilterType)}
                   >
-                    <TabsList>
+                    <TabsList className="flex overflow-x-auto scrollbar-hide w-full sm:w-auto">
                       <TabsTrigger value="all">All</TabsTrigger>
                       <TabsTrigger value="issues">Issues</TabsTrigger>
                       <TabsTrigger value="prs">PRs</TabsTrigger>
@@ -484,7 +484,7 @@ export default function IssuesPage() {
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1.5 text-[#181925] hover:text-blue-600 hover:underline"
                               >
-                                <span className="truncate max-w-[300px]">
+                                <span className="truncate max-w-[200px] sm:max-w-[300px]">
                                   {item.title}
                                 </span>
                                 <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-50" />

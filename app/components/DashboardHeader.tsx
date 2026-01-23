@@ -233,35 +233,35 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 h-16 bg-white z-50">
-        <div className="h-full max-w-3xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="h-full max-w-3xl mx-auto px-4 sm:px-6 flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link
               href={`/dashboard/${owner}/${repo}/traffic`}
-              className="flex items-center"
+              className="flex items-center shrink-0"
             >
               <Logo size={32} />
             </Link>
 
-            <div className="w-px h-6 bg-[#e5e5e5]" />
+            <div className="w-px h-6 bg-[#e5e5e5] shrink-0" />
 
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative min-w-0" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors"
+                className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors min-w-0"
               >
                 <img
                   src={`https://github.com/${owner}.png?size=40`}
                   alt={owner}
-                  className="w-5 h-5 rounded"
+                  className="w-5 h-5 rounded shrink-0"
                 />
-                <span className="text-sm font-medium text-[#333]">{repo}</span>
+                <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">{repo}</span>
                 <ChevronDown
                   className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                 />
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-[220px] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2">
+                <div className="absolute top-full left-0 mt-2 w-[220px] max-w-[min(220px,calc(100vw-2rem))] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
                   <div className="pb-1">
                     <p className="text-sm font-medium text-[#999] px-3 py-1">
                       Projects
@@ -317,7 +317,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
             </button>
 
             {isUserMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[240px] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2">
+              <div className="absolute top-full right-0 mt-2 w-[240px] max-w-[min(240px,calc(100vw-2rem))] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
                 <div className="flex items-center gap-2 mb-2 px-2">
                   <Avatar className="w-[30px] h-[30px]">
                     {userAvatar && (

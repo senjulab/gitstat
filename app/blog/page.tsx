@@ -10,8 +10,8 @@ export default function BlogPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
 
-      <main className="flex-1 pt-44 pb-16">
-        <div className="max-w-4xl mx-auto px-6">
+      <main className="flex-1 pt-32 md:pt-44 pb-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-4xl font-medium  text-[#181925] mb-4 tracking-tight">

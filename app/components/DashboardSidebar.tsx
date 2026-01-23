@@ -50,26 +50,50 @@ export function DashboardSidebar() {
     },
   ];
 
+  const linkClass = (isActive: boolean) =>
+    `flex items-center cursor-pointer gap-2 px-3 py-1 text-sm font-medium transition-colors ${
+      isActive ? "text-[#181925]" : "text-[#999] hover:text-[#666]"
+    }`;
+
   return (
-    <nav className="w-40 shrink-0">
-      <ul className="space-y-0">
-        {sidebarItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <li key={item.id}>
+    <>
+      {/* Mobile: horizontal scrollable tabs */}
+      <nav className="md:hidden shrink-0 overflow-x-auto scrollbar-hide pb-3 -mx-4 px-4 sm:-mx-6 sm:px-6 border-b border-[#e5e5e5]">
+        <div className="flex gap-1 min-w-min">
+          {sidebarItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
               <Link
+                key={item.id}
                 href={item.href}
-                className={`w-full flex items-center cursor-pointer gap-2 px-3 py-1 text-sm font-medium transition-colors ${
-                  isActive ? "text-[#181925]" : "text-[#999] hover:text-[#666]"
+                className={`${linkClass(isActive)} shrink-0 rounded-lg py-2 ${
+                  isActive ? "bg-[#f5f5f5]" : "hover:bg-[#fafafa]"
                 }`}
               >
                 <HugeiconsIcon icon={item.icon} size={16} />
                 {item.label}
               </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Desktop: vertical sidebar */}
+      <nav className="hidden md:block w-40 shrink-0">
+        <ul className="space-y-0">
+          {sidebarItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <li key={item.id}>
+                <Link href={item.href} className={linkClass(isActive)}>
+                  <HugeiconsIcon icon={item.icon} size={16} />
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </>
   );
 }

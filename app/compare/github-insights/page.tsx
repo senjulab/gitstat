@@ -142,8 +142,8 @@ export default function GitHubInsightsComparisonPage() {
     <div className="min-h-screen flex flex-col bg-white tracking-tight">
       <Navbar />
 
-      <main className="flex-1 pt-44 pb-16">
-        <div className="max-w-4xl mx-auto px-6">
+      <main className="flex-1 pt-32 md:pt-44 pb-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-4xl font-medium text-[#181925] mb-4 tracking-tight">
@@ -155,7 +155,8 @@ export default function GitHubInsightsComparisonPage() {
           </div>
 
           {/* Comparison Table */}
-          <div>
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="min-w-[420px]">
             {/* Table Header */}
             <div className="grid grid-cols-[1fr_120px_120px] border-b border-[#e5e5e5]">
               <div className="p-4"></div>
@@ -193,6 +194,7 @@ export default function GitHubInsightsComparisonPage() {
                 </div>
               </div>
             ))}
+            </div>
           </div>
         </div>
       </main>

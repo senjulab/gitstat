@@ -15,7 +15,7 @@ export default function DashboardRepoLayout({
   return (
     <div className="min-h-screen bg-white">
       <DashboardHeader owner={owner} repo={repo} />
-      <main className="pt-20">{children}</main>
+      <main className="pt-16 md:pt-20">{children}</main>
     </div>
   );
 }
