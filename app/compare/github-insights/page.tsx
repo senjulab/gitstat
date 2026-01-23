@@ -65,15 +65,15 @@ const features: Feature[] = [
     github: "cross",
   },
   {
-    name: "Export (CSV / JSON / image)",
-    description: "Export your data in multiple formats.",
+    name: "Export CSV",
+    description: "Export your data in CSV format.",
     gitstat: "check",
     github: "check",
   },
   {
     name: "Team invites & roles",
     description: "Invite team members and manage roles.",
-    gitstat: "check",
+    gitstat: "coming",
     github: "cross",
   },
   {
