@@ -5,7 +5,7 @@ import { Databuddy } from "@databuddy/sdk/react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Gistat - Analytics for your gitHub repos",
+  title: "Gitstat - Analytics for your gitHub repos",
   description:
     "GitHub repo analytics made simple. track stars, commits, traffic, and more.",
 };
