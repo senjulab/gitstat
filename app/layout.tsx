@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Databuddy } from "@databuddy/sdk/react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className={`antialiased bg-white font-sans`}>{children}</body>
+      <body className={`antialiased bg-white font-sans`}>
+        {children}
+        <Databuddy clientId="5a2ea5ac-f598-4b28-8ba4-76f3610111cc" />
+      </body>
     </html>
   );
 }
