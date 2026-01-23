@@ -90,7 +90,7 @@ function StatusCell({ status }: { status: FeatureStatus }) {
       return (
         <HugeiconsIcon
           icon={CheckmarkCircle01Icon}
-          className="text-[#F81DE5] mx-auto"
+          className="text-green-500 mx-auto"
           size={20}
         />
       );
@@ -146,13 +146,11 @@ export default function GitHubInsightsComparisonPage() {
         <div className="max-w-4xl mx-auto px-6">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-4xl font-medium text-[#181925] mb-4">
-              Same privacy values,
-              <br />
-              more features
+            <h1 className="text-4xl md:text-4xl font-medium text-[#181925] mb-4 tracking-tight">
+              GitStat vs GitHub Insights
             </h1>
             <p className="text-base text-[#666] font-normal max-w-md mx-auto">
-              Both tools respect your data. But GitStat goes further with realtime updates, multi-repo tracking, and shareable dashboards.
+              Same respect for your data. GitStat adds realtime updates, multi-repo tracking, and shareable dashboards.
             </p>
           </div>
 
