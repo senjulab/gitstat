@@ -54,7 +54,7 @@ const faqs = [
   {
     question: "Is there a free plan available?",
     answer:
-      "Yes, we offer a 14-day free trial with full access to all features. No credit card required.",
+      "Yes, we offer this tool completly free for now. No credit card required.",
   },
 ];
 
