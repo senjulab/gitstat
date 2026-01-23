@@ -89,6 +89,23 @@ interface ContributorStats {
   deleted: number;
 }
 
+interface RecentCommit {
+  sha: string;
+  message: string;
+  author: {
+    login: string;
+    avatar_url: string;
+  } | null;
+  commit: {
+    author: {
+      date: string;
+      name: string;
+    };
+    message: string;
+  };
+  html_url: string;
+}
+
 export default function ContributorsPage() {
   const params = useParams();
   const owner = params.owner as string;
@@ -105,6 +122,10 @@ export default function ContributorsPage() {
   const [contributorStats, setContributorStats] = useState<ContributorStats[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+
+  const [recentCommit, setRecentCommit] = useState<RecentCommit | null>(null);
+  const [commitLoading, setCommitLoading] = useState(true);
+  const [commitError, setCommitError] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -314,6 +335,97 @@ export default function ContributorsPage() {
   useEffect(() => {
     fetchContributorStats();
   }, [fetchContributorStats]);
+
+  const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+    }
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+    }
+    if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} ${days === 1 ? "day" : "days"} ago`;
+    }
+    if (diffInSeconds < 2592000) {
+      const weeks = Math.floor(diffInSeconds / 604800);
+      return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
+    }
+    if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `${months} ${months === 1 ? "month" : "months"} ago`;
+    }
+    const years = Math.floor(diffInSeconds / 31536000);
+    return `${years} ${years === 1 ? "year" : "years"} ago`;
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const fetchRecentCommit = useCallback(async () => {
+    setCommitLoading(true);
+    setCommitError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
+
+      if (!token) {
+        throw new Error("GitHub token not found.");
+      }
+
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error(
+            "GitHub token lacks required permissions. Please reconnect.",
+          );
+        }
+        throw new Error("Failed to fetch recent commit");
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setRecentCommit(data[0]);
+      } else {
+        setRecentCommit(null);
+      }
+    } catch (err) {
+      setCommitError(
+        err instanceof Error ? err.message : "Failed to fetch commit"
+      );
+    } finally {
+      setCommitLoading(false);
+    }
+  }, [owner, repo, supabase]);
+
+  useEffect(() => {
+    fetchRecentCommit();
+  }, [fetchRecentCommit]);
 
   const handleReconnect = () => {
     window.location.href = "/onboard/connect";
@@ -744,6 +856,80 @@ export default function ContributorsPage() {
                       />
                     </BarChart>
                   </ChartContainer>
+                )}
+              </div>
+
+              {/* Recent Contributions */}
+              <div className="mt-8">
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Recent Contributions
+                  </h2>
+                  <p className="text-sm text-[#999]">
+                    Latest commit message by a contributor
+                  </p>
+                </div>
+
+                {commitLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
+                    <span className="ml-2 text-sm text-[#999]">
+                      Loading recent commit...
+                    </span>
+                  </div>
+                ) : commitError ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-sm text-[#999]">{commitError}</p>
+                  </div>
+                ) : !recentCommit ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-sm text-[#999]">No recent commits found.</p>
+                  </div>
+                ) : (
+                  <Link
+                    href={recentCommit.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={
+                          recentCommit.author?.avatar_url ||
+                          `https://github.com/${recentCommit.commit.author.name}.png?size=40`
+                        }
+                        alt={
+                          recentCommit.author?.login ||
+                          recentCommit.commit.author.name
+                        }
+                      />
+                      <AvatarFallback>
+                        {(
+                          recentCommit.author?.login ||
+                          recentCommit.commit.author.name
+                        )
+                          .charAt(0)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-[#181925]">
+                          {recentCommit.author?.login ||
+                            recentCommit.commit.author.name}
+                        </span>
+                        <span className="text-xs text-[#999]">
+                          committed {formatRelativeTime(recentCommit.commit.author.date)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#666] mb-2 line-clamp-2">
+                        {recentCommit.commit.message.split("\n")[0]}
+                      </p>
+                      <span className="text-xs text-[#999]">
+                        {formatDate(recentCommit.commit.author.date)}
+                      </span>
+                    </div>
+                  </Link>
                 )}
               </div>
             </>
