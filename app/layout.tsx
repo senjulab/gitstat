@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   title: "Gitstat - Analytics for your gitHub repos",
   description:
     "GitHub repo analytics made simple. track stars, commits, traffic, and more.",
+  openGraph: {
+    images: ["/og.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
