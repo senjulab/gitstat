@@ -23,10 +23,42 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const linesChartConfig = {
+  inserted: {
+    label: "Lines Inserted",
+    color: "var(--chart-1)",
+  },
+  deleted: {
+    label: "Lines Deleted",
+    color: "var(--chart-2)",
+  },
+} satisfies ChartConfig;
+
 const DottedBackgroundPattern = () => {
   return (
     <pattern
       id="contributors-pattern-dots"
+      x="0"
+      y="0"
+      width="10"
+      height="10"
+      patternUnits="userSpaceOnUse"
+    >
+      <circle
+        className="dark:text-muted/40 text-muted"
+        cx="2"
+        cy="2"
+        r="1"
+        fill="currentColor"
+      />
+    </pattern>
+  );
+};
+
+const LinesPatternDots = () => {
+  return (
+    <pattern
+      id="contributors-lines-pattern-dots"
       x="0"
       y="0"
       width="10"
@@ -50,6 +82,13 @@ interface Contributor {
   contributions: number;
 }
 
+interface ContributorStats {
+  login: string;
+  avatar_url: string;
+  inserted: number;
+  deleted: number;
+}
+
 export default function ContributorsPage() {
   const params = useParams();
   const owner = params.owner as string;
@@ -61,6 +100,10 @@ export default function ContributorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  const [contributorStats, setContributorStats] = useState<ContributorStats[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -180,6 +223,96 @@ export default function ContributorsPage() {
   useEffect(() => {
     fetchContributors();
   }, [fetchContributors]);
+
+  const fetchContributorStats = useCallback(async () => {
+    setStatsLoading(true);
+    setStatsError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
+
+      if (!token) {
+        throw new Error("GitHub token not found.");
+      }
+
+      // Fetch stats - may return 202 if computing
+      const fetchStats = async (retries = 3): Promise<any> => {
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          },
+        );
+
+        if (res.status === 202 && retries > 0) {
+          // Data is being computed, wait and retry
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          return fetchStats(retries - 1);
+        }
+
+        if (res.status === 422) {
+          throw new Error("Repository has too many commits for stats.");
+        }
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch contributor stats");
+        }
+
+        return res.json();
+      };
+
+      const statsData = await fetchStats();
+
+      if (!Array.isArray(statsData)) {
+        setContributorStats([]);
+        return;
+      }
+
+      // Aggregate additions and deletions for each contributor
+      const processedStats: ContributorStats[] = statsData
+        .map((stat: any) => {
+          const totalInserted = stat.weeks.reduce(
+            (sum: number, week: any) => sum + (week.a || 0),
+            0
+          );
+          const totalDeleted = stat.weeks.reduce(
+            (sum: number, week: any) => sum + (week.d || 0),
+            0
+          );
+
+          return {
+            login: stat.author?.login || "unknown",
+            avatar_url: stat.author?.avatar_url || "",
+            inserted: totalInserted,
+            deleted: totalDeleted,
+          };
+        })
+        .filter((s: ContributorStats) => s.login !== "unknown")
+        .sort(
+          (a: ContributorStats, b: ContributorStats) =>
+            b.inserted + b.deleted - (a.inserted + a.deleted)
+        )
+        .slice(0, 10); // Top 10 contributors by lines changed
+
+      setContributorStats(processedStats);
+    } catch (err) {
+      setStatsError(
+        err instanceof Error ? err.message : "Failed to fetch stats"
+      );
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [owner, repo, supabase]);
+
+  useEffect(() => {
+    fetchContributorStats();
+  }, [fetchContributorStats]);
 
   const handleReconnect = () => {
     window.location.href = "/onboard/connect";
@@ -388,6 +521,122 @@ export default function ContributorsPage() {
                     />
                   </BarChart>
                 </ChartContainer>
+              </div>
+
+              {/* Lines Changed Bar Chart */}
+              <div className="mt-8">
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Lines Changed
+                  </h2>
+                  {contributorStats.length > 0 && (
+                    <p className="text-sm text-[#999]">
+                      <span className="font-mono text-[#181925] tabular-nums">
+                        {contributorStats
+                          .reduce((sum, c) => sum + c.inserted + c.deleted, 0)
+                          .toLocaleString()}
+                      </span>{" "}
+                      total lines changed by top {contributorStats.length} contributors
+                    </p>
+                  )}
+                </div>
+
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
+                    <span className="ml-2 text-sm text-[#999]">
+                      Loading stats...
+                    </span>
+                  </div>
+                ) : statsError ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <p className="text-sm text-[#999]">{statsError}</p>
+                  </div>
+                ) : contributorStats.length === 0 ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <p className="text-sm text-[#999]">No stats available.</p>
+                  </div>
+                ) : (
+                  <ChartContainer config={linesChartConfig} className="h-[250px] w-full">
+                    <BarChart
+                      accessibilityLayer
+                      data={contributorStats}
+                      margin={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                    >
+                      <rect
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="85%"
+                        fill="url(#contributors-lines-pattern-dots)"
+                      />
+                      <defs>
+                        <LinesPatternDots />
+                      </defs>
+                      <XAxis
+                        dataKey="login"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tick={(props) => {
+                          const { x, y, payload } = props;
+                          const contributor = contributorStats.find(
+                            (c) => c.login === payload.value
+                          );
+                          if (!contributor) return <g />;
+                          return (
+                            <g transform={`translate(${x},${y})`}>
+                              <defs>
+                                <clipPath id={`clip-lines-${contributor.login}`}>
+                                  <circle cx="0" cy="12" r="12" />
+                                </clipPath>
+                              </defs>
+                              <image
+                                href={contributor.avatar_url}
+                                x={-12}
+                                y={0}
+                                width={24}
+                                height={24}
+                                clipPath={`url(#clip-lines-${contributor.login})`}
+                              />
+                            </g>
+                          );
+                        }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        width={50}
+                        tickFormatter={(value) => value.toLocaleString()}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            indicator="dashed"
+                            labelFormatter={(value) => {
+                              const contributor = contributorStats.find(
+                                (c) => c.login === value
+                              );
+                              return contributor?.login || value;
+                            }}
+                          />
+                        }
+                      />
+                      <Bar
+                        dataKey="inserted"
+                        fill="var(--color-inserted)"
+                        radius={4}
+                      />
+                      <Bar
+                        dataKey="deleted"
+                        fill="var(--color-deleted)"
+                        radius={4}
+                      />
+                    </BarChart>
+                  </ChartContainer>
+                )}
               </div>
             </>
           )}
