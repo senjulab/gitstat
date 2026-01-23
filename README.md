@@ -1,3 +1,9 @@
+# GitStat
+
+Understand how your git repos grow. GitHub repo analytics made simple—track stars, commits, traffic, and more.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
