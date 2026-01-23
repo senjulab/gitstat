@@ -19,16 +19,7 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className={`antialiased bg-white font-sans`}>
         {children}
-        <Databuddy
-          clientId="5a2ea5ac-f598-4b28-8ba4-76f3610111cc"
-          trackHashChanges={true}
-          trackAttributes={true}
-          trackOutgoingLinks={true}
-          trackInteractions={true}
-          trackScrollDepth={true}
-          trackWebVitals={true}
-          trackErrors={true}
-        />
+        <Databuddy clientId="5a2ea5ac-f598-4b28-8ba4-76f3610111cc" />
       </body>
     </html>
   );

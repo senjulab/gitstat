@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import OnboardingProgress from "@/components/onboarding-progress";
 import { createClient } from "@/lib/supabase/client";
-import { getAppUrl } from "@/lib/utils/app-url";
 
 interface Repository {
   id: number;
@@ -85,7 +84,7 @@ export default function ConnectPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${getAppUrl()}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
           scopes: "read:user user:email read:org repo",
         },
       });
