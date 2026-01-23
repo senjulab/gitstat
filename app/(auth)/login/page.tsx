@@ -109,7 +109,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading || !email}
-            className="w-full h-12 bg-[#9580ff] hover:bg-[#9580ff] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+            className="w-full h-12 bg-[#F81DE5] hover:bg-[#e01ad1] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
           >
             {loading ? "Sending code..." : "Continue with email"}
           </Button>
@@ -163,7 +163,7 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <Link
               href="/register"
-              className="text-[#9580ff] hover:text-[#9580ff] font-medium"
+              className="text-[#F81DE5] hover:text-[#e01ad1] font-medium"
             >
               Register
             </Link>

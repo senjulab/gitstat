@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import { Github } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import {
   TrendingUp,
   Download,
   Image,
   ChevronDown,
-  Loader2,
 } from "lucide-react";
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
@@ -279,8 +279,7 @@ export default function TrafficPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#999] mb-4" />
-        <p className="text-[#666]">Loading analytics...</p>
+        <Spinner />
       </div>
     );
   }

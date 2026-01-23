@@ -13,11 +13,11 @@ import {
   Globe,
   LogOut,
   X,
-  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -432,8 +432,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
               </div>
             ) : fetchingRepos ? (
               <div className="text-center py-6">
-                <Loader2 className="w-8 h-8 animate-spin text-[#999] mx-auto mb-4" />
-                <p className="text-sm text-[#666]">Loading repositories...</p>
+                <Spinner className="w-8 h-8 mx-auto" />
               </div>
             ) : availableRepos.length === 0 ? (
               <div className="text-center py-6">
@@ -456,7 +455,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                       onClick={() => setSelectedRepo(r)}
                       className={`w-full p-3 rounded-xl text-left transition-all cursor-pointer ${
                         selectedRepo?.id === r.id
-                          ? "bg-[#f5f3ff] border-2 border-[#918df6]"
+                          ? "bg-[#fde8fc] border-2 border-[#F81DE5]"
                           : "bg-[#fafafa] border-2 border-transparent hover:border-[#e0e0e0]"
                       }`}
                     >
@@ -495,7 +494,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                   >
                     {addingRepo ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Spinner className="mr-2" />
                         Adding...
                       </>
                     ) : (

@@ -6,7 +6,7 @@ export default function Pricing() {
   ];
 
   return (
-    <div className="py-16 md:py-24 bg-background tracking-tight">
+    <div id="pricing" className="py-16 md:py-24 bg-background tracking-tight">
       <div className="w-full max-w-sm mx-auto px-5 flex flex-col items-center gap-6">
         <span className="text-sm text-[#0006] border-transparent h-[24px] min-w-[24px] bg-[#00000008] px-3 py-1 pl-2 pr-2 gap-1 rounded-sm font-medium flex items-center justify-center border border-[#00000008]">
           Pricing
@@ -54,7 +54,7 @@ export default function Pricing() {
 
         {/* CTA */}
         <div className="w-full flex flex-col items-center gap-2 mt-2">
-          <button className="w-full bg-[#9580ff] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
+          <button className="w-full bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
             Start now for free
           </button>
           <span className="text-sm text-[#999]">No credit card required</span>

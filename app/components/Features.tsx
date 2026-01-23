@@ -21,7 +21,7 @@ export default function Features() {
   ];
 
   return (
-    <div className="py-16 md:py-24 bg-background tracking-tight">
+    <div id="features" className="py-16 md:py-24 bg-background tracking-tight">
       <div className="w-full max-w-5xl mx-auto px-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, index) => (

@@ -230,7 +230,7 @@ export default function SettingsPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
-                Delete project
+                Remove project
               </h2>
               <p className="text-sm text-[#999]">
                 Permanently delete your project. This action is immediate and
@@ -243,7 +243,7 @@ export default function SettingsPage() {
                 onClick={() => setShowDeleteDialog(true)}
                 className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-[#ff2f00] hover:bg-[#ff2f00] text-white border border-[#ff2f00] hover:border-[#e02a00] active:bg-[#e02a00] active:scale-[0.99] transition-all duration-200"
               >
-                Delete
+                Remove
               </Button>
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function SettingsPage() {
         >
           <DialogHeader>
             <DialogTitle className="text-lg font-medium text-[#181925]">
-              Delete project
+              Remove project
             </DialogTitle>
             <DialogDescription className="text-sm text-[#666]">
               This action cannot be undone. This will permanently delete the
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                 disabled={deleteConfirmText !== projectName || isDeleting}
                 className="cursor-pointer select-none h-10 px-4 text-sm rounded-full font-medium bg-[#ff2f00] hover:bg-[#e02a00] text-white border border-[#ff2f00] hover:border-[#e02a00] active:bg-[#cc2600] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isDeleting ? "Deleting..." : "Delete project"}
+                {isDeleting ? "Removing..." : "Remove project"}
               </Button>
             </div>
           </div>

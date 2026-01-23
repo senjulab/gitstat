@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, ChevronLeft, ChevronRight, Github } from "lucide-react";
+import { ChevronLeft, ChevronRight, Github } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +21,17 @@ const chartConfig = {
   contributions: {
     label: "Contributions",
     color: "var(--chart-1)",
+  },
+} satisfies ChartConfig;
+
+const linesChartConfig = {
+  inserted: {
+    label: "Lines Inserted",
+    color: "var(--chart-1)",
+  },
+  deleted: {
+    label: "Lines Deleted",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
 
@@ -44,10 +56,55 @@ const DottedBackgroundPattern = () => {
   );
 };
 
+const LinesPatternDots = () => {
+  return (
+    <pattern
+      id="contributors-lines-pattern-dots"
+      x="0"
+      y="0"
+      width="10"
+      height="10"
+      patternUnits="userSpaceOnUse"
+    >
+      <circle
+        className="dark:text-muted/40 text-muted"
+        cx="2"
+        cy="2"
+        r="1"
+        fill="currentColor"
+      />
+    </pattern>
+  );
+};
+
 interface Contributor {
   login: string;
   avatar_url: string;
   contributions: number;
+}
+
+interface ContributorStats {
+  login: string;
+  avatar_url: string;
+  inserted: number;
+  deleted: number;
+}
+
+interface RecentCommit {
+  sha: string;
+  message: string;
+  author: {
+    login: string;
+    avatar_url: string;
+  } | null;
+  commit: {
+    author: {
+      date: string;
+      name: string;
+    };
+    message: string;
+  };
+  html_url: string;
 }
 
 export default function ContributorsPage() {
@@ -61,6 +118,15 @@ export default function ContributorsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [leaderboardPage, setLeaderboardPage] = useState(1);
+
+  const [contributorStats, setContributorStats] = useState<ContributorStats[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  const [recentCommit, setRecentCommit] = useState<RecentCommit | null>(null);
+  const [commitLoading, setCommitLoading] = useState(true);
+  const [commitError, setCommitError] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -181,6 +247,187 @@ export default function ContributorsPage() {
     fetchContributors();
   }, [fetchContributors]);
 
+  const fetchContributorStats = useCallback(async () => {
+    setStatsLoading(true);
+    setStatsError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
+
+      if (!token) {
+        throw new Error("GitHub token not found.");
+      }
+
+      // Fetch stats - may return 202 if computing
+      const fetchStats = async (retries = 3): Promise<any> => {
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          },
+        );
+
+        if (res.status === 202 && retries > 0) {
+          // Data is being computed, wait and retry
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          return fetchStats(retries - 1);
+        }
+
+        if (res.status === 422) {
+          throw new Error("Repository has too many commits for stats.");
+        }
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch contributor stats");
+        }
+
+        return res.json();
+      };
+
+      const statsData = await fetchStats();
+
+      if (!Array.isArray(statsData)) {
+        setContributorStats([]);
+        return;
+      }
+
+      // Aggregate additions and deletions for each contributor
+      const processedStats: ContributorStats[] = statsData
+        .map((stat: any) => {
+          const totalInserted = stat.weeks.reduce(
+            (sum: number, week: any) => sum + (week.a || 0),
+            0
+          );
+          const totalDeleted = stat.weeks.reduce(
+            (sum: number, week: any) => sum + (week.d || 0),
+            0
+          );
+
+          return {
+            login: stat.author?.login || "unknown",
+            avatar_url: stat.author?.avatar_url || "",
+            inserted: totalInserted,
+            deleted: totalDeleted,
+          };
+        })
+        .filter((s: ContributorStats) => s.login !== "unknown")
+        .sort(
+          (a: ContributorStats, b: ContributorStats) =>
+            b.inserted + b.deleted - (a.inserted + a.deleted)
+        )
+        .slice(0, 10); // Top 10 contributors by lines changed
+
+      setContributorStats(processedStats);
+    } catch (err) {
+      setStatsError(
+        err instanceof Error ? err.message : "Failed to fetch stats"
+      );
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [owner, repo, supabase]);
+
+  useEffect(() => {
+    fetchContributorStats();
+  }, [fetchContributorStats]);
+
+  const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+    }
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+    }
+    if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} ${days === 1 ? "day" : "days"} ago`;
+    }
+    if (diffInSeconds < 2592000) {
+      const weeks = Math.floor(diffInSeconds / 604800);
+      return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
+    }
+    if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `${months} ${months === 1 ? "month" : "months"} ago`;
+    }
+    const years = Math.floor(diffInSeconds / 31536000);
+    return `${years} ${years === 1 ? "year" : "years"} ago`;
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const fetchRecentCommit = useCallback(async () => {
+    setCommitLoading(true);
+    setCommitError(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
+
+      if (!token) {
+        throw new Error("GitHub token not found.");
+      }
+
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error(
+            "GitHub token lacks required permissions. Please reconnect.",
+          );
+        }
+        throw new Error("Failed to fetch recent commit");
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setRecentCommit(data[0]);
+      } else {
+        setRecentCommit(null);
+      }
+    } catch (err) {
+      setCommitError(
+        err instanceof Error ? err.message : "Failed to fetch commit"
+      );
+    } finally {
+      setCommitLoading(false);
+    }
+  }, [owner, repo, supabase]);
+
+  useEffect(() => {
+    fetchRecentCommit();
+  }, [fetchRecentCommit]);
+
   const handleReconnect = () => {
     window.location.href = "/onboard/connect";
   };
@@ -214,10 +461,7 @@ export default function ContributorsPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
-              <span className="ml-2 text-sm text-[#999]">
-                Loading contributors...
-              </span>
+              <Spinner />
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -244,58 +488,165 @@ export default function ContributorsPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3">
-                {contributors.map((contributor) => (
-                  <Link
-                    key={contributor.login}
-                    href={`https://github.com/${contributor.login}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={contributor.avatar_url}
-                        alt={contributor.login}
-                      />
-                      <AvatarFallback>
-                        {contributor.login.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium text-[#181925] block truncate">
-                        {contributor.login}
-                      </span>
-                      <span className="text-xs text-[#999]">
-                        {contributor.contributions.toLocaleString()} contributions
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              {contributors.length >= 3 ? (
+                <>
+                  {/* Sort contributors by contributions descending */}
+                  {(() => {
+                const sortedContributors = [...contributors].sort(
+                  (a, b) => b.contributions - a.contributions
+                );
+                const top5Contributors = sortedContributors.slice(0, 5);
+                const remainingContributors = sortedContributors.slice(5);
+                const paginatedRemaining = remainingContributors.slice(
+                  (leaderboardPage - 1) * 2,
+                  leaderboardPage * 2
+                );
+                const leaderboardTotalPages = Math.ceil(
+                  remainingContributors.length / 2
+                );
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-center gap-4">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <span className="text-sm text-[#999]">
-                    page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
+                return (
+                  <>
+                    {/* Top 5 Contributors - One per row */}
+                    <div className="grid grid-cols-1 gap-3 mb-6">
+                      {top5Contributors.map((contributor, index) => {
+                        const getMedal = () => {
+                          if (index === 0) return <span className="text-2xl">🥇</span>;
+                          if (index === 1) return <span className="text-2xl">🥈</span>;
+                          if (index === 2) return <span className="text-2xl">🥉</span>;
+                          return null;
+                        };
+
+                        return (
+                          <Link
+                            key={contributor.login}
+                            href={`https://github.com/${contributor.login}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#fafafa] transition-colors"
+                          >
+                            {getMedal()}
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage
+                                src={contributor.avatar_url}
+                                alt={contributor.login}
+                              />
+                              <AvatarFallback>
+                                {contributor.login.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-medium text-[#181925] block truncate">
+                                {contributor.login}
+                              </span>
+                              <span className="text-xs text-[#999]">
+                                {contributor.contributions.toLocaleString()}{" "}
+                                contributions
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {/* Remaining Contributors - Two per row with pagination */}
+                    {remainingContributors.length > 0 && (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          {paginatedRemaining.map((contributor) => (
+                            <Link
+                              key={contributor.login}
+                              href={`https://github.com/${contributor.login}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
+                            >
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  src={contributor.avatar_url}
+                                  alt={contributor.login}
+                                />
+                                <AvatarFallback>
+                                  {contributor.login.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm font-medium text-[#181925] block truncate">
+                                  {contributor.login}
+                                </span>
+                                <span className="text-xs text-[#999]">
+                                  {contributor.contributions.toLocaleString()}{" "}
+                                  contributions
+                                </span>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Leaderboard Pagination */}
+                        {leaderboardTotalPages > 1 && (
+                          <div className="mt-6 flex items-center justify-center gap-4">
+                            <button
+                              onClick={() =>
+                                setLeaderboardPage((p) => Math.max(1, p - 1))
+                              }
+                              disabled={leaderboardPage === 1}
+                              className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <span className="text-sm text-[#999]">
+                              page {leaderboardPage} of {leaderboardTotalPages}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setLeaderboardPage((p) =>
+                                  Math.min(leaderboardTotalPages, p + 1)
+                                )
+                              }
+                              disabled={leaderboardPage === leaderboardTotalPages}
+                              className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    </>
+                  );
+                })()}
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {contributors.map((contributor) => (
+                    <Link
+                      key={contributor.login}
+                      href={`https://github.com/${contributor.login}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={contributor.avatar_url}
+                          alt={contributor.login}
+                        />
+                        <AvatarFallback>
+                          {contributor.login.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium text-[#181925] block truncate">
+                          {contributor.login}
+                        </span>
+                        <span className="text-xs text-[#999]">
+                          {contributor.contributions.toLocaleString()}{" "}
+                          contributions
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               )}
 
@@ -388,6 +739,190 @@ export default function ContributorsPage() {
                     />
                   </BarChart>
                 </ChartContainer>
+              </div>
+
+              {/* Lines Changed Bar Chart */}
+              <div className="mt-8">
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Lines Changed
+                  </h2>
+                  {contributorStats.length > 0 && (
+                    <p className="text-sm text-[#999]">
+                      <span className="font-mono text-[#181925] tabular-nums">
+                        {contributorStats
+                          .reduce((sum, c) => sum + c.inserted + c.deleted, 0)
+                          .toLocaleString()}
+                      </span>{" "}
+                      total lines changed by top {contributorStats.length} contributors
+                    </p>
+                  )}
+                </div>
+
+                {statsLoading ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <Spinner />
+                  </div>
+                ) : statsError ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <p className="text-sm text-[#999]">{statsError}</p>
+                  </div>
+                ) : contributorStats.length === 0 ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <p className="text-sm text-[#999]">No stats available.</p>
+                  </div>
+                ) : (
+                  <ChartContainer config={linesChartConfig} className="h-[250px] w-full">
+                    <BarChart
+                      accessibilityLayer
+                      data={contributorStats}
+                      margin={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                    >
+                      <rect
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="85%"
+                        fill="url(#contributors-lines-pattern-dots)"
+                      />
+                      <defs>
+                        <LinesPatternDots />
+                      </defs>
+                      <XAxis
+                        dataKey="login"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tick={(props) => {
+                          const { x, y, payload } = props;
+                          const contributor = contributorStats.find(
+                            (c) => c.login === payload.value
+                          );
+                          if (!contributor) return <g />;
+                          return (
+                            <g transform={`translate(${x},${y})`}>
+                              <defs>
+                                <clipPath id={`clip-lines-${contributor.login}`}>
+                                  <circle cx="0" cy="12" r="12" />
+                                </clipPath>
+                              </defs>
+                              <image
+                                href={contributor.avatar_url}
+                                x={-12}
+                                y={0}
+                                width={24}
+                                height={24}
+                                clipPath={`url(#clip-lines-${contributor.login})`}
+                              />
+                            </g>
+                          );
+                        }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        width={50}
+                        tickFormatter={(value) => value.toLocaleString()}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={
+                          <ChartTooltipContent
+                            indicator="dashed"
+                            labelFormatter={(value) => {
+                              const contributor = contributorStats.find(
+                                (c) => c.login === value
+                              );
+                              return contributor?.login || value;
+                            }}
+                          />
+                        }
+                      />
+                      <Bar
+                        dataKey="inserted"
+                        fill="var(--color-inserted)"
+                        radius={4}
+                      />
+                      <Bar
+                        dataKey="deleted"
+                        fill="var(--color-deleted)"
+                        radius={4}
+                      />
+                    </BarChart>
+                  </ChartContainer>
+                )}
+              </div>
+
+              {/* Recent Contributions */}
+              <div className="mt-8">
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Recent Contributions
+                  </h2>
+                  <p className="text-sm text-[#999]">
+                    Latest commit message by a contributor
+                  </p>
+                </div>
+
+                {commitLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Spinner />
+                  </div>
+                ) : commitError ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-sm text-[#999]">{commitError}</p>
+                  </div>
+                ) : !recentCommit ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-sm text-[#999]">No recent commits found.</p>
+                  </div>
+                ) : (
+                  <Link
+                    href={recentCommit.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={
+                          recentCommit.author?.avatar_url ||
+                          `https://github.com/${recentCommit.commit.author.name}.png?size=40`
+                        }
+                        alt={
+                          recentCommit.author?.login ||
+                          recentCommit.commit.author.name
+                        }
+                      />
+                      <AvatarFallback>
+                        {(
+                          recentCommit.author?.login ||
+                          recentCommit.commit.author.name
+                        )
+                          .charAt(0)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-[#181925]">
+                          {recentCommit.author?.login ||
+                            recentCommit.commit.author.name}
+                        </span>
+                        <span className="text-xs text-[#999]">
+                          committed {formatRelativeTime(recentCommit.commit.author.date)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#666] mb-2 line-clamp-2">
+                        {recentCommit.commit.message.split("\n")[0]}
+                      </p>
+                      <span className="text-xs text-[#999]">
+                        {formatDate(recentCommit.commit.author.date)}
+                      </span>
+                    </div>
+                  </Link>
+                )}
               </div>
             </>
           )}
