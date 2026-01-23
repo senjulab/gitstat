@@ -6,26 +6,22 @@ export default function Footer() {
   ];
 
   const featureLinks = [
-    { label: "Analytics", href: "#" },
-    { label: "Realtime", href: "#" },
-    { label: "Performance", href: "#" },
+    { label: "Traffic", href: "#" },
+    { label: "Contributions", href: "#" },
+    { label: "Pull requests", href: "#" },
+    { label: "Issues", href: "#" },
     { label: "Profiles", href: "#" },
   ];
 
   const companyLinks = [
     { label: "Contact", href: "#" },
     { label: "Blog", href: "#" },
-    { label: "GDPR", href: "#" },
-    { label: "Data policy", href: "#" },
-    { label: "DPA", href: "#" },
     { label: "Privacy", href: "#" },
     { label: "Terms", href: "#" },
   ];
 
   const compareLinks = [
-    { label: "GA4", href: "#" },
-    { label: "Plausible", href: "#" },
-    { label: "Fathom", href: "#" },
+    { label: "GitHub Insights", href: "#" },
   ];
 
   return (
