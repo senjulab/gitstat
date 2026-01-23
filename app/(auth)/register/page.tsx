@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { getAppUrl } from "@/lib/utils/app-url";
 import { Logo } from "@/components/logo";
 
 export default function RegisterPage() {
@@ -49,7 +48,7 @@ export default function RegisterPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${getAppUrl()}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -68,7 +67,7 @@ export default function RegisterPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${getAppUrl()}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

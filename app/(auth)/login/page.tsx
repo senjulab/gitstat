@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
-import { getAppUrl } from "@/lib/utils/app-url";
 import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
@@ -25,7 +24,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${getAppUrl()}/verify`,
+          emailRedirectTo: `${window.location.origin}/verify`,
         },
       });
 
@@ -47,7 +46,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${getAppUrl()}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -66,7 +65,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${getAppUrl()}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
