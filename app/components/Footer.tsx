@@ -15,9 +15,9 @@ export default function Footer() {
 
   const companyLinks = [
     { label: "Contact", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
+    { label: "Blog", href: "/blog" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
   ];
 
   const compareLinks = [
