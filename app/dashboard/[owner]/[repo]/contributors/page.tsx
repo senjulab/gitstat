@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, ChevronLeft, ChevronRight, Github } from "lucide-react";
+import { ChevronLeft, ChevronRight, Github } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -460,10 +461,7 @@ export default function ContributorsPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
-              <span className="ml-2 text-sm text-[#999]">
-                Loading contributors...
-              </span>
+              <Spinner />
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -763,10 +761,7 @@ export default function ContributorsPage() {
 
                 {statsLoading ? (
                   <div className="flex items-center justify-center py-12 h-[250px]">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
-                    <span className="ml-2 text-sm text-[#999]">
-                      Loading stats...
-                    </span>
+                    <Spinner />
                   </div>
                 ) : statsError ? (
                   <div className="flex items-center justify-center py-12 h-[250px]">
@@ -872,10 +867,7 @@ export default function ContributorsPage() {
 
                 {commitLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#999]" />
-                    <span className="ml-2 text-sm text-[#999]">
-                      Loading recent commit...
-                    </span>
+                    <Spinner />
                   </div>
                 ) : commitError ? (
                   <div className="flex items-center justify-center py-8">

@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Github, ExternalLink } from "lucide-react";
+import { Github, ExternalLink } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -338,10 +339,7 @@ export default function IssuesPage() {
         <div className="flex-1 space-y-8">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-[#999]" />
-              <span className="ml-2 text-sm text-[#999]">
-                Loading issues and PRs...
-              </span>
+              <Spinner />
             </div>
           ) : error ? (
             <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">

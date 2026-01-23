@@ -13,11 +13,11 @@ import {
   Globe,
   LogOut,
   X,
-  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -432,8 +432,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
               </div>
             ) : fetchingRepos ? (
               <div className="text-center py-6">
-                <Loader2 className="w-8 h-8 animate-spin text-[#999] mx-auto mb-4" />
-                <p className="text-sm text-[#666]">Loading repositories...</p>
+                <Spinner className="w-8 h-8 mx-auto" />
               </div>
             ) : availableRepos.length === 0 ? (
               <div className="text-center py-6">
@@ -495,7 +494,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                   >
                     {addingRepo ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Spinner className="mr-2" />
                         Adding...
                       </>
                     ) : (

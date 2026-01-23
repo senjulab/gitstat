@@ -17,7 +17,6 @@ import {
   Download,
   ChevronDown,
   Image,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Github,
@@ -31,6 +30,7 @@ import {
 import { toPng } from "html-to-image";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
@@ -384,10 +384,7 @@ export default function StarsPage() {
           <div className="relative min-h-[300px]">
             {loading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 z-10">
-                <Loader2 className="h-8 w-8 animate-spin text-[#999] mb-4" />
-                <p className="text-sm text-[#666]">
-                  Fetching star history... {Math.round(progress)}%
-                </p>
+                <Spinner />
                 <div className="w-48 h-1 bg-[#f0f0f0] rounded-full mt-2 overflow-hidden">
                   <div
                     className="h-full bg-black transition-all duration-300"
