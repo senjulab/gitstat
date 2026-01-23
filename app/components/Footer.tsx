@@ -1,9 +1,8 @@
 export default function Footer() {
   const productLinks = [
-    { label: "Home", href: "#" },
-    { label: "Login", href: "#" },
-    { label: "Register", href: "#" },
-    { label: "Docs", href: "#" },
+    { label: "Home", href: "/" },
+    { label: "Login", href: "/login" },
+    { label: "Register", href: "/register" },
   ];
 
   const featureLinks = [

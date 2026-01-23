@@ -4,7 +4,7 @@ export default function Hero() {
       <div className="w-full max-w-3xl mx-auto px-5 flex flex-col items-center text-center gap-4">
         <span className="text-[#999]">
           An alternative to{" "}
-          <span className="font-medium text-[#181925]">Plausible</span>
+          <span className="font-medium text-[#181925]">GitHub Insights</span>
         </span>
 
         <h1 className="text-6xl/17 tracking-tighter text-[#181925] font-medium md:text-balance">
@@ -15,7 +15,7 @@ export default function Hero() {
           repo evolves in realtime.
         </p>
         <div className="flex items-center gap-4 mt-4">
-          <button className="bg-[#9580ff] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-white w-[320px] md:w-auto items-center justify-center cursor-pointer rounded-full font-medium">
+          <button className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white w-[320px] md:w-auto items-center justify-center cursor-pointer rounded-full font-medium">
             Start now for free
           </button>
           <button className="bg-[#00000008] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] w-[320px] md:w-auto items-center justify-center cursor-pointer rounded-full font-medium">

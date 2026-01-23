@@ -284,7 +284,7 @@ export default function IssuesPage() {
   const getStatusBadge = (item: Issue) => {
     if (item.pull_request?.merged_at) {
       return (
-        <Badge className="bg-purple-100 text-purple-700 border-none text-xs">
+        <Badge className="bg-[#fde8fc] text-[#b812a8] border-none text-xs">
           Merged
         </Badge>
       );

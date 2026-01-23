@@ -455,7 +455,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                       onClick={() => setSelectedRepo(r)}
                       className={`w-full p-3 rounded-xl text-left transition-all cursor-pointer ${
                         selectedRepo?.id === r.id
-                          ? "bg-[#f5f3ff] border-2 border-[#918df6]"
+                          ? "bg-[#fde8fc] border-2 border-[#F81DE5]"
                           : "bg-[#fafafa] border-2 border-transparent hover:border-[#e0e0e0]"
                       }`}
                     >
