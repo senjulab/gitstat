@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function CTA() {
   return (
     <div className="py-16 md:py-24 w-full max-w-5xl mx-auto px-5 bg-background tracking-tight">
@@ -12,9 +14,9 @@ export default function CTA() {
             See your project's growth clearly and stay ahead of every change.
           </p>
           <div className="flex items-center gap-4 mt-4">
-            <button className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
+            <Link href="/register" className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium inline-flex">
               Start now for free
-            </button>
+            </Link>
             <button className="bg-[#00000010] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] items-center justify-center cursor-pointer rounded-full font-medium">
               See demo
             </button>

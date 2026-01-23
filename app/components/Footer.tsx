@@ -31,7 +31,7 @@ export default function Footer() {
           {/* Left side - Description */}
           <div className="flex flex-col gap-6 max-w-sm">
             <p className="text-[#999] text-sm leading-relaxed">
-              Built over hundreds of late nights, GitStat gives you friendly, privacy-first insights about your repositories and projects.
+              Your repos have a story. See it in traffic, stars, commits, and contributors, all in one place.
             </p>
             <span className="text-[#999] text-sm">© 2026</span>
           </div>

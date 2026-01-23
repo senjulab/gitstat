@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Pricing() {
   const features = [
     { label: "Data retention", value: "Forever" },
@@ -54,9 +56,9 @@ export default function Pricing() {
 
         {/* CTA */}
         <div className="w-full flex flex-col items-center gap-2 mt-2">
-          <button className="w-full bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
+          <Link href="/register" className="w-full flex bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium">
             Start now for free
-          </button>
+          </Link>
           <span className="text-sm text-[#999]">No credit card required</span>
         </div>
       </div>
