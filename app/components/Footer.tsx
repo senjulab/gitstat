@@ -21,7 +21,7 @@ export default function Footer() {
   ];
 
   const compareLinks = [
-    { label: "GitHub Insights", href: "#" },
+    { label: "GitHub Insights", href: "/compare/github-insights" },
   ];
 
   return (
