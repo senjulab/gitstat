@@ -12,12 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Github } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  TrendingUp,
-  Download,
-  Image,
-  ChevronDown,
-} from "lucide-react";
+import { TrendingUp, Download, Image, ChevronDown } from "lucide-react";
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -27,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { getAppUrl } from "@/lib/utils/app-url";
 
 interface TrafficData {
   date: string;
@@ -191,7 +187,7 @@ export default function TrafficPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(window.location.pathname)}`,
+        redirectTo: `${getAppUrl()}/auth/callback?returnTo=${encodeURIComponent(window.location.pathname)}`,
         scopes: "read:user user:email read:org repo",
       },
     });
