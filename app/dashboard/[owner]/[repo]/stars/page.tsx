@@ -521,6 +521,14 @@ export default function StarsPage() {
                 <h2 className="text-base font-medium text-[#181925]">
                   Stargazers
                 </h2>
+                {totalCount > 0 && (
+                  <p className="text-sm text-[#999]">
+                    <span className="font-mono text-[#181925] tabular-nums">
+                      {totalCount.toLocaleString()}
+                    </span>{" "}
+                    total stargazers
+                  </p>
+                )}
               </div>
               {!loading && !error && stargazers.length > 0 && (
                 <DropdownMenu>
@@ -550,7 +558,13 @@ export default function StarsPage() {
               )}
             </div>
 
-            {!loading && !error && (
+            {!loading && !error && stargazers.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-sm text-[#999]">No stargazers found.</p>
+              </div>
+            )}
+
+            {!loading && !error && stargazers.length > 0 && (
               <>
                 <div className="grid grid-cols-3 gap-3">
                   {paginatedStargazers.map((stargazer) => (
@@ -583,7 +597,7 @@ export default function StarsPage() {
                 </div>
 
                 {/* Pagination */}
-                {listTotalPages > 1 && (
+                {stargazers.length > 0 && listTotalPages > 1 && (
                   <div className="mt-6 flex items-center justify-center gap-4">
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
