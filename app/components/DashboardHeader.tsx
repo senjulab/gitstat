@@ -26,6 +26,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client";
+import { getAppUrl } from "@/lib/utils/app-url";
 
 interface DashboardHeaderProps {
   owner: string;
@@ -152,7 +153,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(window.location.pathname)}`,
+        redirectTo: `${getAppUrl()}/auth/callback?returnTo=${encodeURIComponent(window.location.pathname)}`,
         scopes: "read:user user:email read:org repo",
       },
     });
