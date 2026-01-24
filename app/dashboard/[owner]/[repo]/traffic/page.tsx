@@ -12,7 +12,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Github } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { TrendingUp, Download, Image, ChevronDown } from "lucide-react";
+import {
+  TrendingUp,
+  Download,
+  Image,
+  ChevronDown,
+} from "lucide-react";
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -90,26 +95,38 @@ export default function TrafficPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
-        throw new Error("Authentication required");
+      if (!token) {
+        throw new Error("GitHub token not found. Please reconnect.");
       }
 
-      // Fetch from our internal proxy API
-      const response = await fetch(`/api/traffic/${owner}/${repo}`);
+      // Fetch Clones
+      const clonesRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/traffic/clones`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
 
-      if (!response.ok) {
-        if (response.status === 403 || response.status === 401) {
-          throw new Error("Access denied or repository not connected.");
+      if (!clonesRes.ok) {
+        if (
+          clonesRes.status === 403 ||
+          clonesRes.status === 401 ||
+          clonesRes.status === 404
+        ) {
+          throw new Error(
+            "Access denied or repository not found. Please reconnect to upgrade permissions.",
+          );
         }
-        throw new Error(`Failed to fetch traffic data`);
+        throw new Error(`Failed to fetch clones data (${clonesRes.status})`);
       }
-
-      const data = await response.json();
-      const clonesJson = data.clones;
-      const viewsJson = data.views;
+      const clonesJson = await clonesRes.json();
 
       const formattedClones = clonesJson.clones.map((item: any) => ({
         date: new Date(item.timestamp).toLocaleDateString("en-US", {
@@ -119,6 +136,31 @@ export default function TrafficPage() {
         unique: item.uniques,
         total: item.count,
       }));
+
+      // Fetch Views
+      const viewsRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/traffic/views`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
+      if (!viewsRes.ok) {
+        if (
+          viewsRes.status === 403 ||
+          viewsRes.status === 401 ||
+          viewsRes.status === 404
+        ) {
+          throw new Error(
+            "Access denied or repository not found. Please reconnect to upgrade permissions.",
+          );
+        }
+        throw new Error(`Failed to fetch views data (${viewsRes.status})`);
+      }
+      const viewsJson = await viewsRes.json();
 
       const formattedViews = viewsJson.views.map((item: any) => ({
         date: new Date(item.timestamp).toLocaleDateString("en-US", {
@@ -146,13 +188,20 @@ export default function TrafficPage() {
   }, [owner, repo, supabase]);
 
   const handleReconnect = useCallback(async () => {
-    const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;
-    if (slug) {
-      window.location.href = `https://github.com/apps/${slug}/installations/new`;
-    } else {
-      alert("Configuration missing");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?returnTo=${encodeURIComponent(window.location.pathname)}`,
+        scopes: "read:user user:email read:org repo",
+      },
+    });
+    if (error) {
+      console.error("Reconnect error:", error);
+      setError(
+        "Failed to start reconnect flow. Please try logging out and in again.",
+      );
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     fetchTrafficData();
