@@ -20,14 +20,11 @@ interface Repository {
 
 export default function ConnectPage() {
   const [loading, setLoading] = useState(false);
-  const [fetchingRepos, setFetchingRepos] = useState(false);
   const [connected, setConnected] = useState(false);
-  const [repositories, setRepositories] = useState<Repository[]>([]);
-  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    // Check if user just came back from GitHub OAuth
+    // Check if user just came back from GitHub OAuth (or installation flow)
     const checkGitHubConnection = async () => {
       const {
         data: { session },
@@ -46,119 +43,25 @@ export default function ConnectPage() {
 
       if (connectedRepos && connectedRepos.length > 0) {
         setConnected(true);
-        setRepositories(
-          connectedRepos.map((repo) => ({
-            id: repo.github_repo_id,
-            name: repo.repo_name,
-            full_name: repo.repo_full_name,
-            owner: {
-              login: repo.repo_owner,
-              type: repo.is_organization ? "Organization" : "User",
-            },
-            default_branch: repo.default_branch,
-            fork: false,
-            private: false,
-          })),
-        );
-        return;
-      }
-
-      // Only fetch repos if user authenticated with GitHub provider
-      // Google OAuth users will have provider === 'google', not 'github'
-      const isGitHubUser = user?.app_metadata?.provider === "github";
-
-      if (session?.provider_token && isGitHubUser) {
-        // User is connected to GitHub
-        setConnected(true);
-        fetchRepositories(session.provider_token);
+        // We can redirect automatically if needed, or show success state
+        if (connectedRepos.length === 1) {
+          const repo = connectedRepos[0];
+          window.location.href = `/dashboard/${repo.repo_owner}/${repo.repo_name}/traffic`;
+        }
       }
     };
 
     checkGitHubConnection();
-  }, []);
+  }, [supabase]);
 
-  const handleConnectGitHub = async () => {
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: "read:user user:email read:org repo",
-        },
-      });
-
-      if (error) throw error;
-    } catch (err: any) {
-      console.error("GitHub OAuth error:", err);
-      alert("Failed to connect to GitHub. Please try again.");
-      setLoading(false);
+  const handleConnectGitHub = () => {
+    const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;
+    if (!slug) {
+      alert("GitHub App configuration missing");
+      return;
     }
-  };
-
-  const fetchRepositories = async (accessToken: string) => {
-    setFetchingRepos(true);
-
-    try {
-      // Fetch user's repositories from GitHub API
-      const response = await fetch(
-        "https://api.github.com/user/repos?per_page=100&sort=updated",
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        },
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch repositories");
-
-      const repos: Repository[] = await response.json();
-      setRepositories(repos);
-    } catch (err) {
-      console.error("Failed to fetch repositories:", err);
-      alert("Failed to load repositories. Please try again.");
-    } finally {
-      setFetchingRepos(false);
-    }
-  };
-
-  const handleContinue = async () => {
-    if (!selectedRepo) return;
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data: existing } = await supabase
-        .from("connected_repositories")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("github_repo_id", selectedRepo.id)
-        .single();
-
-      if (!existing) {
-        const { error } = await supabase.from("connected_repositories").insert({
-          user_id: user.id,
-          github_repo_id: selectedRepo.id,
-          repo_name: selectedRepo.name,
-          repo_full_name: selectedRepo.full_name,
-          repo_owner: selectedRepo.owner.login,
-          is_organization: selectedRepo.owner.type === "Organization",
-          default_branch: selectedRepo.default_branch || "main",
-        });
-
-        if (error) throw error;
-      }
-
-      window.location.href = `/dashboard/${selectedRepo.owner.login}/${selectedRepo.name}/traffic`;
-    } catch (err: any) {
-      console.error("Failed to save repository:", err);
-      alert("Failed to save repository. Please try again.");
-    }
+    // Redirect to GitHub App Installation
+    window.location.href = `https://github.com/apps/${slug}/installations/new`;
   };
 
   const handleCheckAgain = async () => {
@@ -193,7 +96,7 @@ export default function ConnectPage() {
           </h1>
           <p className="text-[#666666] text-md">
             {connected
-              ? "Select a repository or organization"
+              ? "Repositories connected!"
               : "Authorize GitStat to access your repositories"}
           </p>
         </div>
@@ -224,59 +127,18 @@ export default function ConnectPage() {
             </div>
           )}
 
-          {/* Loading Repositories */}
-          {fetchingRepos && (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-              <p className="mt-4 text-sm text-[#666666]">
-                Loading repositories...
-              </p>
-            </div>
-          )}
-
-          {/* Repository Selection */}
-          {connected && repositories.length > 0 && !fetchingRepos && (
+          {/* Connected State */}
+          {connected && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
-                  {repositories.map((repo) => (
-                    <button
-                      key={repo.id}
-                      onClick={() => setSelectedRepo(repo)}
-                      className={`w-full p-3 rounded-xl text-left transition-all cursor-pointer ${
-                        selectedRepo?.id === repo.id
-                          ? "bg-indigo-50 border-2 border-indigo-400"
-                          : "bg-[#f3f3f3] border-2 border-transparent hover:border-neutral-300"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-black block truncate">
-                            {repo.full_name}
-                          </span>
-                          <div className="flex gap-1.5 mt-1 flex-wrap">
-                            {repo.owner.type === "Organization" && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700">
-                                Organization
-                              </span>
-                            )}
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-700">
-                              {repo.private ? "Private" : "Public"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              <div className="text-center p-4 bg-green-50 rounded-xl text-green-700">
+                Redirecting to your dashboard...
               </div>
-
               <Button
-                onClick={handleContinue}
-                disabled={!selectedRepo}
-                className="w-full h-12 bg-[#14141F] hover:bg-[#14141F] text-white rounded-full text-base font-medium cursor-pointer disabled:opacity-50"
+                onClick={handleConnectGitHub}
+                variant="outline"
+                className="w-full h-12 rounded-xl text-base font-medium"
               >
-                Continue
+                Connect more repositories
               </Button>
             </div>
           )}
