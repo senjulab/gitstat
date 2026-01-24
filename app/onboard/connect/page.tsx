@@ -161,6 +161,21 @@ export default function ConnectPage() {
     }
   };
 
+  const handleCheckAgain = async () => {
+    setLoading(true);
+    await fetch("/api/github/installations")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.found && data.count > 0) {
+          window.location.reload();
+        } else {
+          handleConnectGitHub();
+        }
+      })
+      .catch(() => handleConnectGitHub())
+      .finally(() => setLoading(false));
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 tracking-tight">
       <div className="w-full max-w-sm space-y-6">
