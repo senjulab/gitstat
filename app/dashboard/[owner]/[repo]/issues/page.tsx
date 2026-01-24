@@ -146,12 +146,11 @@ export default function IssuesPage() {
 
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.provider_token;
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!token) {
-        throw new Error("GitHub token not found. Please reconnect.");
+      if (!user) {
+        throw new Error("Authentication required");
       }
 
       // Fetch all issues (includes PRs) with pagination
@@ -162,10 +161,9 @@ export default function IssuesPage() {
       while (hasMore && page <= 10) {
         // Limit to 10 pages (1000 items)
         const res = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100&page=${page}`,
+          `/api/gh/${owner}/${repo}/issues?state=all&per_page=100&page=${page}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               Accept: "application/vnd.github.v3+json",
             },
           },
