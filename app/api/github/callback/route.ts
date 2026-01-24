@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const installationId = requestUrl.searchParams.get("installation_id");
   const setupAction = requestUrl.searchParams.get("setup_action");
-  const origin = requestUrl.origin;
+
 
   if (!installationId) {
     return NextResponse.redirect(`${getURL()}onboard/connect?error=missing_installation_id`);
@@ -78,6 +78,7 @@ export async function GET(request: Request) {
            repo_owner: repo.owner.login,
            is_organization: repo.owner.type === "Organization",
            default_branch: repo.default_branch || "main",
+           installation_id: Number(installationId)
          });
  
          if (insertError) {
