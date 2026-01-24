@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getURL } from '@/lib/utils'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -14,35 +15,38 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error('OAuth callback error:', error)
-      return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+      return NextResponse.redirect(`${getURL()}login?error=auth_failed`)
     }
 
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
-      return NextResponse.redirect(`${origin}/login?error=no_user`)
+      return NextResponse.redirect(`${getURL()}login?error=no_user`)
     }
 
     if (returnTo) {
-      return NextResponse.redirect(`${origin}${returnTo}?openAddModal=true`)
+      // Ensure returnTo starts with / to avoid open redirect vulnerabilities if not careful, 
+      // though typically returnTo is a path.
+      const cleanReturnTo = returnTo.startsWith('/') ? returnTo.substring(1) : returnTo
+      return NextResponse.redirect(`${getURL()}${cleanReturnTo}?openAddModal=true`)
     }
 
     const isGoogleUser = user.app_metadata.provider === 'google'
     const isGitHubUser = user.app_metadata.provider === 'github'
     
     if (isGoogleUser || isGitHubUser) {
-      return NextResponse.redirect(`${origin}/onboard/connect`)
+      return NextResponse.redirect(`${getURL()}onboard/connect`)
     }
 
     const hasName = user.user_metadata?.full_name
     
     if (!hasName) {
-      return NextResponse.redirect(`${origin}/onboard/profile`)
+      return NextResponse.redirect(`${getURL()}onboard/profile`)
     }
 
-    return NextResponse.redirect(`${origin}/onboard/connect`)
+    return NextResponse.redirect(`${getURL()}onboard/connect`)
   }
 
-  return NextResponse.redirect(`${origin}/login`)
+  return NextResponse.redirect(`${getURL()}login`)
 }
 
