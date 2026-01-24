@@ -40,7 +40,7 @@ const chartConfig = {
 
 const DottedBackgroundPattern = ({ config }: { config: ChartConfig }) => {
   const items = Object.fromEntries(
-    Object.entries(config).map(([key, value]) => [key, value.color])
+    Object.entries(config).map(([key, value]) => [key, value.color]),
   );
   return (
     <>
@@ -146,12 +146,11 @@ export default function IssuesPage() {
 
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.provider_token;
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!token) {
-        throw new Error("GitHub token not found. Please reconnect.");
+      if (!user) {
+        throw new Error("Authentication required");
       }
 
       // Fetch all issues (includes PRs) with pagination
@@ -162,19 +161,18 @@ export default function IssuesPage() {
       while (hasMore && page <= 10) {
         // Limit to 10 pages (1000 items)
         const res = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/issues?state=all&per_page=100&page=${page}`,
+          `/api/gh/${owner}/${repo}/issues?state=all&per_page=100&page=${page}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               Accept: "application/vnd.github.v3+json",
             },
-          }
+          },
         );
 
         if (!res.ok) {
           if (res.status === 403) {
             throw new Error(
-              "GitHub token lacks required permissions. Please reconnect."
+              "GitHub token lacks required permissions. Please reconnect.",
             );
           }
           throw new Error("Failed to fetch issues");
@@ -201,7 +199,7 @@ export default function IssuesPage() {
         openPRs: prs.filter((p) => p.state === "open").length,
         mergedPRs: prs.filter((p) => p.pull_request?.merged_at).length,
         closedPRs: prs.filter(
-          (p) => p.state === "closed" && !p.pull_request?.merged_at
+          (p) => p.state === "closed" && !p.pull_request?.merged_at,
         ).length,
       };
       setStats(newStats);
@@ -242,7 +240,7 @@ export default function IssuesPage() {
           }),
           opened: value.opened,
           closed: value.closed,
-        })
+        }),
       );
 
       setChartData(chartDataArray);
@@ -270,7 +268,7 @@ export default function IssuesPage() {
         return issues.filter(
           (i) =>
             i.state === "closed" &&
-            (!i.pull_request || !i.pull_request.merged_at)
+            (!i.pull_request || !i.pull_request.merged_at),
         );
       case "merged":
         return issues.filter((i) => i.pull_request?.merged_at);
@@ -393,7 +391,10 @@ export default function IssuesPage() {
                 <p className="text-sm text-[#999] mb-4">
                   Opened vs closed issues in the last 12 months
                 </p>
-                <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <ChartContainer
+                  config={chartConfig}
+                  className="h-[250px] w-full"
+                >
                   <AreaChart accessibilityLayer data={chartData}>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
                     <XAxis
@@ -463,88 +464,88 @@ export default function IssuesPage() {
                   </div>
                 ) : (
                   <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[40%]">Title</TableHead>
-                          <TableHead>Author</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Opened</TableHead>
-                          <TableHead>Closed</TableHead>
-                          <TableHead>Labels</TableHead>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">Title</TableHead>
+                        <TableHead>Author</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Opened</TableHead>
+                        <TableHead>Closed</TableHead>
+                        <TableHead>Labels</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredItems.slice(0, 50).map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">
+                            <Link
+                              href={item.html_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 text-[#181925] hover:text-blue-600 hover:underline"
+                            >
+                              <span className="truncate max-w-[200px] sm:max-w-[300px]">
+                                {item.title}
+                              </span>
+                              <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-50" />
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage
+                                  src={item.user.avatar_url}
+                                  alt={item.user.login}
+                                />
+                                <AvatarFallback>
+                                  {item.user.login.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm text-[#666]">
+                                {item.user.login}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{getTypeBadge(item)}</TableCell>
+                          <TableCell>{getStatusBadge(item)}</TableCell>
+                          <TableCell className="text-sm text-[#666]">
+                            {formatRelativeTime(item.created_at)}
+                          </TableCell>
+                          <TableCell className="text-sm text-[#666]">
+                            {item.closed_at
+                              ? formatRelativeTime(item.closed_at)
+                              : "-"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap max-w-[150px]">
+                              {item.labels.slice(0, 2).map((label) => (
+                                <Badge
+                                  key={label.name}
+                                  variant="outline"
+                                  className="text-xs"
+                                  style={{
+                                    backgroundColor: `#${label.color}20`,
+                                    borderColor: `#${label.color}`,
+                                    color: `#${label.color}`,
+                                  }}
+                                >
+                                  {label.name}
+                                </Badge>
+                              ))}
+                              {item.labels.length > 2 && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs text-[#999]"
+                                >
+                                  +{item.labels.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredItems.slice(0, 50).map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="font-medium">
-                              <Link
-                                href={item.html_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 text-[#181925] hover:text-blue-600 hover:underline"
-                              >
-                                <span className="truncate max-w-[200px] sm:max-w-[300px]">
-                                  {item.title}
-                                </span>
-                                <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-50" />
-                              </Link>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage
-                                    src={item.user.avatar_url}
-                                    alt={item.user.login}
-                                  />
-                                  <AvatarFallback>
-                                    {item.user.login.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-sm text-[#666]">
-                                  {item.user.login}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>{getTypeBadge(item)}</TableCell>
-                            <TableCell>{getStatusBadge(item)}</TableCell>
-                            <TableCell className="text-sm text-[#666]">
-                              {formatRelativeTime(item.created_at)}
-                            </TableCell>
-                            <TableCell className="text-sm text-[#666]">
-                              {item.closed_at
-                                ? formatRelativeTime(item.closed_at)
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1 flex-wrap max-w-[150px]">
-                                {item.labels.slice(0, 2).map((label) => (
-                                  <Badge
-                                    key={label.name}
-                                    variant="outline"
-                                    className="text-xs"
-                                    style={{
-                                      backgroundColor: `#${label.color}20`,
-                                      borderColor: `#${label.color}`,
-                                      color: `#${label.color}`,
-                                    }}
-                                  >
-                                    {label.name}
-                                  </Badge>
-                                ))}
-                                {item.labels.length > 2 && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs text-[#999]"
-                                  >
-                                    +{item.labels.length - 2}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
+                      ))}
+                    </TableBody>
                   </Table>
                 )}
 
