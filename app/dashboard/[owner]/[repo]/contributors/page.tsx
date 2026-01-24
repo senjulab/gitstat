@@ -172,17 +172,19 @@ export default function ContributorsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
+      if (!token) {
         throw new Error("GitHub token not found. Please reconnect.");
       }
 
       const res = await fetch(
-        `/api/gh/${owner}/${repo}/contributors?per_page=10&page=${currentPage}`,
+        `https://api.github.com/repos/${owner}/${repo}/contributors?per_page=10&page=${currentPage}`,
         {
           headers: {
+            Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github.v3+json",
           },
         },
@@ -251,20 +253,25 @@ export default function ContributorsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
+      if (!token) {
         throw new Error("GitHub token not found.");
       }
 
       // Fetch stats - may return 202 if computing
       const fetchStats = async (retries = 3): Promise<any> => {
-        const res = await fetch(`/api/gh/${owner}/${repo}/stats/contributors`, {
-          headers: {
-            Accept: "application/vnd.github.v3+json",
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/vnd.github.v3+json",
+            },
           },
-        });
+        );
 
         if (res.status === 202 && retries > 0) {
           // Data is being computed, wait and retry
@@ -375,18 +382,23 @@ export default function ContributorsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
-        throw new Error("Authentication required");
+      if (!token) {
+        throw new Error("GitHub token not found.");
       }
 
-      const res = await fetch(`/api/gh/${owner}/${repo}/commits?per_page=1`, {
-        headers: {
-          Accept: "application/vnd.github.v3+json",
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         if (res.status === 403) {
