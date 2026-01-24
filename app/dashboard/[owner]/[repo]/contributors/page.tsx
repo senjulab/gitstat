@@ -120,9 +120,7 @@ export default function ContributorsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [leaderboardPage, setLeaderboardPage] = useState(1);
 
-  const [contributorStats, setContributorStats] = useState<ContributorStats[]>(
-    [],
-  );
+  const [contributorStats, setContributorStats] = useState<ContributorStats[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
 
@@ -174,17 +172,19 @@ export default function ContributorsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
-        throw new Error("Authentication required");
+      if (!token) {
+        throw new Error("GitHub token not found. Please reconnect.");
       }
 
       const res = await fetch(
-        `/api/gh/${owner}/${repo}/contributors?per_page=10&page=${currentPage}`,
+        `https://api.github.com/repos/${owner}/${repo}/contributors?per_page=10&page=${currentPage}`,
         {
           headers: {
+            Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github.v3+json",
           },
         },
@@ -192,7 +192,9 @@ export default function ContributorsPage() {
 
       if (!res.ok) {
         if (res.status === 403) {
-          throw new Error("Access denied or api rate limit exceeded.");
+          throw new Error(
+            "GitHub token lacks required permissions. Please reconnect.",
+          );
         }
         throw new Error("Failed to fetch contributors");
       }
@@ -235,9 +237,7 @@ export default function ContributorsPage() {
       cacheRef.current.owner = owner;
       cacheRef.current.repo = repo;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch contributors",
-      );
+      setError(err instanceof Error ? err.message : "Failed to fetch contributors");
     } finally {
       setLoading(false);
     }
@@ -253,18 +253,25 @@ export default function ContributorsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) throw new Error("Authentication required");
+      if (!token) {
+        throw new Error("GitHub token not found.");
+      }
 
       // Fetch stats - may return 202 if computing
       const fetchStats = async (retries = 3): Promise<any> => {
-        const res = await fetch(`/api/gh/${owner}/${repo}/stats/contributors`, {
-          headers: {
-            Accept: "application/vnd.github.v3+json",
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/vnd.github.v3+json",
+            },
           },
-        });
+        );
 
         if (res.status === 202 && retries > 0) {
           // Data is being computed, wait and retry
@@ -295,11 +302,11 @@ export default function ContributorsPage() {
         .map((stat: any) => {
           const totalInserted = stat.weeks.reduce(
             (sum: number, week: any) => sum + (week.a || 0),
-            0,
+            0
           );
           const totalDeleted = stat.weeks.reduce(
             (sum: number, week: any) => sum + (week.d || 0),
-            0,
+            0
           );
 
           return {
@@ -312,14 +319,14 @@ export default function ContributorsPage() {
         .filter((s: ContributorStats) => s.login !== "unknown")
         .sort(
           (a: ContributorStats, b: ContributorStats) =>
-            b.inserted + b.deleted - (a.inserted + a.deleted),
+            b.inserted + b.deleted - (a.inserted + a.deleted)
         )
         .slice(0, 10); // Top 10 contributors by lines changed
 
       setContributorStats(processedStats);
     } catch (err) {
       setStatsError(
-        err instanceof Error ? err.message : "Failed to fetch stats",
+        err instanceof Error ? err.message : "Failed to fetch stats"
       );
     } finally {
       setStatsLoading(false);
@@ -375,18 +382,23 @@ export default function ContributorsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
-        throw new Error("Authentication required");
+      if (!token) {
+        throw new Error("GitHub token not found.");
       }
 
-      const res = await fetch(`/api/gh/${owner}/${repo}/commits?per_page=1`, {
-        headers: {
-          Accept: "application/vnd.github.v3+json",
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github.v3+json",
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         if (res.status === 403) {
@@ -405,7 +417,7 @@ export default function ContributorsPage() {
       }
     } catch (err) {
       setCommitError(
-        err instanceof Error ? err.message : "Failed to fetch commit",
+        err instanceof Error ? err.message : "Failed to fetch commit"
       );
     } finally {
       setCommitLoading(false);
@@ -480,140 +492,130 @@ export default function ContributorsPage() {
                 <>
                   {/* Sort contributors by contributions descending */}
                   {(() => {
-                    const sortedContributors = [...contributors].sort(
-                      (a, b) => b.contributions - a.contributions,
-                    );
-                    const top5Contributors = sortedContributors.slice(0, 5);
-                    const remainingContributors = sortedContributors.slice(5);
-                    const paginatedRemaining = remainingContributors.slice(
-                      (leaderboardPage - 1) * 2,
-                      leaderboardPage * 2,
-                    );
-                    const leaderboardTotalPages = Math.ceil(
-                      remainingContributors.length / 2,
-                    );
+                const sortedContributors = [...contributors].sort(
+                  (a, b) => b.contributions - a.contributions
+                );
+                const top5Contributors = sortedContributors.slice(0, 5);
+                const remainingContributors = sortedContributors.slice(5);
+                const paginatedRemaining = remainingContributors.slice(
+                  (leaderboardPage - 1) * 2,
+                  leaderboardPage * 2
+                );
+                const leaderboardTotalPages = Math.ceil(
+                  remainingContributors.length / 2
+                );
 
-                    return (
+                return (
+                  <>
+                    {/* Top 5 Contributors - One per row */}
+                    <div className="grid grid-cols-1 gap-3 mb-6">
+                      {top5Contributors.map((contributor, index) => {
+                        const getMedal = () => {
+                          if (index === 0) return <span className="text-2xl">🥇</span>;
+                          if (index === 1) return <span className="text-2xl">🥈</span>;
+                          if (index === 2) return <span className="text-2xl">🥉</span>;
+                          return null;
+                        };
+
+                        return (
+                          <Link
+                            key={contributor.login}
+                            href={`https://github.com/${contributor.login}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#fafafa] transition-colors"
+                          >
+                            {getMedal()}
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage
+                                src={contributor.avatar_url}
+                                alt={contributor.login}
+                              />
+                              <AvatarFallback>
+                                {contributor.login.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-medium text-[#181925] block truncate">
+                                {contributor.login}
+                              </span>
+                              <span className="text-xs text-[#999]">
+                                {contributor.contributions.toLocaleString()}{" "}
+                                contributions
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {/* Remaining Contributors - Two per row with pagination */}
+                    {remainingContributors.length > 0 && (
                       <>
-                        {/* Top 5 Contributors - One per row */}
-                        <div className="grid grid-cols-1 gap-3 mb-6">
-                          {top5Contributors.map((contributor, index) => {
-                            const getMedal = () => {
-                              if (index === 0)
-                                return <span className="text-2xl">🥇</span>;
-                              if (index === 1)
-                                return <span className="text-2xl">🥈</span>;
-                              if (index === 2)
-                                return <span className="text-2xl">🥉</span>;
-                              return null;
-                            };
-
-                            return (
-                              <Link
-                                key={contributor.login}
-                                href={`https://github.com/${contributor.login}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#fafafa] transition-colors"
-                              >
-                                {getMedal()}
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage
-                                    src={contributor.avatar_url}
-                                    alt={contributor.login}
-                                  />
-                                  <AvatarFallback>
-                                    {contributor.login.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <span className="text-sm font-medium text-[#181925] block truncate">
-                                    {contributor.login}
-                                  </span>
-                                  <span className="text-xs text-[#999]">
-                                    {contributor.contributions.toLocaleString()}{" "}
-                                    contributions
-                                  </span>
-                                </div>
-                              </Link>
-                            );
-                          })}
+                        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
+                          {paginatedRemaining.map((contributor) => (
+                            <Link
+                              key={contributor.login}
+                              href={`https://github.com/${contributor.login}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
+                            >
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  src={contributor.avatar_url}
+                                  alt={contributor.login}
+                                />
+                                <AvatarFallback>
+                                  {contributor.login.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm font-medium text-[#181925] block truncate">
+                                  {contributor.login}
+                                </span>
+                                <span className="text-xs text-[#999]">
+                                  {contributor.contributions.toLocaleString()}{" "}
+                                  contributions
+                                </span>
+                              </div>
+                            </Link>
+                          ))}
                         </div>
 
-                        {/* Remaining Contributors - Two per row with pagination */}
-                        {remainingContributors.length > 0 && (
-                          <>
-                            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
-                              {paginatedRemaining.map((contributor) => (
-                                <Link
-                                  key={contributor.login}
-                                  href={`https://github.com/${contributor.login}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#fafafa] transition-colors"
-                                >
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarImage
-                                      src={contributor.avatar_url}
-                                      alt={contributor.login}
-                                    />
-                                    <AvatarFallback>
-                                      {contributor.login
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1 min-w-0">
-                                    <span className="text-sm font-medium text-[#181925] block truncate">
-                                      {contributor.login}
-                                    </span>
-                                    <span className="text-xs text-[#999]">
-                                      {contributor.contributions.toLocaleString()}{" "}
-                                      contributions
-                                    </span>
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-
-                            {/* Leaderboard Pagination */}
-                            {leaderboardTotalPages > 1 && (
-                              <div className="mt-6 flex items-center justify-center gap-4">
-                                <button
-                                  onClick={() =>
-                                    setLeaderboardPage((p) =>
-                                      Math.max(1, p - 1),
-                                    )
-                                  }
-                                  disabled={leaderboardPage === 1}
-                                  className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                </button>
-                                <span className="text-sm text-[#999]">
-                                  page {leaderboardPage} of{" "}
-                                  {leaderboardTotalPages}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    setLeaderboardPage((p) =>
-                                      Math.min(leaderboardTotalPages, p + 1),
-                                    )
-                                  }
-                                  disabled={
-                                    leaderboardPage === leaderboardTotalPages
-                                  }
-                                  className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                  <ChevronRight className="h-4 w-4" />
-                                </button>
-                              </div>
-                            )}
-                          </>
+                        {/* Leaderboard Pagination */}
+                        {leaderboardTotalPages > 1 && (
+                          <div className="mt-6 flex items-center justify-center gap-4">
+                            <button
+                              onClick={() =>
+                                setLeaderboardPage((p) => Math.max(1, p - 1))
+                              }
+                              disabled={leaderboardPage === 1}
+                              className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <span className="text-sm text-[#999]">
+                              page {leaderboardPage} of {leaderboardTotalPages}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setLeaderboardPage((p) =>
+                                  Math.min(leaderboardTotalPages, p + 1)
+                                )
+                              }
+                              disabled={leaderboardPage === leaderboardTotalPages}
+                              className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
                         )}
                       </>
-                    );
-                  })()}
+                    )}
+                    </>
+                  );
+                })()}
                 </>
               ) : (
                 <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
@@ -656,18 +658,12 @@ export default function ContributorsPage() {
                   </h2>
                   <p className="text-sm text-[#999]">
                     <span className="font-mono text-[#181925] tabular-nums">
-                      {contributors
-                        .reduce((sum, c) => sum + c.contributions, 0)
-                        .toLocaleString()}
+                      {contributors.reduce((sum, c) => sum + c.contributions, 0).toLocaleString()}
                     </span>{" "}
-                    total contributions from top {contributors.length}{" "}
-                    contributors
+                    total contributions from top {contributors.length} contributors
                   </p>
                 </div>
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-[250px] w-full"
-                >
+                <ChartContainer config={chartConfig} className="h-[250px] w-full">
                   <BarChart
                     accessibilityLayer
                     data={contributors}
@@ -694,7 +690,7 @@ export default function ContributorsPage() {
                       tick={(props) => {
                         const { x, y, payload } = props;
                         const contributor = contributors.find(
-                          (c) => c.login === payload.value,
+                          (c) => c.login === payload.value
                         );
                         if (!contributor) return <g />;
                         return (
@@ -729,7 +725,7 @@ export default function ContributorsPage() {
                         <ChartTooltipContent
                           labelFormatter={(value) => {
                             const contributor = contributors.find(
-                              (c) => c.login === value,
+                              (c) => c.login === value
                             );
                             return contributor?.login || value;
                           }}
@@ -758,8 +754,7 @@ export default function ContributorsPage() {
                           .reduce((sum, c) => sum + c.inserted + c.deleted, 0)
                           .toLocaleString()}
                       </span>{" "}
-                      total lines changed by top {contributorStats.length}{" "}
-                      contributors
+                      total lines changed by top {contributorStats.length} contributors
                     </p>
                   )}
                 </div>
@@ -777,10 +772,7 @@ export default function ContributorsPage() {
                     <p className="text-sm text-[#999]">No stats available.</p>
                   </div>
                 ) : (
-                  <ChartContainer
-                    config={linesChartConfig}
-                    className="h-[250px] w-full"
-                  >
+                  <ChartContainer config={linesChartConfig} className="h-[250px] w-full">
                     <BarChart
                       accessibilityLayer
                       data={contributorStats}
@@ -804,15 +796,13 @@ export default function ContributorsPage() {
                         tick={(props) => {
                           const { x, y, payload } = props;
                           const contributor = contributorStats.find(
-                            (c) => c.login === payload.value,
+                            (c) => c.login === payload.value
                           );
                           if (!contributor) return <g />;
                           return (
                             <g transform={`translate(${x},${y})`}>
                               <defs>
-                                <clipPath
-                                  id={`clip-lines-${contributor.login}`}
-                                >
+                                <clipPath id={`clip-lines-${contributor.login}`}>
                                   <circle cx="0" cy="12" r="12" />
                                 </clipPath>
                               </defs>
@@ -842,7 +832,7 @@ export default function ContributorsPage() {
                             indicator="dashed"
                             labelFormatter={(value) => {
                               const contributor = contributorStats.find(
-                                (c) => c.login === value,
+                                (c) => c.login === value
                               );
                               return contributor?.login || value;
                             }}
@@ -885,9 +875,7 @@ export default function ContributorsPage() {
                   </div>
                 ) : !recentCommit ? (
                   <div className="flex items-center justify-center py-8">
-                    <p className="text-sm text-[#999]">
-                      No recent commits found.
-                    </p>
+                    <p className="text-sm text-[#999]">No recent commits found.</p>
                   </div>
                 ) : (
                   <Link
@@ -923,8 +911,7 @@ export default function ContributorsPage() {
                             recentCommit.commit.author.name}
                         </span>
                         <span className="text-xs text-[#999]">
-                          committed{" "}
-                          {formatRelativeTime(recentCommit.commit.author.date)}
+                          committed {formatRelativeTime(recentCommit.commit.author.date)}
                         </span>
                       </div>
                       <p className="text-sm text-[#666] mb-2 line-clamp-2">
