@@ -134,10 +134,17 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
 
   const openAddModal = async () => {
     setIsDropdownOpen(false);
-    // Redirect to GitHub App Installation to select more repositories
-    const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;
-    if (slug) {
-      window.location.href = `https://github.com/apps/${slug}/installations/new`;
+    setIsAddModalOpen(true);
+    setSelectedRepo(null);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.provider_token) {
+      setHasGitHubToken(true);
+      fetchRepositories(session.provider_token);
+    } else {
+      setHasGitHubToken(false);
     }
   };
 
@@ -159,43 +166,26 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
     setFetchingRepos(true);
 
     try {
-      // Use our internal endpoint to discover installable repos
-      const response = await fetch("/api/github/installations");
+      const response = await fetch(
+        "https://api.github.com/user/repos?per_page=100&sort=updated",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        },
+      );
+
       if (!response.ok) throw new Error("Failed to fetch repositories");
 
-      const data = await response.json();
-
-      const repos: Repository[] = [];
-      if (data.found && data.repos) {
-        // We need to fetch details for these repos if not fully provided,
-        // or we can just use what we have.
-        // The current implementation expects full Repo objects.
-        // Since /api/github/installations syncs them to DB, we might just want to
-        // fetch from our DB or rely on the sync.
-        // Actually, for "Add Project", we want to list repos that are NOT yet connected
-        // but ARE accessible via the installation.
-        // Let's assume /api/github/installations returns a list of all accessible repos
-        // mapped to a similar structure.
-        // Wait, the previous logic fetched from user/repos using OAuth token.
-        // Now we don't have OAuth token with repo scope.
-        // We must rely on what the App can see.
-        // The /api/github/installations endpoint I wrote returns a simplified list of strings.
-        // I should update that endpoint to return full objects or update this component.
-        // For now, let's just reload the page if sync happens, as the backend syncs everything.
-        // But to show "Available Repos" in the modal, we need the list.
-        // The endpoint returns `repos: string[]` (full_names).
-        // We'll trust the sync logic for now.
-      }
-
-      // ALTERNATIVE: Since we auto-sync all repos on connect/check,
-      // "Add Project" might just mean "Select from connected repositories that are not yet in the sidebar list"?
-      // But connected_repositories table IS the list.
-
-      // If the user wants to add a NEW repo, they must install the app on it.
-      // So "Add Project" should probably just redirect to the GitHub App installation page
-      // to let them select more repos.
-
-      window.location.href = `https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_SLUG}/installations/new`;
+      const repos: Repository[] = await response.json();
+      const connectedIds = new Set(
+        connectedRepos.map((r) => `${r.owner}/${r.name}`),
+      );
+      const filtered = repos.filter(
+        (r) => !connectedIds.has(`${r.owner.login}/${r.name}`),
+      );
+      setAvailableRepos(filtered);
     } catch (err) {
       console.error("Failed to fetch repositories:", err);
     } finally {
@@ -264,9 +254,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                   alt={owner}
                   className="w-5 h-5 rounded shrink-0"
                 />
-                <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">
-                  {repo}
-                </span>
+                <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">{repo}</span>
                 <ChevronDown
                   className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                 />
