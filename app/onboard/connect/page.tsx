@@ -94,11 +94,11 @@ export default function ConnectPage() {
           <h1 className="text-2xl font-medium text-black">
             Connect your GitHub
           </h1>
-          <p className="text-[#666666] text-md">
+          {/* <p className="text-[#666666] text-md">
             {connected
               ? "Repositories connected!"
               : "Authorize GitStat to access your repositories"}
-          </p>
+          </p> */}
         </div>
 
         {/* Form */}
@@ -138,7 +138,7 @@ export default function ConnectPage() {
                 className="w-full h-12 rounded-xl text-base font-medium"
               >
                 Connect more repositories
-              </Button>
+              </Button> 
             </div>
           )} */}
 
