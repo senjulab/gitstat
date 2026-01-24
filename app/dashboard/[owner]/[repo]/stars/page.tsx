@@ -92,11 +92,12 @@ export default function StarsPage() {
 
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.provider_token;
 
-      if (!user) {
-        throw new Error("Authentication required");
+      if (!token) {
+        throw new Error("GitHub token not found. Please reconnect.");
       }
 
       // Helper to transform API response to flat Stargazer object
@@ -121,17 +122,20 @@ export default function StarsPage() {
 
       // Step 1: Fetch first page to get total count
       const firstPageRes = await fetch(
-        `/api/gh/${owner}/${repo}/stargazers?per_page=100&page=1`,
+        `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=1`,
         {
           headers: {
+            Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github.v3.star+json",
           },
         },
       );
 
       if (!firstPageRes.ok) {
-        if (firstPageRes.status === 403 || firstPageRes.status === 401) {
-          throw new Error("Access denied. Please check your connection.");
+        if (firstPageRes.status === 403) {
+          throw new Error(
+            "GitHub token lacks required permissions. Please reconnect.",
+          );
         }
         throw new Error("Failed to fetch stargazers");
       }
@@ -173,9 +177,10 @@ export default function StarsPage() {
         for (let j = i; j < i + batchSize && j <= totalPagesToFetch; j++) {
           batchPromises.push(
             fetch(
-              `/api/gh/${owner}/${repo}/stargazers?per_page=100&page=${j}`,
+              `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=${j}`,
               {
                 headers: {
+                  Authorization: `Bearer ${token}`,
                   Accept: "application/vnd.github.v3.star+json",
                 },
               },
