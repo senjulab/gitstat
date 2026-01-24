@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { App } from "octokit";
 import { NextResponse } from "next/server";
+import { getURL } from "@/lib/utils";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   const origin = requestUrl.origin;
 
   if (!installationId) {
-    return NextResponse.redirect(`${origin}/onboard/connect?error=missing_installation_id`);
+    return NextResponse.redirect(`${getURL()}onboard/connect?error=missing_installation_id`);
   }
 
   // Check for required environment variables
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
 
   if (!appId || !privateKey || !clientId || !clientSecret) {
     console.error("Missing GitHub App credentials");
-    return NextResponse.redirect(`${origin}/onboard/connect?error=server_configuration`);
+    return NextResponse.redirect(`${getURL()}onboard/connect?error=server_configuration`);
   }
 
   try {
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.redirect(`${origin}/login`);
+      return NextResponse.redirect(`${getURL()}login`);
     }
 
     // Authenticate as GitHub App using the helper class
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
     });
 
     if (repositories.total_count === 0 || repositories.repositories.length === 0) {
-        return NextResponse.redirect(`${origin}/onboard/connect?error=no_repositories_selected`);
+        return NextResponse.redirect(`${getURL()}onboard/connect?error=no_repositories_selected`);
     }
 
     const firstRepo = repositories.repositories[0];
@@ -86,10 +87,10 @@ export async function GET(request: Request) {
     }
 
     // Redirect to the dashboard of the first repository
-    return NextResponse.redirect(`${origin}/dashboard/${firstRepo.owner.login}/${firstRepo.name}/traffic`);
+    return NextResponse.redirect(`${getURL()}dashboard/${firstRepo.owner.login}/${firstRepo.name}/traffic`);
 
   } catch (error) {
     console.error("GitHub App callback error:", error);
-    return NextResponse.redirect(`${origin}/onboard/connect?error=installation_failed`);
+    return NextResponse.redirect(`${getURL()}onboard/connect?error=installation_failed`);
   }
 }
