@@ -8,9 +8,9 @@ export const metadata = {
     "GitHub Insights is fine. But 14 days of traffic data and no star history wasn't cutting it. So we built something better with Bun, Next.js, Supabase, and the GitHub API.",
 };
 
-const p = "text-base text-[#666666] leading-snug mt-4 mb-5";
-const h2 = "text-xl font-medium text-[#1a1a1a] mt-16 mb-4";
-const h3 = "text-lg font-medium text-[#1a1a1a] mt-8 mb-3";
+const p = "text-base text-[#666666] leading-snug tracking-tight mt-4 mb-5";
+const h2 = "text-xl font-medium text-[#1a1a1a] tracking-tight mt-16 mb-4";
+const h3 = "text-lg font-medium text-[#1a1a1a] tracking-tight mt-8 mb-3";
 
 export default function WhyWeBuiltGitStat() {
   return (
@@ -41,7 +41,7 @@ export default function WhyWeBuiltGitStat() {
 
           <header className="mb-10">
             <time className="text-sm text-[#666666] font-normal">2026-01-24</time>
-            <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a1a] mt-2">
+            <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a1a] tracking-tight mt-2">
               Why We Built GitStat
             </h1>
           </header>
