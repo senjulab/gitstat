@@ -107,7 +107,6 @@ export default function ConnectPage() {
           {!connected && (
             <div className="space-y-3">
               <Button
-                // onClick={handleConnectGitHub}
                 disabled={true}
                 className="w-full h-12 bg-black hover:bg-neutral-800 text-white rounded-xl text-base font-medium cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
               >
@@ -127,7 +126,7 @@ export default function ConnectPage() {
             </div>
           )}
 
-          {/* Connected State */}
+          {/* Connected State
           {connected && (
             <div className="space-y-4">
               <div className="text-center p-4 bg-green-50 rounded-xl text-green-700">
@@ -141,7 +140,7 @@ export default function ConnectPage() {
                 Connect more repositories
               </Button>
             </div>
-          )}
+          )} */}
 
           <OnboardingProgress currentStep={1} totalSteps={2} />
         </div>
