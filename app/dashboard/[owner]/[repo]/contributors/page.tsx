@@ -107,10 +107,14 @@ interface RecentCommit {
   html_url: string;
 }
 
+import { useDashboardCache } from "@/app/components/DashboardCacheProvider";
+
 export default function ContributorsPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+
+  const { cache, setCache } = useDashboardCache();
 
   const [contributors, setContributors] = useState<Contributor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +148,25 @@ export default function ContributorsPage() {
   }>({});
 
   const fetchContributors = useCallback(async () => {
+    // 1. Level 1 Cache: Context Cache (Persistent across tabs)
+    if (
+      currentPage === 1 &&
+      cache.contributors?.data &&
+      cache.contributors.data.length > 0
+    ) {
+      setContributors(cache.contributors.data);
+      setTotalPages(cache.contributors.totalPages);
+      setTotalCount(cache.contributors.totalCount);
+      setLoading(false);
+
+      // Also sync local cacheRef
+      cacheRef.current[1] = { data: cache.contributors.data };
+      cacheRef.current.totalPages = cache.contributors.totalPages;
+      cacheRef.current.totalCount = cache.contributors.totalCount;
+      return;
+    }
+
+    // 2. Level 2 Cache: Local Ref Cache (Persistent within component lifecycle)
     // Clear page data cache if owner or repo changed
     if (cacheRef.current.owner !== owner || cacheRef.current.repo !== repo) {
       // Create new cache object for new repo
@@ -225,6 +248,16 @@ export default function ContributorsPage() {
       cacheRef.current.totalCount = fetchedTotalCount;
       cacheRef.current.owner = owner;
       cacheRef.current.repo = repo;
+
+      // Update global cache if on first page
+      if (currentPage === 1) {
+        setCache("contributors", {
+          ...cache.contributors,
+          data: data,
+          totalPages: fetchedTotalPages,
+          totalCount: fetchedTotalCount,
+        });
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch contributors",
@@ -232,7 +265,7 @@ export default function ContributorsPage() {
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, currentPage]);
+  }, [owner, repo, currentPage, cache.contributors, setCache]);
 
   useEffect(() => {
     fetchContributors();

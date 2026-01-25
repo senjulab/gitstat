@@ -53,10 +53,14 @@ interface ChartDataPoint {
   fullDate: string;
 }
 
+import { useDashboardCache } from "@/app/components/DashboardCacheProvider";
+
 export default function StarsPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+
+  const { cache, setCache } = useDashboardCache();
 
   const chartRef = useRef<HTMLDivElement>(null);
   const [axis, setAxis] = useState(0);
@@ -84,6 +88,15 @@ export default function StarsPage() {
   });
 
   const fetchAllStargazers = useCallback(async () => {
+    // Check cache first
+    if (cache.stars) {
+      setStargazers(cache.stars.data);
+      setChartData(cache.stars.chartData);
+      setTotalCount(cache.stars.totalCount);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setProgress(0);
@@ -244,13 +257,20 @@ export default function StarsPage() {
       setStargazers(allStargazers);
       setTotalCount(allStargazers.length);
       setChartData(processedData);
+
+      // Save to cache
+      setCache("stars", {
+        data: allStargazers,
+        chartData: processedData,
+        totalCount: allStargazers.length,
+      });
     } catch (err: any) {
       console.error("Failed to fetch star history:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [owner, repo]);
+  }, [owner, repo, cache.stars, setCache]);
 
   useEffect(() => {
     fetchAllStargazers();

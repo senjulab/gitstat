@@ -120,10 +120,14 @@ function formatRelativeTime(dateString: string): string {
   return formatDate(dateString);
 }
 
+import { useDashboardCache } from "@/app/components/DashboardCacheProvider";
+
 export default function IssuesPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+
+  const { cache, setCache } = useDashboardCache();
 
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,6 +145,15 @@ export default function IssuesPage() {
   const supabase = createClient();
 
   const fetchIssuesAndPRs = useCallback(async () => {
+    // Check cache first
+    if (cache.issues) {
+      setIssues(cache.issues.issues);
+      setStats(cache.issues.stats);
+      setChartData(cache.issues.chartData);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -232,12 +245,19 @@ export default function IssuesPage() {
       );
 
       setChartData(chartDataArray);
+
+      // Save to cache
+      setCache("issues", {
+        issues: allIssues,
+        stats: newStats,
+        chartData: chartDataArray,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
-  }, [owner, repo]);
+  }, [owner, repo, setCache]);
 
   useEffect(() => {
     fetchIssuesAndPRs();
