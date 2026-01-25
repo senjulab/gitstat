@@ -275,29 +275,25 @@ export default function ContributorsPage() {
     setStatsLoading(true);
     setStatsError(null);
 
+    // Check cache first
+    if (cache.contributors?.stats && cache.contributors.stats.length > 0) {
+      setContributorStats(cache.contributors.stats);
+      setStatsLoading(false);
+      return;
+    }
+
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.provider_token;
-
-      if (!token) {
-        throw new Error("GitHub token not found.");
-      }
-
       // Fetch stats - may return 202 if computing
-      const fetchStats = async (retries = 3): Promise<any> => {
-        const res = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/vnd.github.v3+json",
-            },
-          },
-        );
+      // Poll for up to 20 seconds (10 attempts * 2s)
+      const fetchStats = async (retries = 10): Promise<any> => {
+        const res = await fetch(`/api/stats/contributors/${owner}/${repo}`);
 
-        if (res.status === 202 && retries > 0) {
+        if (res.status === 202) {
+          if (retries <= 0) {
+            throw new Error(
+              "Stats computation timed out. Please try again later.",
+            );
+          }
           // Data is being computed, wait and retry
           await new Promise((resolve) => setTimeout(resolve, 2000));
           return fetchStats(retries - 1);
@@ -308,10 +304,22 @@ export default function ContributorsPage() {
         }
 
         if (!res.ok) {
+          if (res.status === 403) {
+            throw new Error(
+              "Access denied. Please ensure the repository is connected.",
+            );
+          }
           throw new Error("Failed to fetch contributor stats");
         }
 
-        return res.json();
+        const data = await res.json();
+        // GitHub API sometimes returns empty object or unexpected structure when still processing
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+          // Treating empty array as potentially still processing or just empty.
+          // But if it's 200 OK and empty, it might likely be empty.
+          return data;
+        }
+        return data;
       };
 
       const statsData = await fetchStats();
@@ -348,6 +356,12 @@ export default function ContributorsPage() {
         .slice(0, 10); // Top 10 contributors by lines changed
 
       setContributorStats(processedStats);
+
+      // Save to cache
+      setCache("contributors", {
+        ...cache.contributors,
+        stats: processedStats,
+      });
     } catch (err) {
       setStatsError(
         err instanceof Error ? err.message : "Failed to fetch stats",
@@ -355,7 +369,7 @@ export default function ContributorsPage() {
     } finally {
       setStatsLoading(false);
     }
-  }, [owner, repo, supabase]);
+  }, [owner, repo, cache.contributors, setCache]);
 
   useEffect(() => {
     fetchContributorStats();
