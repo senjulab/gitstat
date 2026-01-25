@@ -61,10 +61,14 @@ const animationConfig = {
   glowWidth: 300,
 };
 
+import { useDashboardCache } from "@/app/components/DashboardCacheProvider";
+
 export default function TrafficPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+
+  const { cache, setCache } = useDashboardCache();
 
   const [clonesData, setClonesData] = useState<TrafficData[]>([]);
   const [visitorData, setVisitorData] = useState<VisitorData[]>([]);
@@ -85,6 +89,15 @@ export default function TrafficPage() {
   const supabase = createClient();
 
   const fetchTrafficData = useCallback(async () => {
+    // Check cache first
+    if (cache.traffic) {
+      setClonesData(cache.traffic.clonesData);
+      setVisitorData(cache.traffic.visitorData);
+      setTotals(cache.traffic.totals);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -129,13 +142,22 @@ export default function TrafficPage() {
         unique: item.uniques,
       }));
 
-      setClonesData(formattedClones);
-      setVisitorData(formattedViews);
-      setTotals({
+      const newTotals = {
         clones: clonesJson.count,
         uniqueClones: clonesJson.uniques,
         views: viewsJson.count,
         uniqueVisitors: viewsJson.uniques,
+      };
+
+      setClonesData(formattedClones);
+      setVisitorData(formattedViews);
+      setTotals(newTotals);
+
+      // Save to cache
+      setCache("traffic", {
+        clonesData: formattedClones,
+        visitorData: formattedViews,
+        totals: newTotals,
       });
     } catch (err: any) {
       console.error("Traffic fetch error:", err);
@@ -143,7 +165,7 @@ export default function TrafficPage() {
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, supabase]);
+  }, [owner, repo, supabase, cache.traffic, setCache]);
 
   const handleReconnect = useCallback(async () => {
     const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;

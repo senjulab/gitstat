@@ -53,10 +53,14 @@ interface ChartDataPoint {
   fullDate: string;
 }
 
+import { useDashboardCache } from "@/app/components/DashboardCacheProvider";
+
 export default function StarsPage() {
   const params = useParams();
   const owner = params.owner as string;
   const repo = params.repo as string;
+
+  const { cache, setCache } = useDashboardCache();
 
   const chartRef = useRef<HTMLDivElement>(null);
   const [axis, setAxis] = useState(0);
@@ -84,6 +88,15 @@ export default function StarsPage() {
   });
 
   const fetchAllStargazers = useCallback(async () => {
+    // Check cache first
+    if (cache.stars) {
+      setStargazers(cache.stars.data);
+      setChartData(cache.stars.chartData);
+      setTotalCount(cache.stars.totalCount);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setProgress(0);
@@ -91,15 +104,6 @@ export default function StarsPage() {
     setChartData([]);
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.provider_token;
-
-      if (!token) {
-        throw new Error("GitHub token not found. Please reconnect.");
-      }
-
       // Helper to transform API response to flat Stargazer object
       const mapStargazers = (data: any[]): Stargazer[] => {
         return data
@@ -122,19 +126,13 @@ export default function StarsPage() {
 
       // Step 1: Fetch first page to get total count
       const firstPageRes = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=1`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github.v3.star+json",
-          },
-        },
+        `/api/stars/${owner}/${repo}?per_page=100&page=1`,
       );
 
       if (!firstPageRes.ok) {
         if (firstPageRes.status === 403) {
           throw new Error(
-            "GitHub token lacks required permissions. Please reconnect.",
+            "Access denied. Please ensure the repository is connected.",
           );
         }
         throw new Error("Failed to fetch stargazers");
@@ -149,9 +147,20 @@ export default function StarsPage() {
       let totalPagesToFetch = 1;
 
       if (linkHeader) {
-        const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
-        if (lastPageMatch) {
-          totalPagesToFetch = parseInt(lastPageMatch[1], 10);
+        const lastPageMatch = linkHeader.match(
+          /page=(\d+)&per_page=\d+>; rel="last"/,
+        );
+        // Fallback or specialized regex might be needed depending on exactly how GitHub/Next returns link headers
+        // Since we are proxying, the loopback link header might validly contain local URL, or we might need to rely on what GitHub sent.
+        // Actually, our API proxies the Link header from GitHub. GitHub link headers look like:
+        // <https://api.github.com/repositories/...?page=2>; rel="next", <https://api.github.com/repositories/...?page=X>; rel="last"
+        // We only care about the page number.
+
+        const lastPageMatchGithub = linkHeader.match(
+          /[?&]page=(\d+)[^>]*>; rel="last"/,
+        );
+        if (lastPageMatchGithub) {
+          totalPagesToFetch = parseInt(lastPageMatchGithub[1], 10);
         }
       }
 
@@ -176,15 +185,9 @@ export default function StarsPage() {
         const batchPromises = [];
         for (let j = i; j < i + batchSize && j <= totalPagesToFetch; j++) {
           batchPromises.push(
-            fetch(
-              `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=${j}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  Accept: "application/vnd.github.v3.star+json",
-                },
-              },
-            ).then((res) => res.json()),
+            fetch(`/api/stars/${owner}/${repo}?per_page=100&page=${j}`).then(
+              (res) => res.json(),
+            ),
           );
         }
 
@@ -254,13 +257,20 @@ export default function StarsPage() {
       setStargazers(allStargazers);
       setTotalCount(allStargazers.length);
       setChartData(processedData);
+
+      // Save to cache
+      setCache("stars", {
+        data: allStargazers,
+        chartData: processedData,
+        totalCount: allStargazers.length,
+      });
     } catch (err: any) {
       console.error("Failed to fetch star history:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, supabase]);
+  }, [owner, repo, cache.stars, setCache]);
 
   useEffect(() => {
     fetchAllStargazers();
