@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
+  const origin = requestUrl.origin;
   const installationId = requestUrl.searchParams.get("installation_id");
   const setupAction = requestUrl.searchParams.get("setup_action");
 

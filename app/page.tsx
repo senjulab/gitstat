@@ -1,3 +1,4 @@
+import DashboardPreview from "./components/DashboardPreview";
 import Navbar from "./components/Navbar";
 
 import Hero from "./components/Hero";
