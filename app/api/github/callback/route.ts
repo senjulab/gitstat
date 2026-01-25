@@ -1,7 +1,7 @@
-
 import { createClient } from "@/lib/supabase/server";
 import { App } from "octokit";
 import { NextResponse } from "next/server";
+import { getURL } from "@/lib/utils";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     });
 
     if (repositories.total_count === 0 || repositories.repositories.length === 0) {
-        return NextResponse.redirect(`${origin}/onboard/connect?error=no_repositories_selected`);
+        return NextResponse.redirect(`${getURL()}onboard/connect?error=no_repositories_selected`);
     }
 
     const firstRepo = repositories.repositories[0];
@@ -88,10 +88,10 @@ export async function GET(request: Request) {
     }
 
     // Redirect to the dashboard of the first repository
-    return NextResponse.redirect(`${origin}/dashboard/${firstRepo.owner.login}/${firstRepo.name}/traffic`);
+    return NextResponse.redirect(`${getURL()}dashboard/${firstRepo.owner.login}/${firstRepo.name}/traffic`);
 
   } catch (error) {
     console.error("GitHub App callback error:", error);
-    return NextResponse.redirect(`${origin}/onboard/connect?error=installation_failed`);
+    return NextResponse.redirect(`${getURL()}onboard/connect?error=installation_failed`);
   }
 }
