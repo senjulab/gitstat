@@ -6,6 +6,9 @@ export const metadata = {
   title: "Why We Built GitStat | GitStat Blog",
   description:
     "GitHub Insights is fine. But 14 days of traffic data and no star history wasn't cutting it. So we built something better with Bun, Next.js, Supabase, and the GitHub API.",
+  openGraph: {
+    images: ["/gitstatbutwhyblog.png"],
+  },
 };
 
 const p = "text-base text-[#666666] leading-snug tracking-tight mt-4 mb-5";
@@ -40,10 +43,19 @@ export default function WhyWeBuiltGitStat() {
           </Link>
 
           <header className="mb-10">
-            <time className="text-sm text-[#666666] font-normal">2026-01-24</time>
-            <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a1a] tracking-tight mt-2">
+            <time className="text-sm text-[#666666] font-normal">
+              2026-01-24
+            </time>
+            <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a1a] tracking-tight mt-2 mb-8">
               Why We Built GitStat
             </h1>
+            <div className="w-full aspect-[1200/630] rounded-xl overflow-hidden border border-[#00000008]">
+              <img
+                src="/gitstatbutwhyblog.png"
+                alt="Why We Built GitStat"
+                className="w-full h-full object-cover"
+              />
+            </div>
           </header>
 
           <p className={p}>
@@ -52,9 +64,9 @@ export default function WhyWeBuiltGitStat() {
           </p>
           <p className={p}>And every time, you hit the same walls.</p>
           <p className={p}>
-            Traffic data disappears after 14 days. Star history is just a number,
-            not a graph. Viewing multiple repos means opening multiple tabs.
-            Exporting data usually means copy-pasting from a table.
+            Traffic data disappears after 14 days. Star history is just a
+            number, not a graph. Viewing multiple repos means opening multiple
+            tabs. Exporting data usually means copy-pasting from a table.
           </p>
           <p className={p}>
             GitHub Insights works, but it's not built for people who want to
@@ -181,7 +193,9 @@ export default function WhyWeBuiltGitStat() {
             Here's how we compare to the default GitHub experience:
           </p>
           <p className={p}>
-            <strong className="font-medium text-[#181925]">Star History:</strong>{" "}
+            <strong className="font-medium text-[#181925]">
+              Star History:
+            </strong>{" "}
             GitHub gives you a number. We give you a full timeline with avatars
             for every stargazer.
           </p>
