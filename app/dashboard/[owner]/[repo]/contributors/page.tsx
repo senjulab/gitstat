@@ -724,9 +724,14 @@ export default function ContributorsPage() {
                     />
                     <defs>
                       <DottedBackgroundPattern />
-                      <clipPath id="avatarClip">
-                        <circle cx="12" cy="12" r="12" />
-                      </clipPath>
+                      {contributors.map((_, i) => (
+                        <clipPath
+                          key={i}
+                          id={`contributors-avatar-clip-${i}`}
+                        >
+                          <circle cx="0" cy="12" r="12" />
+                        </clipPath>
+                      ))}
                     </defs>
                     <XAxis
                       dataKey="login"
@@ -735,24 +740,20 @@ export default function ContributorsPage() {
                       tickMargin={8}
                       tick={(props) => {
                         const { x, y, payload } = props;
-                        const contributor = contributors.find(
+                        const index = contributors.findIndex(
                           (c) => c.login === payload.value,
                         );
-                        if (!contributor) return <g />;
+                        if (index < 0) return <g />;
+                        const contributor = contributors[index];
                         return (
                           <g transform={`translate(${x},${y})`}>
-                            <defs>
-                              <clipPath id={`clip-${contributor.login}`}>
-                                <circle cx="0" cy="12" r="12" />
-                              </clipPath>
-                            </defs>
                             <image
                               href={contributor.avatar_url}
                               x={-12}
                               y={0}
                               width={24}
                               height={24}
-                              clipPath={`url(#clip-${contributor.login})`}
+                              clipPath={`url(#contributors-avatar-clip-${index})`}
                             />
                           </g>
                         );
@@ -837,6 +838,11 @@ export default function ContributorsPage() {
                       />
                       <defs>
                         <LinesPatternDots />
+                        {contributorStats.map((_, i) => (
+                          <clipPath key={i} id={`lines-avatar-clip-${i}`}>
+                            <circle cx="0" cy="12" r="12" />
+                          </clipPath>
+                        ))}
                       </defs>
                       <XAxis
                         dataKey="login"
@@ -845,26 +851,20 @@ export default function ContributorsPage() {
                         tickMargin={8}
                         tick={(props) => {
                           const { x, y, payload } = props;
-                          const contributor = contributorStats.find(
+                          const index = contributorStats.findIndex(
                             (c) => c.login === payload.value,
                           );
-                          if (!contributor) return <g />;
+                          if (index < 0) return <g />;
+                          const contributor = contributorStats[index];
                           return (
                             <g transform={`translate(${x},${y})`}>
-                              <defs>
-                                <clipPath
-                                  id={`clip-lines-${contributor.login}`}
-                                >
-                                  <circle cx="0" cy="12" r="12" />
-                                </clipPath>
-                              </defs>
                               <image
                                 href={contributor.avatar_url}
                                 x={-12}
                                 y={0}
                                 width={24}
                                 height={24}
-                                clipPath={`url(#clip-lines-${contributor.login})`}
+                                clipPath={`url(#lines-avatar-clip-${index})`}
                               />
                             </g>
                           );
