@@ -522,65 +522,70 @@ export default function ContributorsPage() {
                     );
                     const top3Contributors = sortedContributors.slice(0, 3);
                     const remainingContributors = sortedContributors.slice(3);
-                    const paginatedRemaining = remainingContributors.slice(
-                      (leaderboardPage - 1) * 2,
-                      leaderboardPage * 2,
-                    );
-                    const leaderboardTotalPages = Math.ceil(
+                    const remainderPages = Math.ceil(
                       remainingContributors.length / 2,
+                    );
+                    const leaderboardTotalPages =
+                      1 + remainderPages;
+                    const isLeaderboardPage = leaderboardPage === 1;
+                    const paginatedRemaining = remainingContributors.slice(
+                      (leaderboardPage - 2) * 2,
+                      (leaderboardPage - 1) * 2,
                     );
 
                     return (
                       <>
-                        {/* Top 3 Contributors - Leaderboard */}
-                        <div className="grid grid-cols-1 gap-3 mb-6">
-                          {top3Contributors.map((contributor, index) => {
-                            const getMedal = () => {
-                              if (index === 0)
-                                return <span className="text-2xl">🥇</span>;
-                              if (index === 1)
-                                return <span className="text-2xl">🥈</span>;
-                              if (index === 2)
-                                return <span className="text-2xl">🥉</span>;
-                              return null;
-                            };
-
-                            return (
-                              <Link
-                                key={contributor.login}
-                                href={`https://github.com/${contributor.login}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#fafafa] transition-colors"
-                              >
-                                {getMedal()}
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage
-                                    src={contributor.avatar_url}
-                                    alt={contributor.login}
-                                  />
-                                  <AvatarFallback>
-                                    {contributor.login.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <span className="text-sm font-medium text-[#181925] block truncate">
-                                    {contributor.login}
-                                  </span>
-                                  <span className="text-xs text-[#999]">
-                                    {contributor.contributions.toLocaleString()}{" "}
-                                    contributions
-                                  </span>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-
-                        {/* Remaining Contributors - 2 per row with pagination */}
-                        {remainingContributors.length > 0 && (
+                        {isLeaderboardPage ? (
                           <>
-                            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
+                            {/* Page 1: Top 3 only */}
+                            <div className="grid grid-cols-1 gap-3 mb-6">
+                              {top3Contributors.map((contributor, index) => {
+                                const getMedal = () => {
+                                  if (index === 0)
+                                    return <span className="text-2xl">🥇</span>;
+                                  if (index === 1)
+                                    return <span className="text-2xl">🥈</span>;
+                                  if (index === 2)
+                                    return <span className="text-2xl">🥉</span>;
+                                  return null;
+                                };
+
+                                return (
+                                  <Link
+                                    key={contributor.login}
+                                    href={`https://github.com/${contributor.login}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#fafafa] transition-colors"
+                                  >
+                                    {getMedal()}
+                                    <Avatar className="h-10 w-10">
+                                      <AvatarImage
+                                        src={contributor.avatar_url}
+                                        alt={contributor.login}
+                                      />
+                                      <AvatarFallback>
+                                        {contributor.login.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-sm font-medium text-[#181925] block truncate">
+                                        {contributor.login}
+                                      </span>
+                                      <span className="text-xs text-[#999]">
+                                        {contributor.contributions.toLocaleString()}{" "}
+                                        contributions
+                                      </span>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Page 2+: Others only, 2 per row */}
+                            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3 mb-6">
                               {paginatedRemaining.map((contributor) => (
                                 <Link
                                   key={contributor.login}
@@ -612,41 +617,41 @@ export default function ContributorsPage() {
                                 </Link>
                               ))}
                             </div>
-
-                            {/* Leaderboard Pagination */}
-                            {leaderboardTotalPages > 1 && (
-                              <div className="mt-6 flex items-center justify-center gap-4">
-                                <button
-                                  onClick={() =>
-                                    setLeaderboardPage((p) =>
-                                      Math.max(1, p - 1),
-                                    )
-                                  }
-                                  disabled={leaderboardPage === 1}
-                                  className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                </button>
-                                <span className="text-sm text-[#999]">
-                                  page {leaderboardPage} of{" "}
-                                  {leaderboardTotalPages}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    setLeaderboardPage((p) =>
-                                      Math.min(leaderboardTotalPages, p + 1),
-                                    )
-                                  }
-                                  disabled={
-                                    leaderboardPage === leaderboardTotalPages
-                                  }
-                                  className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                  <ChevronRight className="h-4 w-4" />
-                                </button>
-                              </div>
-                            )}
                           </>
+                        )}
+
+                        {/* Pagination: page 1 = top 3, page 2+ = others */}
+                        {leaderboardTotalPages > 1 && (
+                          <div className="mt-6 flex items-center justify-center gap-4">
+                            <button
+                              onClick={() =>
+                                setLeaderboardPage((p) =>
+                                  Math.max(1, p - 1),
+                                )
+                              }
+                              disabled={leaderboardPage === 1}
+                              className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <span className="text-sm text-[#999]">
+                              page {leaderboardPage} of{" "}
+                              {leaderboardTotalPages}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setLeaderboardPage((p) =>
+                                  Math.min(leaderboardTotalPages, p + 1),
+                                )
+                              }
+                              disabled={
+                                leaderboardPage === leaderboardTotalPages
+                              }
+                              className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </button>
+                          </div>
                         )}
                       </>
                     );
