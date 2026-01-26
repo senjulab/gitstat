@@ -37,8 +37,8 @@ export default function Features() {
               src="/demo.png"
               alt="Dashboard"
               className="w-full"
-              width="2880"
-              height="1800"
+              width="5388"
+              height="3436"
             />
           </div>
         </div>

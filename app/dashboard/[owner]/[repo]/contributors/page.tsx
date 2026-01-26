@@ -77,6 +77,9 @@ const LinesPatternDots = () => {
   );
 };
 
+// Helper to get a safe ID for SVG clipPath elements
+const getSafeClipId = (prefix: string, index: number) => `${prefix}-${index}`;
+
 interface Contributor {
   login: string;
   avatar_url: string;
@@ -724,17 +727,14 @@ export default function ContributorsPage() {
                     />
                     <defs>
                       <DottedBackgroundPattern />
-                      {contributors.map((contributor) => {
-                        const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `contributor-${contributors.indexOf(contributor)}`;
-                        return (
-                          <clipPath
-                            key={contributor.login}
-                            id={`contributors-avatar-clip-${safeId}`}
-                          >
-                            <circle cx="0" cy="12" r="12" />
-                          </clipPath>
-                        );
-                      })}
+                      {contributors.map((_, index) => (
+                        <clipPath
+                          key={getSafeClipId("contrib-clip", index)}
+                          id={getSafeClipId("contrib-clip", index)}
+                        >
+                          <circle cx="0" cy="12" r="12" />
+                        </clipPath>
+                      ))}
                     </defs>
                     <XAxis
                       dataKey="login"
@@ -745,9 +745,10 @@ export default function ContributorsPage() {
                         const { x, y, payload } = props;
                         if (!payload?.value) return <g />;
                         const login = String(payload.value);
-                        const contributor = contributors.find(
+                        const index = contributors.findIndex(
                           (c) => c.login?.toLowerCase() === login.toLowerCase(),
                         );
+                        const contributor = index >= 0 ? contributors[index] : null;
                         if (!contributor || !contributor.avatar_url) {
                           return (
                             <g transform={`translate(${x},${y})`}>
@@ -769,8 +770,7 @@ export default function ContributorsPage() {
                             </g>
                           );
                         }
-                        const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `contributor-${contributors.indexOf(contributor)}`;
-                        const clipId = `contributors-avatar-clip-${safeId}`;
+                        const clipId = getSafeClipId("contrib-clip", index);
                         return (
                           <g transform={`translate(${x},${y})`}>
                             <image
@@ -789,7 +789,7 @@ export default function ContributorsPage() {
                       tickLine={false}
                       axisLine={false}
                       tickMargin={8}
-                      width={50}
+                      width={70}
                       tickFormatter={(value) => value.toLocaleString()}
                     />
                     <ChartTooltip
@@ -864,17 +864,14 @@ export default function ContributorsPage() {
                       />
                       <defs>
                         <LinesPatternDots />
-                        {contributorStats.map((contributor) => {
-                          const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `stat-${contributorStats.indexOf(contributor)}`;
-                          return (
-                            <clipPath
-                              key={contributor.login}
-                              id={`lines-avatar-clip-${safeId}`}
-                            >
-                              <circle cx="0" cy="12" r="12" />
-                            </clipPath>
-                          );
-                        })}
+                        {contributorStats.map((_, index) => (
+                          <clipPath
+                            key={getSafeClipId("lines-clip", index)}
+                            id={getSafeClipId("lines-clip", index)}
+                          >
+                            <circle cx="0" cy="12" r="12" />
+                          </clipPath>
+                        ))}
                       </defs>
                       <XAxis
                         dataKey="login"
@@ -885,9 +882,10 @@ export default function ContributorsPage() {
                           const { x, y, payload } = props;
                           if (!payload?.value) return <g />;
                           const login = String(payload.value);
-                          const contributor = contributorStats.find(
+                          const index = contributorStats.findIndex(
                             (c) => c.login?.toLowerCase() === login.toLowerCase(),
                           );
+                          const contributor = index >= 0 ? contributorStats[index] : null;
                           if (!contributor || !contributor.avatar_url) {
                             return (
                               <g transform={`translate(${x},${y})`}>
@@ -909,8 +907,7 @@ export default function ContributorsPage() {
                               </g>
                             );
                           }
-                          const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `stat-${contributorStats.indexOf(contributor)}`;
-                          const clipId = `lines-avatar-clip-${safeId}`;
+                          const clipId = getSafeClipId("lines-clip", index);
                           return (
                             <g transform={`translate(${x},${y})`}>
                               <image
@@ -929,7 +926,7 @@ export default function ContributorsPage() {
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
-                        width={50}
+                        width={70}
                         tickFormatter={(value) => value.toLocaleString()}
                       />
                       <ChartTooltip
