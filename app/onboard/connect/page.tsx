@@ -96,7 +96,7 @@ export default function ConnectPage() {
               <Button
                 onClick={handleConnectGitHub}
                 disabled={false}
-                className="w-full h-12 bg-black hover:bg-neutral-800 text-white rounded-xl text-base font-medium cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full h-12 bg-black hover:bg-neutral-800 text-white rounded-xl text-base font-medium cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <svg
                   className="w-5 h-5"
