@@ -271,6 +271,10 @@ export default function ContributorsPage() {
     fetchContributors();
   }, [fetchContributors]);
 
+  useEffect(() => {
+    setLeaderboardPage(1);
+  }, [contributors]);
+
   const fetchContributorStats = useCallback(async () => {
     setStatsLoading(true);
     setStatsError(null);
@@ -516,8 +520,8 @@ export default function ContributorsPage() {
                     const sortedContributors = [...contributors].sort(
                       (a, b) => b.contributions - a.contributions,
                     );
-                    const top5Contributors = sortedContributors.slice(0, 5);
-                    const remainingContributors = sortedContributors.slice(5);
+                    const top3Contributors = sortedContributors.slice(0, 3);
+                    const remainingContributors = sortedContributors.slice(3);
                     const paginatedRemaining = remainingContributors.slice(
                       (leaderboardPage - 1) * 2,
                       leaderboardPage * 2,
@@ -528,9 +532,9 @@ export default function ContributorsPage() {
 
                     return (
                       <>
-                        {/* Top 5 Contributors - One per row */}
+                        {/* Top 3 Contributors - Leaderboard */}
                         <div className="grid grid-cols-1 gap-3 mb-6">
-                          {top5Contributors.map((contributor, index) => {
+                          {top3Contributors.map((contributor, index) => {
                             const getMedal = () => {
                               if (index === 0)
                                 return <span className="text-2xl">🥇</span>;
@@ -573,7 +577,7 @@ export default function ContributorsPage() {
                           })}
                         </div>
 
-                        {/* Remaining Contributors - Two per row with pagination */}
+                        {/* Remaining Contributors - 2 per row with pagination */}
                         {remainingContributors.length > 0 && (
                           <>
                             <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
