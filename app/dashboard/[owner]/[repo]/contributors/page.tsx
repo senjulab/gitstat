@@ -522,15 +522,15 @@ export default function ContributorsPage() {
                     );
                     const top3Contributors = sortedContributors.slice(0, 3);
                     const remainingContributors = sortedContributors.slice(3);
+                    const perPage = 10;
                     const remainderPages = Math.ceil(
-                      remainingContributors.length / 2,
+                      remainingContributors.length / perPage,
                     );
-                    const leaderboardTotalPages =
-                      1 + remainderPages;
+                    const leaderboardTotalPages = 1 + remainderPages;
                     const isLeaderboardPage = leaderboardPage === 1;
                     const paginatedRemaining = remainingContributors.slice(
-                      (leaderboardPage - 2) * 2,
-                      (leaderboardPage - 1) * 2,
+                      (leaderboardPage - 2) * perPage,
+                      (leaderboardPage - 1) * perPage,
                     );
 
                     return (
