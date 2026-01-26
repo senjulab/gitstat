@@ -112,6 +112,16 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
     router.push("/login");
   };
 
+  const handleAddProject = () => {
+    const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG;
+    if (!slug) {
+      console.error("GitHub App configuration missing");
+      return;
+    }
+    // Redirect to GitHub App Installation - exact same logic as ConnectPage
+    window.location.href = `https://github.com/apps/${slug}/installations/new`;
+  };
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 h-16 bg-white z-50">
@@ -173,7 +183,10 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
 
                   <div className="border-t border-[#f0f0f0] my-2 mx-1" />
 
-                  <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#181925] cursor-pointer hover:bg-[#f5f5f5] transition-colors">
+                  <button
+                    onClick={handleAddProject}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#181925] cursor-pointer hover:bg-[#f5f5f5] transition-colors"
+                  >
                     <Plus className="w-[16px] h-[16px] text-[#999]" />
                     Add project
                   </button>
