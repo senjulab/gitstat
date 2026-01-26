@@ -12,7 +12,7 @@ const POSTS = [
   {
     slug: "why-we-built-gitstat",
     title: "Why We Built GitStat",
-    date: "2026-01-24",
+    date: "2026-01-26",
     image: "/gitstatbutwhyblog.png",
     excerpt:
       "GitHub Insights is fine. But 14 days of traffic data and no star history wasn't cutting it. So we built something better with Bun, Next.js, Supabase, and the GitHub API.",
