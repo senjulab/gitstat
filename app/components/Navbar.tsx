@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const Logo = () => (
   <svg
@@ -66,6 +63,15 @@ export default function Navbar() {
           Blog
         </span>
       </Link>
+      <Link
+        href="https://bags.fm/CBEPWiQ35jiuW1jZEYH1U98c39ixRz2qD3dQT41WBAGS"
+        target="_blank"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
+          Support Dev
+        </span>
+      </Link>
     </>
   );
 
@@ -114,9 +120,7 @@ export default function Navbar() {
           className="fixed top-0 right-0 left-auto bottom-0 h-full w-full max-w-[min(280px,100vw-2rem)] rounded-l-2xl rounded-r-none border-0 border-l border-[#2a2a35] shadow-xl flex flex-col pt-14 pb-6 px-6 bg-[#14141f] [&_[data-slot=dialog-close]]:text-[#eaeaeb] !top-0 !left-auto !translate-x-0 !translate-y-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right"
         >
           <nav className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4">
-              {navLinks}
-            </div>
+            <div className="flex flex-col gap-4">{navLinks}</div>
             <div className="flex flex-col gap-4 pt-2 border-t border-[#2a2a35]">
               {authLinks}
             </div>
@@ -127,7 +131,7 @@ export default function Navbar() {
       {/* Desktop: floating pill */}
       <header
         className={`dark fixed top-8 left-1/2 -translate-x-1/2 z-[99] ${
-          isLoggedIn ? "w-[340px]" : "w-[380px]"
+          isLoggedIn ? "w-[440px]" : "w-[480px]"
         } bg-[#14141f] backdrop-blur-lg rounded-[24px] overflow-hidden shadow-xl hidden md:block tracking-tight`}
       >
         <nav>
@@ -138,9 +142,7 @@ export default function Navbar() {
               </Link>
               {navLinks}
             </div>
-            <div className="flex items-center gap-2">
-              {authLinks}
-            </div>
+            <div className="flex items-center gap-2">{authLinks}</div>
           </div>
         </nav>
       </header>

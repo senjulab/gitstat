@@ -44,12 +44,12 @@ export default function WhyWeBuiltGitStat() {
 
           <header className="mb-10">
             <time className="text-sm text-[#666666] font-normal">
-              2026-01-24
+              2026-01-26
             </time>
             <h1 className="text-3xl md:text-4xl font-medium text-[#1a1a1a] tracking-tight mt-2 mb-8">
               Why We Built GitStat
             </h1>
-            <div className="w-full aspect-[1200/630] rounded-xl overflow-hidden border border-[#00000008]">
+            <div className="w-full aspect-[1200/630] bg-[#F5F5F7] rounded-xl overflow-hidden border border-[#00000008]">
               <img
                 src="/gitstatbutwhyblog.png"
                 alt="Why We Built GitStat"
