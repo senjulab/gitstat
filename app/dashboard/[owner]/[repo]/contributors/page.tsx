@@ -77,8 +77,6 @@ const LinesPatternDots = () => {
   );
 };
 
-// Helper to get a safe ID for SVG clipPath elements
-const getSafeClipId = (prefix: string, index: number) => `${prefix}-${index}`;
 
 interface Contributor {
   login: string;
@@ -727,14 +725,6 @@ export default function ContributorsPage() {
                     />
                     <defs>
                       <DottedBackgroundPattern />
-                      {contributors.map((_, index) => (
-                        <clipPath
-                          key={getSafeClipId("contrib-clip", index)}
-                          id={getSafeClipId("contrib-clip", index)}
-                        >
-                          <circle cx="0" cy="12" r="12" />
-                        </clipPath>
-                      ))}
                     </defs>
                     <XAxis
                       dataKey="login"
@@ -742,13 +732,14 @@ export default function ContributorsPage() {
                       axisLine={false}
                       tickMargin={8}
                       tick={(props) => {
-                        const { x, y, payload } = props;
+                        const { x, y, payload, index } = props;
                         if (!payload?.value) return <g />;
                         const login = String(payload.value);
-                        const index = contributors.findIndex(
+                        // Use index from Recharts directly, fallback to findIndex
+                        const dataIndex = typeof index === 'number' ? index : contributors.findIndex(
                           (c) => c.login?.toLowerCase() === login.toLowerCase(),
                         );
-                        const contributor = index >= 0 ? contributors[index] : null;
+                        const contributor = dataIndex >= 0 ? contributors[dataIndex] : null;
                         if (!contributor || !contributor.avatar_url) {
                           return (
                             <g transform={`translate(${x},${y})`}>
@@ -770,17 +761,20 @@ export default function ContributorsPage() {
                             </g>
                           );
                         }
-                        const clipId = getSafeClipId("contrib-clip", index);
                         return (
                           <g transform={`translate(${x},${y})`}>
-                            <image
-                              href={contributor.avatar_url}
-                              x={-12}
-                              y={0}
-                              width={24}
-                              height={24}
-                              clipPath={`url(#${clipId})`}
-                            />
+                            <foreignObject x={-12} y={0} width={24} height={24}>
+                              <img
+                                src={contributor.avatar_url}
+                                alt={contributor.login}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            </foreignObject>
                           </g>
                         );
                       }}
@@ -864,14 +858,6 @@ export default function ContributorsPage() {
                       />
                       <defs>
                         <LinesPatternDots />
-                        {contributorStats.map((_, index) => (
-                          <clipPath
-                            key={getSafeClipId("lines-clip", index)}
-                            id={getSafeClipId("lines-clip", index)}
-                          >
-                            <circle cx="0" cy="12" r="12" />
-                          </clipPath>
-                        ))}
                       </defs>
                       <XAxis
                         dataKey="login"
@@ -879,13 +865,14 @@ export default function ContributorsPage() {
                         axisLine={false}
                         tickMargin={8}
                         tick={(props) => {
-                          const { x, y, payload } = props;
+                          const { x, y, payload, index } = props;
                           if (!payload?.value) return <g />;
                           const login = String(payload.value);
-                          const index = contributorStats.findIndex(
+                          // Use index from Recharts directly, fallback to findIndex
+                          const dataIndex = typeof index === 'number' ? index : contributorStats.findIndex(
                             (c) => c.login?.toLowerCase() === login.toLowerCase(),
                           );
-                          const contributor = index >= 0 ? contributorStats[index] : null;
+                          const contributor = dataIndex >= 0 ? contributorStats[dataIndex] : null;
                           if (!contributor || !contributor.avatar_url) {
                             return (
                               <g transform={`translate(${x},${y})`}>
@@ -907,17 +894,20 @@ export default function ContributorsPage() {
                               </g>
                             );
                           }
-                          const clipId = getSafeClipId("lines-clip", index);
                           return (
                             <g transform={`translate(${x},${y})`}>
-                              <image
-                                href={contributor.avatar_url}
-                                x={-12}
-                                y={0}
-                                width={24}
-                                height={24}
-                                clipPath={`url(#${clipId})`}
-                              />
+                              <foreignObject x={-12} y={0} width={24} height={24}>
+                                <img
+                                  src={contributor.avatar_url}
+                                  alt={contributor.login}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                  }}
+                                />
+                              </foreignObject>
                             </g>
                           );
                         }}
