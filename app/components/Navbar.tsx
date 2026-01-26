@@ -69,7 +69,7 @@ export default function Navbar() {
         onClick={() => setMobileMenuOpen(false)}
       >
         <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
-          Support dev
+          Support Dev
         </span>
       </Link>
     </>
