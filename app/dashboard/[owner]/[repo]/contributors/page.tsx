@@ -724,14 +724,17 @@ export default function ContributorsPage() {
                     />
                     <defs>
                       <DottedBackgroundPattern />
-                      {contributors.map((_, i) => (
-                        <clipPath
-                          key={i}
-                          id={`contributors-avatar-clip-${i}`}
-                        >
-                          <circle cx="0" cy="12" r="12" />
-                        </clipPath>
-                      ))}
+                      {contributors.map((contributor) => {
+                        const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `contributor-${contributors.indexOf(contributor)}`;
+                        return (
+                          <clipPath
+                            key={contributor.login}
+                            id={`contributors-avatar-clip-${safeId}`}
+                          >
+                            <circle cx="0" cy="12" r="12" />
+                          </clipPath>
+                        );
+                      })}
                     </defs>
                     <XAxis
                       dataKey="login"
@@ -740,11 +743,34 @@ export default function ContributorsPage() {
                       tickMargin={8}
                       tick={(props) => {
                         const { x, y, payload } = props;
-                        const index = contributors.findIndex(
-                          (c) => c.login === payload.value,
+                        if (!payload?.value) return <g />;
+                        const login = String(payload.value);
+                        const contributor = contributors.find(
+                          (c) => c.login?.toLowerCase() === login.toLowerCase(),
                         );
-                        if (index < 0) return <g />;
-                        const contributor = contributors[index];
+                        if (!contributor || !contributor.avatar_url) {
+                          return (
+                            <g transform={`translate(${x},${y})`}>
+                              <circle
+                                cx="0"
+                                cy="12"
+                                r="12"
+                                fill="#e5e5e5"
+                              />
+                              <text
+                                x="0"
+                                y="16"
+                                textAnchor="middle"
+                                fontSize="10"
+                                fill="#999"
+                              >
+                                {login.charAt(0)?.toUpperCase() || "?"}
+                              </text>
+                            </g>
+                          );
+                        }
+                        const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `contributor-${contributors.indexOf(contributor)}`;
+                        const clipId = `contributors-avatar-clip-${safeId}`;
                         return (
                           <g transform={`translate(${x},${y})`}>
                             <image
@@ -753,7 +779,7 @@ export default function ContributorsPage() {
                               y={0}
                               width={24}
                               height={24}
-                              clipPath={`url(#contributors-avatar-clip-${index})`}
+                              clipPath={`url(#${clipId})`}
                             />
                           </g>
                         );
@@ -838,11 +864,17 @@ export default function ContributorsPage() {
                       />
                       <defs>
                         <LinesPatternDots />
-                        {contributorStats.map((_, i) => (
-                          <clipPath key={i} id={`lines-avatar-clip-${i}`}>
-                            <circle cx="0" cy="12" r="12" />
-                          </clipPath>
-                        ))}
+                        {contributorStats.map((contributor) => {
+                          const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `stat-${contributorStats.indexOf(contributor)}`;
+                          return (
+                            <clipPath
+                              key={contributor.login}
+                              id={`lines-avatar-clip-${safeId}`}
+                            >
+                              <circle cx="0" cy="12" r="12" />
+                            </clipPath>
+                          );
+                        })}
                       </defs>
                       <XAxis
                         dataKey="login"
@@ -851,11 +883,34 @@ export default function ContributorsPage() {
                         tickMargin={8}
                         tick={(props) => {
                           const { x, y, payload } = props;
-                          const index = contributorStats.findIndex(
-                            (c) => c.login === payload.value,
+                          if (!payload?.value) return <g />;
+                          const login = String(payload.value);
+                          const contributor = contributorStats.find(
+                            (c) => c.login?.toLowerCase() === login.toLowerCase(),
                           );
-                          if (index < 0) return <g />;
-                          const contributor = contributorStats[index];
+                          if (!contributor || !contributor.avatar_url) {
+                            return (
+                              <g transform={`translate(${x},${y})`}>
+                                <circle
+                                  cx="0"
+                                  cy="12"
+                                  r="12"
+                                  fill="#e5e5e5"
+                                />
+                                <text
+                                  x="0"
+                                  y="16"
+                                  textAnchor="middle"
+                                  fontSize="10"
+                                  fill="#999"
+                                >
+                                  {login.charAt(0)?.toUpperCase() || "?"}
+                                </text>
+                              </g>
+                            );
+                          }
+                          const safeId = contributor.login?.replace(/[^a-zA-Z0-9-_]/g, "-") || `stat-${contributorStats.indexOf(contributor)}`;
+                          const clipId = `lines-avatar-clip-${safeId}`;
                           return (
                             <g transform={`translate(${x},${y})`}>
                               <image
@@ -864,7 +919,7 @@ export default function ContributorsPage() {
                                 y={0}
                                 width={24}
                                 height={24}
-                                clipPath={`url(#lines-avatar-clip-${index})`}
+                                clipPath={`url(#${clipId})`}
                               />
                             </g>
                           );
