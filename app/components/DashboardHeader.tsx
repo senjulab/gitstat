@@ -161,25 +161,27 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                       Projects
                     </p>
                   </div>
-                  {connectedRepos.map((r) => (
-                    <Link
-                      key={`${r.owner}/${r.name}`}
-                      href={`/dashboard/${r.owner}/${r.name}${getCurrentSubRoute()}`}
-                      onClick={() => setIsDropdownOpen(false)}
-                      className={`w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        r.owner === owner && r.name === repo
-                          ? "text-[#181925] bg-[#f5f5f5]"
-                          : "text-[#181925] hover:bg-[#f5f5f5]"
-                      }`}
-                    >
-                      <img
-                        src={`https://github.com/${r.owner}.png?size=40`}
-                        alt={r.owner}
-                        className="w-4 h-4 rounded"
-                      />
-                      {r.name}
-                    </Link>
-                  ))}
+                  <div className="max-h-[200px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    {connectedRepos.map((r) => (
+                      <Link
+                        key={`${r.owner}/${r.name}`}
+                        href={`/dashboard/${r.owner}/${r.name}${getCurrentSubRoute()}`}
+                        onClick={() => setIsDropdownOpen(false)}
+                        className={`w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          r.owner === owner && r.name === repo
+                            ? "text-[#181925] bg-[#f5f5f5]"
+                            : "text-[#181925] hover:bg-[#f5f5f5]"
+                        }`}
+                      >
+                        <img
+                          src={`https://github.com/${r.owner}.png?size=40`}
+                          alt={r.owner}
+                          className="w-4 h-4 rounded"
+                        />
+                        {r.name}
+                      </Link>
+                    ))}
+                  </div>
 
                   <div className="border-t border-[#f0f0f0] my-2 mx-1" />
 
