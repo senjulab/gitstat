@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toPng } from "html-to-image";
+import { exportChartAsBrandedImage } from "@/lib/export-branded-chart";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -313,14 +313,10 @@ export default function StarsPage() {
   const exportToPNG = async () => {
     if (!chartRef.current) return;
     try {
-      const dataUrl = await toPng(chartRef.current, {
-        backgroundColor: "#ffffff",
-        pixelRatio: 2,
-      });
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `${owner}-${repo}-star-history.png`;
-      a.click();
+      await exportChartAsBrandedImage(
+        chartRef.current,
+        `${owner}-${repo}-star-history.png`
+      );
     } catch (err) {
       console.error("Failed to export PNG:", err);
     }

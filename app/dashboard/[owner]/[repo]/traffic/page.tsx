@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Github } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { TrendingUp, Download, Image, ChevronDown } from "lucide-react";
+import { exportChartAsBrandedImage } from "@/lib/export-branded-chart";
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -203,16 +204,10 @@ export default function TrafficPage() {
 
   const exportToPNG = useCallback(async () => {
     if (!chartRef.current) return;
-
-    const { toPng } = await import("html-to-image");
-    const dataUrl = await toPng(chartRef.current, {
-      backgroundColor: "#ffffff",
-    });
-
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = `git-clones-${owner}-${repo}.png`;
-    link.click();
+    await exportChartAsBrandedImage(
+      chartRef.current,
+      `git-clones-${owner}-${repo}.png`
+    );
   }, [owner, repo]);
 
   const exportVisitorsToCSV = useCallback(() => {
@@ -237,16 +232,10 @@ export default function TrafficPage() {
 
   const exportVisitorsToPNG = useCallback(async () => {
     if (!visitorChartRef.current) return;
-
-    const { toPng } = await import("html-to-image");
-    const dataUrl = await toPng(visitorChartRef.current, {
-      backgroundColor: "#ffffff",
-    });
-
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = `visitors-${owner}-${repo}.png`;
-    link.click();
+    await exportChartAsBrandedImage(
+      visitorChartRef.current,
+      `visitors-${owner}-${repo}.png`
+    );
   }, [owner, repo]);
 
   if (loading) {
