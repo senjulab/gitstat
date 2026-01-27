@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import UserHeader from "@/components/user-header";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function DashboardPage() {
   const params = useParams();
@@ -53,8 +54,9 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <Spinner className="w-8 h-8 mb-4" />
+        <p className="text-sm text-[#666]">Loading...</p>
       </div>
     );
   }
