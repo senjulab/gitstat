@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Check } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, Copy01Icon } from "@hugeicons/core-free-icons";
+import { Download01Icon } from "@hugeicons/core-free-icons";
 import { toPng } from "html-to-image";
 import { Logo } from "@/components/logo";
 import { GeistMono } from "geist/font/mono";
@@ -48,8 +47,6 @@ export function ExportPreviewModal({
   const [chartDataUrl, setChartDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [copying, setCopying] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [hideAvatarForExport, setHideAvatarForExport] = useState(false);
   const [avatarLoaded, setAvatarLoaded] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -78,7 +75,6 @@ export function ExportPreviewModal({
     if (open && chartRef.current) {
       setLoading(true);
       setChartDataUrl(null);
-      setCopied(false);
 
       toPng(chartRef.current, {
         backgroundColor: "#ffffff",
@@ -142,62 +138,6 @@ export function ExportPreviewModal({
     }
   };
 
-  const handleCopy = async () => {
-    if (!previewCardRef.current || copying) return;
-
-    setCopying(true);
-    setHideAvatarForExport(true);
-    
-    try {
-      // Wait for DOM update
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      const dataUrl = await toPng(previewCardRef.current, {
-        backgroundColor: "#fafafa",
-        pixelRatio: 2,
-        cacheBust: true,
-        quality: 1,
-      });
-
-      if (!dataUrl || dataUrl === "data:," || !dataUrl.startsWith("data:image")) {
-        throw new Error(`Failed to generate image data URL. Got: ${dataUrl?.substring(0, 50)}...`);
-      }
-
-      // Convert data URL to blob
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "image/png": blob,
-        }),
-      ]);
-
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err: any) {
-      console.error("Failed to copy:", err);
-      // Fallback: try copying just the chart image if full card fails
-      if (chartDataUrl) {
-        try {
-          const response = await fetch(chartDataUrl);
-          const blob = await response.blob();
-          await navigator.clipboard.write([
-            new ClipboardItem({
-              "image/png": blob,
-            }),
-          ]);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        } catch (fallbackErr: any) {
-          console.error("Fallback copy also failed:", fallbackErr);
-        }
-      }
-    } finally {
-      setCopying(false);
-      setHideAvatarForExport(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -297,21 +237,6 @@ export function ExportPreviewModal({
                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <HugeiconsIcon icon={Download01Icon} size={16} />
-              )}
-            </button>
-
-            <button
-              onClick={handleCopy}
-              disabled={!chartDataUrl || loading || copying}
-              className="h-10 w-10 rounded-md shadow-lg cursor-pointer bg-white border border-[#e5e5e5] text-[#181925] flex items-center justify-center transition-colors duration-200 ease-out hover:bg-[#f5f5f5] hover:border-[#d0d0d0] disabled:opacity-50 disabled:cursor-not-allowed"
-              title={copied ? "Copied!" : copying ? "Copying..." : "Copy to clipboard"}
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : copying ? (
-                <div className="h-4 w-4 border-2 border-[#181925]/30 border-t-[#181925] rounded-full animate-spin" />
-              ) : (
-                <HugeiconsIcon icon={Copy01Icon} size={16} />
               )}
             </button>
           </div>
