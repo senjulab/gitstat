@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { DashboardSidebar } from "@/app/components/DashboardSidebar";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight, Github, Download, Image, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Github } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ExportPreviewModal } from "@/components/export-preview-modal";
 
 const chartConfig = {
   contributions: {
@@ -141,12 +134,6 @@ export default function ContributorsPage() {
   const [recentCommit, setRecentCommit] = useState<RecentCommit | null>(null);
   const [commitLoading, setCommitLoading] = useState(true);
   const [commitError, setCommitError] = useState<string | null>(null);
-
-  // Export modal state
-  const contributionsChartRef = useRef<HTMLDivElement>(null);
-  const linesChartRef = useRef<HTMLDivElement>(null);
-  const [contributionsExportModalOpen, setContributionsExportModalOpen] = useState(false);
-  const [linesExportModalOpen, setLinesExportModalOpen] = useState(false);
 
   const supabase = createClient();
 
@@ -706,50 +693,24 @@ export default function ContributorsPage() {
 
               {/* Contributions Bar Chart */}
               <div className="mt-8">
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <h2 className="text-base font-medium text-[#181925]">
-                      Contributions
-                    </h2>
-                    <p className="text-sm text-[#999]">
-                      <span className="font-mono text-[#181925] tabular-nums">
-                        {contributors
-                          .reduce((sum, c) => sum + c.contributions, 0)
-                          .toLocaleString()}
-                      </span>{" "}
-                      total contributions from top {contributors.length}{" "}
-                      contributors
-                    </p>
-                  </div>
-                  {contributors.length > 0 && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
-                          title="Export"
-                        >
-                          <Download className="h-3 w-3" />
-                          Export
-                          <ChevronDown className="h-3 w-3" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
-                        <DropdownMenuItem
-                          onClick={() => setContributionsExportModalOpen(true)}
-                          className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
-                        >
-                          <Image className="h-3 w-3" />
-                          PNG
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Contributions
+                  </h2>
+                  <p className="text-sm text-[#999]">
+                    <span className="font-mono text-[#181925] tabular-nums">
+                      {contributors
+                        .reduce((sum, c) => sum + c.contributions, 0)
+                        .toLocaleString()}
+                    </span>{" "}
+                    total contributions from top {contributors.length}{" "}
+                    contributors
+                  </p>
                 </div>
-                <div ref={contributionsChartRef}>
-                  <ChartContainer
-                    config={chartConfig}
-                    className="h-[250px] w-full"
-                  >
+                <ChartContainer
+                  config={chartConfig}
+                  className="h-[250px] w-full"
+                >
                   <BarChart
                     accessibilityLayer
                     data={contributors}
@@ -845,50 +806,24 @@ export default function ContributorsPage() {
                     />
                   </BarChart>
                 </ChartContainer>
-                </div>
               </div>
 
               {/* Lines Changed Bar Chart */}
               <div className="mt-8">
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <h2 className="text-base font-medium text-[#181925]">
-                      Lines Changed
-                    </h2>
-                    {contributorStats.length > 0 && (
-                      <p className="text-sm text-[#999]">
-                        <span className="font-mono text-[#181925] tabular-nums">
-                          {contributorStats
-                            .reduce((sum, c) => sum + c.inserted + c.deleted, 0)
-                            .toLocaleString()}
-                        </span>{" "}
-                        total lines changed by top {contributorStats.length}{" "}
-                        contributors
-                      </p>
-                    )}
-                  </div>
-                  {contributorStats.length > 0 && !statsLoading && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className="cursor-pointer flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#999] hover:text-[#666] hover:bg-[#fafafa] rounded-full transition-all duration-200"
-                          title="Export"
-                        >
-                          <Download className="h-3 w-3" />
-                          Export
-                          <ChevronDown className="h-3 w-3" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-[80px] p-0.5">
-                        <DropdownMenuItem
-                          onClick={() => setLinesExportModalOpen(true)}
-                          className="cursor-pointer flex items-center gap-1.5 px-2 py-1 text-xs"
-                        >
-                          <Image className="h-3 w-3" />
-                          PNG
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Lines Changed
+                  </h2>
+                  {contributorStats.length > 0 && (
+                    <p className="text-sm text-[#999]">
+                      <span className="font-mono text-[#181925] tabular-nums">
+                        {contributorStats
+                          .reduce((sum, c) => sum + c.inserted + c.deleted, 0)
+                          .toLocaleString()}
+                      </span>{" "}
+                      total lines changed by top {contributorStats.length}{" "}
+                      contributors
+                    </p>
                   )}
                 </div>
 
@@ -905,11 +840,10 @@ export default function ContributorsPage() {
                     <p className="text-sm text-[#999]">No stats available.</p>
                   </div>
                 ) : (
-                  <div ref={linesChartRef}>
-                    <ChartContainer
-                      config={linesChartConfig}
-                      className="h-[250px] w-full"
-                    >
+                  <ChartContainer
+                    config={linesChartConfig}
+                    className="h-[250px] w-full"
+                  >
                     <BarChart
                       accessibilityLayer
                       data={contributorStats}
@@ -1011,7 +945,6 @@ export default function ContributorsPage() {
                       />
                     </BarChart>
                   </ChartContainer>
-                  </div>
                 )}
               </div>
 
@@ -1092,28 +1025,6 @@ export default function ContributorsPage() {
           )}
         </div>
       </div>
-
-      <ExportPreviewModal
-        open={contributionsExportModalOpen}
-        onOpenChange={setContributionsExportModalOpen}
-        chartRef={contributionsChartRef}
-        filename={`contributions-${owner}-${repo}.png`}
-        title="Contributions"
-        subtitle={`${contributors.reduce((sum, c) => sum + c.contributions, 0).toLocaleString()} total contributions from top ${contributors.length} contributors`}
-        owner={owner}
-        repo={repo}
-      />
-
-      <ExportPreviewModal
-        open={linesExportModalOpen}
-        onOpenChange={setLinesExportModalOpen}
-        chartRef={linesChartRef}
-        filename={`lines-changed-${owner}-${repo}.png`}
-        title="Lines Changed"
-        subtitle={`${contributorStats.reduce((sum, c) => sum + c.inserted + c.deleted, 0).toLocaleString()} total lines changed by top ${contributorStats.length} contributors`}
-        owner={owner}
-        repo={repo}
-      />
     </div>
   );
 }
