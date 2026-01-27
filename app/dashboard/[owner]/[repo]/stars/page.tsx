@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { exportChartAsBrandedImage } from "@/lib/export-branded-chart";
+import { ExportPreviewModal } from "@/components/export-preview-modal";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -71,6 +71,7 @@ export default function StarsPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
 
   const supabase = createClient();
 
@@ -310,16 +311,8 @@ export default function StarsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const exportToPNG = async () => {
-    if (!chartRef.current) return;
-    try {
-      await exportChartAsBrandedImage(
-        chartRef.current,
-        `${owner}-${repo}-star-history.png`
-      );
-    } catch (err) {
-      console.error("Failed to export PNG:", err);
-    }
+  const exportToPNG = () => {
+    setExportModalOpen(true);
   };
 
   // Client-side pagination
@@ -628,6 +621,17 @@ export default function StarsPage() {
           </div>
         </div>
       </div>
+
+      <ExportPreviewModal
+        open={exportModalOpen}
+        onOpenChange={setExportModalOpen}
+        chartRef={chartRef}
+        filename={`${owner}-${repo}-star-history.png`}
+        title="Star History"
+        subtitle={`${totalCount.toLocaleString()} total stars`}
+        owner={owner}
+        repo={repo}
+      />
     </div>
   );
 }

@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Github } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { TrendingUp, Download, Image, ChevronDown } from "lucide-react";
-import { exportChartAsBrandedImage } from "@/lib/export-branded-chart";
+import { ExportPreviewModal } from "@/components/export-preview-modal";
 import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -86,6 +86,8 @@ export default function TrafficPage() {
   });
   const chartRef = useRef<HTMLDivElement>(null);
   const visitorChartRef = useRef<HTMLDivElement>(null);
+  const [clonesExportModalOpen, setClonesExportModalOpen] = useState(false);
+  const [visitorsExportModalOpen, setVisitorsExportModalOpen] = useState(false);
 
   const supabase = createClient();
 
@@ -202,13 +204,9 @@ export default function TrafficPage() {
     URL.revokeObjectURL(url);
   }, [clonesData, owner, repo]);
 
-  const exportToPNG = useCallback(async () => {
-    if (!chartRef.current) return;
-    await exportChartAsBrandedImage(
-      chartRef.current,
-      `git-clones-${owner}-${repo}.png`
-    );
-  }, [owner, repo]);
+  const exportToPNG = useCallback(() => {
+    setClonesExportModalOpen(true);
+  }, []);
 
   const exportVisitorsToCSV = useCallback(() => {
     const headers = ["Date", "Views", "Unique"];
@@ -230,13 +228,9 @@ export default function TrafficPage() {
     URL.revokeObjectURL(url);
   }, [visitorData, owner, repo]);
 
-  const exportVisitorsToPNG = useCallback(async () => {
-    if (!visitorChartRef.current) return;
-    await exportChartAsBrandedImage(
-      visitorChartRef.current,
-      `visitors-${owner}-${repo}.png`
-    );
-  }, [owner, repo]);
+  const exportVisitorsToPNG = useCallback(() => {
+    setVisitorsExportModalOpen(true);
+  }, []);
 
   if (loading) {
     return (
@@ -642,6 +636,28 @@ export default function TrafficPage() {
           </div>
         </div>
       </div>
+
+      <ExportPreviewModal
+        open={clonesExportModalOpen}
+        onOpenChange={setClonesExportModalOpen}
+        chartRef={chartRef}
+        filename={`git-clones-${owner}-${repo}.png`}
+        title="Git Clones"
+        subtitle={`${totalClones.toLocaleString()} clones and ${totalUniqueClones.toLocaleString()} unique clones in the last 14 days`}
+        owner={owner}
+        repo={repo}
+      />
+
+      <ExportPreviewModal
+        open={visitorsExportModalOpen}
+        onOpenChange={setVisitorsExportModalOpen}
+        chartRef={visitorChartRef}
+        filename={`visitors-${owner}-${repo}.png`}
+        title="Visitors"
+        subtitle={`${totalViews.toLocaleString()} views and ${totalUnique.toLocaleString()} unique visitors in the last 14 days`}
+        owner={owner}
+        repo={repo}
+      />
     </div>
   );
 }
