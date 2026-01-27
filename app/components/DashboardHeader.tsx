@@ -37,15 +37,19 @@ interface Repository {
   private: boolean;
 }
 
+interface ConnectedRepo {
+  owner: string;
+  name: string;
+  displayName: string;
+}
+
 export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState("");
-  const [connectedRepos, setConnectedRepos] = useState<
-    { owner: string; name: string }[]
-  >([]);
+  const [connectedRepos, setConnectedRepos] = useState<ConnectedRepo[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -75,12 +79,16 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
 
         const { data: repos } = await supabase
           .from("connected_repositories")
-          .select("repo_owner, repo_name")
+          .select("repo_owner, repo_name, display_name")
           .eq("user_id", user.id);
 
         if (repos) {
           setConnectedRepos(
-            repos.map((r) => ({ owner: r.repo_owner, name: r.repo_name })),
+            repos.map((r) => ({
+              owner: r.repo_owner,
+              name: r.repo_name,
+              displayName: r.display_name || r.repo_name,
+            })),
           );
         }
       }
@@ -147,7 +155,9 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                   className="w-5 h-5 rounded shrink-0"
                 />
                 <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">
-                  {repo}
+                  {connectedRepos.find(
+                    (r) => r.owner === owner && r.name === repo,
+                  )?.displayName || repo}
                 </span>
                 <ChevronDown
                   className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -178,7 +188,7 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
                           alt={r.owner}
                           className="w-4 h-4 rounded"
                         />
-                        {r.name}
+                        {r.displayName}
                       </Link>
                     ))}
                   </div>
