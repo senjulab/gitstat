@@ -48,7 +48,10 @@ export function ExportPreviewModal({
 }: ExportPreviewModalProps) {
   const [chartDataUrl, setChartDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [hideAvatarForExport, setHideAvatarForExport] = useState(false);
   const previewCardRef = useRef<HTMLDivElement>(null);
 
   // Capture the chart when modal opens
@@ -61,6 +64,7 @@ export function ExportPreviewModal({
       toPng(chartRef.current, {
         backgroundColor: "#ffffff",
         pixelRatio: 2,
+        cacheBust: true,
       })
         .then((dataUrl) => {
           setChartDataUrl(dataUrl);
@@ -74,47 +78,105 @@ export function ExportPreviewModal({
   }, [open, chartRef]);
 
   const handleDownload = async () => {
-    if (!previewCardRef.current) return;
+    if (!previewCardRef.current || downloading) return;
 
+    setDownloading(true);
+    setHideAvatarForExport(true);
+    
     try {
+      // Wait for DOM update
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       const dataUrl = await toPng(previewCardRef.current, {
         backgroundColor: "#fafafa",
         pixelRatio: 2,
+        cacheBust: true,
+        quality: 1,
       });
+
+      if (!dataUrl || dataUrl === "data:," || !dataUrl.startsWith("data:image")) {
+        throw new Error(`Failed to generate image data URL. Got: ${dataUrl?.substring(0, 50)}...`);
+      }
 
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = filename;
+      link.style.display = "none";
+      document.body.appendChild(link);
       link.click();
-    } catch (err) {
-      console.error("Failed to download:", err);
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 100);
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.toString() || "Unknown error";
+      const errorDetails = err?.stack || JSON.stringify(err);
+      console.error("Failed to download:", {
+        message: errorMessage,
+        details: errorDetails,
+        error: err,
+        previewCardExists: !!previewCardRef.current,
+      });
+      alert(`Failed to download image: ${errorMessage}. Please try again.`);
+    } finally {
+      setDownloading(false);
+      setHideAvatarForExport(false);
     }
   };
 
   const handleCopy = async () => {
-    if (!previewCardRef.current) return;
+    if (!previewCardRef.current || copying) return;
 
+    setCopying(true);
+    setHideAvatarForExport(true);
+    
     try {
+      // Wait for DOM update
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       const dataUrl = await toPng(previewCardRef.current, {
         backgroundColor: "#fafafa",
         pixelRatio: 2,
+        cacheBust: true,
+        quality: 1,
       });
 
-      // Convert data URL to blob with explicit PNG type
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const pngBlob = new Blob([blob], { type: "image/png" });
+      if (!dataUrl || dataUrl === "data:," || !dataUrl.startsWith("data:image")) {
+        throw new Error(`Failed to generate image data URL. Got: ${dataUrl?.substring(0, 50)}...`);
+      }
+
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
 
       await navigator.clipboard.write([
         new ClipboardItem({
-          "image/png": pngBlob,
+          "image/png": blob,
         }),
       ]);
 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to copy:", err);
+      // Fallback: try copying just the chart image if full card fails
+      if (chartDataUrl) {
+        try {
+          const response = await fetch(chartDataUrl);
+          const blob = await response.blob();
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              "image/png": blob,
+            }),
+          ]);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (fallbackErr: any) {
+          console.error("Fallback copy also failed:", fallbackErr);
+        }
+      }
+    } finally {
+      setCopying(false);
+      setHideAvatarForExport(false);
     }
   };
 
@@ -133,17 +195,30 @@ export function ExportPreviewModal({
                 className="bg-[#fafafa] rounded-xl p-6 flex flex-col items-center shadow-sm max-w-full tracking-tight"
               >
                 {/* Repo info with avatar */}
-                {owner && repo && (
+                {owner && repo && !hideAvatarForExport && (
                   <div className="flex items-center gap-2 mb-3">
                     <Avatar className="h-6 w-6">
                       <AvatarImage
                         src={`https://github.com/${owner}.png`}
                         alt={owner}
                       />
-                      <AvatarFallback className="text-xs">
+                      <AvatarFallback className="text-xs bg-[#e5e5e5] text-[#666]">
                         {owner.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
+                    <span className="text-sm font-medium text-[#181925]">
+                      {owner}/{repo}
+                    </span>
+                  </div>
+                )}
+                {/* Repo info without avatar (for export) */}
+                {owner && repo && hideAvatarForExport && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-6 w-6 rounded-full bg-[#e5e5e5] flex items-center justify-center">
+                      <span className="text-xs text-[#666]">
+                        {owner.slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
                     <span className="text-sm font-medium text-[#181925]">
                       {owner}/{repo}
                     </span>
@@ -191,21 +266,27 @@ export function ExportPreviewModal({
           <div className="absolute -right-14 top-1/2 -translate-y-1/2 flex flex-col gap-2">
             <button
               onClick={handleDownload}
-              disabled={!chartDataUrl || loading}
+              disabled={!chartDataUrl || loading || downloading}
               className="h-10 w-10 rounded-md shadow-lg cursor-pointer bg-[#181925] text-white flex items-center justify-center transition-colors duration-200 ease-out hover:bg-[#2a2b3d] disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Download"
+              title={downloading ? "Downloading..." : "Download"}
             >
-              <HugeiconsIcon icon={Download01Icon} size={16} />
+              {downloading ? (
+                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <HugeiconsIcon icon={Download01Icon} size={16} />
+              )}
             </button>
 
             <button
               onClick={handleCopy}
-              disabled={!chartDataUrl || loading}
+              disabled={!chartDataUrl || loading || copying}
               className="h-10 w-10 rounded-md shadow-lg cursor-pointer bg-white border border-[#e5e5e5] text-[#181925] flex items-center justify-center transition-colors duration-200 ease-out hover:bg-[#f5f5f5] hover:border-[#d0d0d0] disabled:opacity-50 disabled:cursor-not-allowed"
-              title={copied ? "Copied!" : "Copy to clipboard"}
+              title={copied ? "Copied!" : copying ? "Copying..." : "Copy to clipboard"}
             >
               {copied ? (
                 <Check className="h-4 w-4 text-green-600" />
+              ) : copying ? (
+                <div className="h-4 w-4 border-2 border-[#181925]/30 border-t-[#181925] rounded-full animate-spin" />
               ) : (
                 <HugeiconsIcon icon={Copy01Icon} size={16} />
               )}
