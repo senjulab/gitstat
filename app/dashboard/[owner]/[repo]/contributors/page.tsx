@@ -77,7 +77,6 @@ const LinesPatternDots = () => {
   );
 };
 
-
 interface Contributor {
   login: string;
   avatar_url: string;
@@ -566,7 +565,9 @@ export default function ContributorsPage() {
                                         alt={contributor.login}
                                       />
                                       <AvatarFallback>
-                                        {contributor.login.charAt(0).toUpperCase()}
+                                        {contributor.login
+                                          .charAt(0)
+                                          .toUpperCase()}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
@@ -626,9 +627,7 @@ export default function ContributorsPage() {
                           <div className="mt-6 flex items-center justify-center gap-4">
                             <button
                               onClick={() =>
-                                setLeaderboardPage((p) =>
-                                  Math.max(1, p - 1),
-                                )
+                                setLeaderboardPage((p) => Math.max(1, p - 1))
                               }
                               disabled={leaderboardPage === 1}
                               className="cursor-pointer text-[#999] hover:text-[#181925] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -636,8 +635,7 @@ export default function ContributorsPage() {
                               <ChevronLeft className="h-4 w-4" />
                             </button>
                             <span className="text-sm text-[#999]">
-                              page {leaderboardPage} of{" "}
-                              {leaderboardTotalPages}
+                              page {leaderboardPage} of {leaderboardTotalPages}
                             </span>
                             <button
                               onClick={() =>
@@ -736,19 +734,20 @@ export default function ContributorsPage() {
                         if (!payload?.value) return <g />;
                         const login = String(payload.value);
                         // Use index from Recharts directly, fallback to findIndex
-                        const dataIndex = typeof index === 'number' ? index : contributors.findIndex(
-                          (c) => c.login?.toLowerCase() === login.toLowerCase(),
-                        );
-                        const contributor = dataIndex >= 0 ? contributors[dataIndex] : null;
+                        const dataIndex =
+                          typeof index === "number"
+                            ? index
+                            : contributors.findIndex(
+                                (c) =>
+                                  c.login?.toLowerCase() ===
+                                  login.toLowerCase(),
+                              );
+                        const contributor =
+                          dataIndex >= 0 ? contributors[dataIndex] : null;
                         if (!contributor || !contributor.avatar_url) {
                           return (
                             <g transform={`translate(${x},${y})`}>
-                              <circle
-                                cx="0"
-                                cy="12"
-                                r="12"
-                                fill="#e5e5e5"
-                              />
+                              <circle cx="0" cy="12" r="12" fill="#e5e5e5" />
                               <text
                                 x="0"
                                 y="16"
@@ -770,8 +769,8 @@ export default function ContributorsPage() {
                                 style={{
                                   width: 24,
                                   height: 24,
-                                  borderRadius: '50%',
-                                  objectFit: 'cover',
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
                                 }}
                               />
                             </foreignObject>
@@ -869,19 +868,20 @@ export default function ContributorsPage() {
                           if (!payload?.value) return <g />;
                           const login = String(payload.value);
                           // Use index from Recharts directly, fallback to findIndex
-                          const dataIndex = typeof index === 'number' ? index : contributorStats.findIndex(
-                            (c) => c.login?.toLowerCase() === login.toLowerCase(),
-                          );
-                          const contributor = dataIndex >= 0 ? contributorStats[dataIndex] : null;
+                          const dataIndex =
+                            typeof index === "number"
+                              ? index
+                              : contributorStats.findIndex(
+                                  (c) =>
+                                    c.login?.toLowerCase() ===
+                                    login.toLowerCase(),
+                                );
+                          const contributor =
+                            dataIndex >= 0 ? contributorStats[dataIndex] : null;
                           if (!contributor || !contributor.avatar_url) {
                             return (
                               <g transform={`translate(${x},${y})`}>
-                                <circle
-                                  cx="0"
-                                  cy="12"
-                                  r="12"
-                                  fill="#e5e5e5"
-                                />
+                                <circle cx="0" cy="12" r="12" fill="#e5e5e5" />
                                 <text
                                   x="0"
                                   y="16"
@@ -896,15 +896,20 @@ export default function ContributorsPage() {
                           }
                           return (
                             <g transform={`translate(${x},${y})`}>
-                              <foreignObject x={-12} y={0} width={24} height={24}>
+                              <foreignObject
+                                x={-12}
+                                y={0}
+                                width={24}
+                                height={24}
+                              >
                                 <img
                                   src={contributor.avatar_url}
                                   alt={contributor.login}
                                   style={{
                                     width: 24,
                                     height: 24,
-                                    borderRadius: '50%',
-                                    objectFit: 'cover',
+                                    borderRadius: "50%",
+                                    objectFit: "cover",
                                   }}
                                 />
                               </foreignObject>
