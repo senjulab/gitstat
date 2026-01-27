@@ -343,14 +343,14 @@ export default function IssuesPage() {
         <DashboardSidebar />
 
         <div className="flex-1 min-w-0 space-y-8">
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Spinner />
-            </div>
-          ) : error ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
-              <div className="px-6 py-8 text-center">
-                <p className="text-[#666] mb-4">{error}</p>
+          {/* Section 1: Stats */}
+          <div className="relative min-h-[100px]">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center  z-10"></div>
+            )}
+            {error && !loading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
+                <p className="text-[#666] mb-4 text-center">{error}</p>
                 {error.includes("token") && (
                   <Link href="/connect">
                     <Button className="gap-2">
@@ -360,213 +360,230 @@ export default function IssuesPage() {
                   </Link>
                 )}
               </div>
-            </div>
-          ) : (
-            <>
-              {/* Section 1: Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div>
-                  <p className="text-sm text-[#999] mb-1">Open Issues</p>
-                  <p className="text-2xl font-semibold text-[#181925] font-mono">
-                    {stats.openIssues.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-[#999] mb-1">Closed Issues</p>
-                  <p className="text-2xl font-semibold text-[#181925] font-mono">
-                    {stats.closedIssues.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-[#999] mb-1">Open PRs</p>
-                  <p className="text-2xl font-semibold text-[#181925] font-mono">
-                    {stats.openPRs.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-[#999] mb-1">Merged PRs</p>
-                  <p className="text-2xl font-semibold text-[#181925] font-mono">
-                    {stats.mergedPRs.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Section 2: Area Chart */}
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <div>
-                <h2 className="text-base font-medium text-[#181925] mb-1">
-                  Issues Over Time
-                </h2>
-                <p className="text-sm text-[#999] mb-4">
-                  Opened vs closed issues in the last 12 months
+                <p className="text-sm text-[#999] mb-1">Open Issues</p>
+                <p className="text-2xl font-semibold text-[#181925] font-mono">
+                  {loading ? "..." : stats.openIssues.toLocaleString()}
                 </p>
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-[250px] w-full"
-                >
-                  <AreaChart accessibilityLayer data={chartData}>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="month"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent />}
-                    />
-                    <defs>
-                      <DottedBackgroundPattern config={chartConfig} />
-                    </defs>
-                    <Area
-                      dataKey="closed"
-                      type="natural"
-                      fill="url(#dotted-background-pattern-closed)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-closed)"
-                      stackId="a"
-                      strokeWidth={1.5}
-                    />
-                    <Area
-                      dataKey="opened"
-                      type="natural"
-                      fill="url(#dotted-background-pattern-opened)"
-                      fillOpacity={0.4}
-                      stroke="var(--color-opened)"
-                      stackId="a"
-                      strokeWidth={1.5}
-                    />
-                  </AreaChart>
-                </ChartContainer>
               </div>
-
-              {/* Section 3: Tables with Filters */}
               <div>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
-                  <div>
-                    <h2 className="text-base font-medium text-[#181925] mb-1">
-                      All Items
-                    </h2>
-                    <p className="text-sm text-[#999]">
-                      {filteredItems.length} items
-                    </p>
-                  </div>
-                  <Tabs
-                    value={activeFilter}
-                    onValueChange={(v) => setActiveFilter(v as FilterType)}
-                  >
-                    <TabsList className="flex overflow-x-auto scrollbar-hide w-full sm:w-auto">
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="issues">Issues</TabsTrigger>
-                      <TabsTrigger value="prs">PRs</TabsTrigger>
-                      <TabsTrigger value="open">Open</TabsTrigger>
-                      <TabsTrigger value="closed">Closed</TabsTrigger>
-                      <TabsTrigger value="merged">Merged</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-
-                {filteredItems.length === 0 ? (
-                  <div className="flex items-center justify-center py-8">
-                    <p className="text-sm text-[#999]">No items found.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[40%]">Title</TableHead>
-                        <TableHead>Author</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Opened</TableHead>
-                        <TableHead>Closed</TableHead>
-                        <TableHead>Labels</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredItems.slice(0, 50).map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">
-                            <Link
-                              href={item.html_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-[#181925] hover:text-blue-600 hover:underline"
-                            >
-                              <span className="truncate max-w-[200px] sm:max-w-[300px]">
-                                {item.title}
-                              </span>
-                              <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-50" />
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage
-                                  src={item.user.avatar_url}
-                                  alt={item.user.login}
-                                />
-                                <AvatarFallback>
-                                  {item.user.login.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm text-[#666]">
-                                {item.user.login}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{getTypeBadge(item)}</TableCell>
-                          <TableCell>{getStatusBadge(item)}</TableCell>
-                          <TableCell className="text-sm text-[#666]">
-                            {formatRelativeTime(item.created_at)}
-                          </TableCell>
-                          <TableCell className="text-sm text-[#666]">
-                            {item.closed_at
-                              ? formatRelativeTime(item.closed_at)
-                              : "-"}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1 flex-wrap max-w-[150px]">
-                              {item.labels.slice(0, 2).map((label) => (
-                                <Badge
-                                  key={label.name}
-                                  variant="outline"
-                                  className="text-xs"
-                                  style={{
-                                    backgroundColor: `#${label.color}20`,
-                                    borderColor: `#${label.color}`,
-                                    color: `#${label.color}`,
-                                  }}
-                                >
-                                  {label.name}
-                                </Badge>
-                              ))}
-                              {item.labels.length > 2 && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs text-[#999]"
-                                >
-                                  +{item.labels.length - 2}
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-
-                {filteredItems.length > 50 && (
-                  <div className="mt-4 text-center">
-                    <p className="text-sm text-[#999]">
-                      Showing 50 of {filteredItems.length} items
-                    </p>
-                  </div>
-                )}
+                <p className="text-sm text-[#999] mb-1">Closed Issues</p>
+                <p className="text-2xl font-semibold text-[#181925] font-mono">
+                  {loading ? "..." : stats.closedIssues.toLocaleString()}
+                </p>
               </div>
-            </>
-          )}
+              <div>
+                <p className="text-sm text-[#999] mb-1">Open PRs</p>
+                <p className="text-2xl font-semibold text-[#181925] font-mono">
+                  {loading ? "..." : stats.openPRs.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-[#999] mb-1">Merged PRs</p>
+                <p className="text-2xl font-semibold text-[#181925] font-mono">
+                  {loading ? "..." : stats.mergedPRs.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Area Chart */}
+          <div className="relative min-h-[300px]">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+                <Spinner />
+              </div>
+            )}
+            {error && !loading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
+                <p className="text-[#666] mb-4 text-center">{error}</p>
+              </div>
+            )}
+            <div>
+              <h2 className="text-base font-medium text-[#181925] mb-1">
+                Issues Over Time
+              </h2>
+              <p className="text-sm text-[#999] mb-4">
+                Opened vs closed issues in the last 12 months
+              </p>
+              <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <AreaChart accessibilityLayer data={chartData}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
+                  <defs>
+                    <DottedBackgroundPattern config={chartConfig} />
+                  </defs>
+                  <Area
+                    dataKey="closed"
+                    type="natural"
+                    fill="url(#dotted-background-pattern-closed)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-closed)"
+                    stackId="a"
+                    strokeWidth={1.5}
+                  />
+                  <Area
+                    dataKey="opened"
+                    type="natural"
+                    fill="url(#dotted-background-pattern-opened)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-opened)"
+                    stackId="a"
+                    strokeWidth={1.5}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+          </div>
+
+          {/* Section 3: Tables with Filters */}
+          <div className="relative min-h-[200px]">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center  z-10">
+                <Spinner />
+              </div>
+            )}
+            {error && !loading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
+                <p className="text-[#666] mb-4 text-center">{error}</p>
+              </div>
+            )}
+            <div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
+                <div>
+                  <h2 className="text-base font-medium text-[#181925] mb-1">
+                    All Items
+                  </h2>
+                  <p className="text-sm text-[#999]">
+                    {loading ? "..." : `${filteredItems.length} items`}
+                  </p>
+                </div>
+                <Tabs
+                  value={activeFilter}
+                  onValueChange={(v) => setActiveFilter(v as FilterType)}
+                >
+                  <TabsList className="flex overflow-x-auto scrollbar-hide w-full sm:w-auto">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="issues">Issues</TabsTrigger>
+                    <TabsTrigger value="prs">PRs</TabsTrigger>
+                    <TabsTrigger value="open">Open</TabsTrigger>
+                    <TabsTrigger value="closed">Closed</TabsTrigger>
+                    <TabsTrigger value="merged">Merged</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {!loading && !error && filteredItems.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-sm text-[#999]">No items found.</p>
+                </div>
+              ) : !loading && !error ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%]">Title</TableHead>
+                      <TableHead>Author</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Opened</TableHead>
+                      <TableHead>Closed</TableHead>
+                      <TableHead>Labels</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.slice(0, 50).map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">
+                          <Link
+                            href={item.html_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-[#181925] hover:text-blue-600 hover:underline"
+                          >
+                            <span className="truncate max-w-[200px] sm:max-w-[300px]">
+                              {item.title}
+                            </span>
+                            <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-50" />
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage
+                                src={item.user.avatar_url}
+                                alt={item.user.login}
+                              />
+                              <AvatarFallback>
+                                {item.user.login.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm text-[#666]">
+                              {item.user.login}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getTypeBadge(item)}</TableCell>
+                        <TableCell>{getStatusBadge(item)}</TableCell>
+                        <TableCell className="text-sm text-[#666]">
+                          {formatRelativeTime(item.created_at)}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#666]">
+                          {item.closed_at
+                            ? formatRelativeTime(item.closed_at)
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1 flex-wrap max-w-[150px]">
+                            {item.labels.slice(0, 2).map((label) => (
+                              <Badge
+                                key={label.name}
+                                variant="outline"
+                                className="text-xs"
+                                style={{
+                                  backgroundColor: `#${label.color}20`,
+                                  borderColor: `#${label.color}`,
+                                  color: `#${label.color}`,
+                                }}
+                              >
+                                {label.name}
+                              </Badge>
+                            ))}
+                            {item.labels.length > 2 && (
+                              <Badge
+                                variant="outline"
+                                className="text-xs text-[#999]"
+                              >
+                                +{item.labels.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : null}
+
+              {!loading && !error && filteredItems.length > 50 && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-[#999]">
+                    Showing 50 of {filteredItems.length} items
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
