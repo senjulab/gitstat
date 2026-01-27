@@ -53,7 +53,7 @@ export default function WhyWeBuiltGitStat() {
               <img
                 src="/gitstatbutwhyblog.png"
                 alt="Why We Built GitStat"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-105 "
               />
             </div>
           </header>
