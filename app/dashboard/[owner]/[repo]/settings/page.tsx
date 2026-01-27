@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Copy, Check } from "lucide-react";
@@ -26,6 +26,7 @@ export default function SettingsPage() {
   const supabase = createClient();
 
   const [projectName, setProjectName] = useState(repo);
+  const [originalProjectName, setOriginalProjectName] = useState(repo);
   const [isPublic, setIsPublic] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -34,6 +35,10 @@ export default function SettingsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const projectToken = "4a151b05-4d06-4b29-9592-2e828ebc86f2";
   const publicUrl = `gitstat.dev/s/${owner}/${repo}`;
@@ -58,6 +63,81 @@ export default function SettingsPage() {
 
   const handleRemoveMember = (username: string) => {
     setTeamMembers(teamMembers.filter((m) => m !== username));
+  };
+
+  // Fetch current display_name on mount
+  useEffect(() => {
+    const fetchDisplayName = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from("connected_repositories")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .eq("repo_owner", owner)
+          .eq("repo_name", repo)
+          .single();
+
+        if (error) {
+          console.error("Error fetching display name:", error);
+          return;
+        }
+
+        if (data?.display_name) {
+          setProjectName(data.display_name);
+          setOriginalProjectName(data.display_name);
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDisplayName();
+  }, [owner, repo, supabase]);
+
+  const handleSaveProjectName = async () => {
+    if (projectName.trim() === originalProjectName.trim()) {
+      return; // No changes
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      const response = await fetch("/api/settings/update-repo-name", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          owner,
+          repo,
+          displayName: projectName.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update project name");
+      }
+
+      setOriginalProjectName(data.displayName);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      setSaveError(err.message || "Failed to update project name");
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteProject = async () => {
@@ -117,7 +197,7 @@ export default function SettingsPage() {
 
         <div className="flex-1 min-w-0 space-y-4">
           {/* will make it in public after launch */}
-          {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Project name
@@ -129,21 +209,38 @@ export default function SettingsPage() {
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 maxLength={30}
+                disabled={isLoading || isSaving}
                 className="border-none rounded-xl h-11 bg-[#fafafa] text-base font-medium placeholder:text-[#b3b3b3] focus:ring-0"
               />
+              {saveError && (
+                <p className="text-xs text-red-600 mt-2">{saveError}</p>
+              )}
+              {saveSuccess && (
+                <p className="text-xs text-green-600 mt-2">
+                  Project name updated successfully!
+                </p>
+              )}
             </div>
             <div className="px-4 py-2 bg-white border-t border-[#f7f7f7] flex items-center justify-between h-12">
               <span className="text-xs text-[#999]">
                 Maximum of 30 characters
               </span>
-              <Button className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200">
-                Save
+              <Button
+                onClick={handleSaveProjectName}
+                disabled={
+                  isLoading ||
+                  isSaving ||
+                  projectName.trim() === originalProjectName.trim() ||
+                  projectName.trim().length === 0
+                }
+                className="cursor-pointer select-none h-[30px] px-2.5 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? "Saving..." : saveSuccess ? "Saved!" : "Save"}
               </Button>
             </div>
-          </div> */}
+          </div>
 
           {/* will make it in public after launch */}
-
           {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
@@ -178,7 +275,6 @@ export default function SettingsPage() {
           </div> */}
 
           {/* will make it in public after launch */}
-
           {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
