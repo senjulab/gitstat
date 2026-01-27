@@ -8,7 +8,6 @@ import { Download01Icon, Copy01Icon } from "@hugeicons/core-free-icons";
 import { toPng } from "html-to-image";
 import { Logo } from "@/components/logo";
 import { GeistMono } from "geist/font/mono";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 // Helper to wrap numbers in mono font spans
 function formatSubtitleWithMonoNumbers(text: string) {
@@ -52,7 +51,27 @@ export function ExportPreviewModal({
   const [copying, setCopying] = useState(false);
   const [copied, setCopied] = useState(false);
   const [hideAvatarForExport, setHideAvatarForExport] = useState(false);
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const previewCardRef = useRef<HTMLDivElement>(null);
+
+  // Preload avatar image
+  useEffect(() => {
+    if (open && owner) {
+      setAvatarLoaded(false);
+      setAvatarError(false);
+      const img = new Image();
+      img.onload = () => {
+        setAvatarLoaded(true);
+        setAvatarError(false);
+      };
+      img.onerror = () => {
+        setAvatarLoaded(false);
+        setAvatarError(true);
+      };
+      img.src = `https://avatars.githubusercontent.com/${owner}?size=48`;
+    }
+  }, [open, owner]);
 
   // Capture the chart when modal opens
   useEffect(() => {
@@ -195,30 +214,34 @@ export function ExportPreviewModal({
                 className="bg-[#fafafa] rounded-xl p-6 flex flex-col items-center shadow-sm max-w-full tracking-tight"
               >
                 {/* Repo info with avatar */}
-                {owner && repo && !hideAvatarForExport && (
+                {owner && repo && (
                   <div className="flex items-center gap-2 mb-3">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage
-                        src={`https://github.com/${owner}.png`}
-                        alt={owner}
-                      />
-                      <AvatarFallback className="text-xs bg-[#e5e5e5] text-[#666]">
-                        {owner.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium text-[#181925]">
-                      {owner}/{repo}
-                    </span>
-                  </div>
-                )}
-                {/* Repo info without avatar (for export) */}
-                {owner && repo && hideAvatarForExport && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="h-6 w-6 rounded-full bg-[#e5e5e5] flex items-center justify-center">
-                      <span className="text-xs text-[#666]">
-                        {owner.slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
+                    {hideAvatarForExport ? (
+                      <div className="h-6 w-6 rounded-full bg-[#e5e5e5] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs text-[#666] font-medium">
+                          {owner.slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="h-6 w-6 rounded-full bg-[#e5e5e5] flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                        <img
+                          src={`https://avatars.githubusercontent.com/${owner}?size=48`}
+                          alt={owner}
+                          className="h-full w-full object-cover"
+                          onLoad={() => setAvatarLoaded(true)}
+                          onError={() => {
+                            setAvatarError(true);
+                            setAvatarLoaded(false);
+                          }}
+                          style={{ display: avatarError ? 'none' : 'block' }}
+                        />
+                        {avatarError && (
+                          <span className="text-xs text-[#666] font-medium absolute inset-0 flex items-center justify-center">
+                            {owner.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <span className="text-sm font-medium text-[#181925]">
                       {owner}/{repo}
                     </span>
