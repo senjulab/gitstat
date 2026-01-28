@@ -35,6 +35,13 @@ const linesChartConfig = {
   },
 } satisfies ChartConfig;
 
+const commitsOverTimeConfig = {
+  commits: {
+    label: "Commits",
+    color: "var(--chart-1)",
+  },
+} satisfies ChartConfig;
+
 const DottedBackgroundPattern = () => {
   return (
     <pattern
@@ -60,6 +67,27 @@ const LinesPatternDots = () => {
   return (
     <pattern
       id="contributors-lines-pattern-dots"
+      x="0"
+      y="0"
+      width="10"
+      height="10"
+      patternUnits="userSpaceOnUse"
+    >
+      <circle
+        className="dark:text-muted/40 text-muted"
+        cx="2"
+        cy="2"
+        r="1"
+        fill="currentColor"
+      />
+    </pattern>
+  );
+};
+
+const CommitsOverTimePattern = () => {
+  return (
+    <pattern
+      id="commits-over-time-pattern-dots"
       x="0"
       y="0"
       width="10"
@@ -107,6 +135,11 @@ interface RecentCommit {
   html_url: string;
 }
 
+interface CommitsOverTime {
+  week: string;
+  commits: number;
+}
+
 import { useDashboardCache } from "@/app/components/DashboardCacheProvider";
 
 export default function ContributorsPage() {
@@ -133,6 +166,10 @@ export default function ContributorsPage() {
   const [recentCommit, setRecentCommit] = useState<RecentCommit | null>(null);
   const [commitLoading, setCommitLoading] = useState(true);
   const [commitError, setCommitError] = useState<string | null>(null);
+
+  const [commitsOverTime, setCommitsOverTime] = useState<CommitsOverTime[]>([]);
+  const [commitsOverTimeLoading, setCommitsOverTimeLoading] = useState(true);
+  const [commitsOverTimeError, setCommitsOverTimeError] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -452,6 +489,37 @@ export default function ContributorsPage() {
   useEffect(() => {
     fetchRecentCommit();
   }, [fetchRecentCommit]);
+
+  const fetchCommitsOverTime = useCallback(async () => {
+    setCommitsOverTimeLoading(true);
+    setCommitsOverTimeError(null);
+
+    try {
+      const res = await fetch(`/api/commits-over-time/${owner}/${repo}`);
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          throw new Error(
+            "Access denied. Please ensure the repository is connected.",
+          );
+        }
+        throw new Error("Failed to fetch commits over time");
+      }
+
+      const data = await res.json();
+      setCommitsOverTime(data);
+    } catch (err) {
+      setCommitsOverTimeError(
+        err instanceof Error ? err.message : "Failed to fetch commits over time",
+      );
+    } finally {
+      setCommitsOverTimeLoading(false);
+    }
+  }, [owner, repo]);
+
+  useEffect(() => {
+    fetchCommitsOverTime();
+  }, [fetchCommitsOverTime]);
 
   const handleReconnect = () => {
     window.location.href = "/onboard/connect";
@@ -946,6 +1014,81 @@ export default function ContributorsPage() {
                       <Bar
                         dataKey="deleted"
                         fill="var(--color-deleted)"
+                        radius={4}
+                      />
+                    </BarChart>
+                  </ChartContainer>
+                )}
+              </div>
+
+              {/* Commits Over Time */}
+              <div className="mt-8">
+                <div className="mb-4">
+                  <h2 className="text-base font-medium text-[#181925]">
+                    Commits over time
+                  </h2>
+                  <p className="text-sm text-[#999]">
+                    {commitsOverTime.length > 0
+                      ? `Weekly from ${commitsOverTime[0].week} to ${commitsOverTime[commitsOverTime.length - 1].week}`
+                      : commitsOverTimeLoading
+                      ? "Loading..."
+                      : "No commits data available"}
+                  </p>
+                </div>
+
+                {commitsOverTimeLoading ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <Spinner />
+                  </div>
+                ) : commitsOverTimeError ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <p className="text-sm text-[#999]">{commitsOverTimeError}</p>
+                  </div>
+                ) : commitsOverTime.length === 0 ? (
+                  <div className="flex items-center justify-center py-12 h-[250px]">
+                    <p className="text-sm text-[#999]">No commits data available.</p>
+                  </div>
+                ) : (
+                  <ChartContainer
+                    config={commitsOverTimeConfig}
+                    className="h-[250px] w-full"
+                  >
+                    <BarChart
+                      accessibilityLayer
+                      data={commitsOverTime}
+                      margin={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                    >
+                      <rect
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="85%"
+                        fill="url(#commits-over-time-pattern-dots)"
+                      />
+                      <defs>
+                        <CommitsOverTimePattern />
+                      </defs>
+                      <XAxis
+                        dataKey="week"
+                        tickLine={false}
+                        tickMargin={10}
+                        axisLine={false}
+                        tickFormatter={(value) => value}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        width={70}
+                        tickFormatter={(value) => value.toLocaleString()}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Bar
+                        dataKey="commits"
+                        fill="var(--color-commits)"
                         radius={4}
                       />
                     </BarChart>
