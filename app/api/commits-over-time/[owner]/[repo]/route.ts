@@ -15,9 +15,10 @@ function getStartOfWeek(date: Date): Date {
 }
 
 function formatWeekLabel(date: Date): string {
+  // Format as "MMM DD" (e.g., "Jan 26") for better readability
   const month = date.toLocaleDateString("en-US", { month: "short" });
-  const year = date.toLocaleDateString("en-US", { year: "2-digit" });
-  return `${month} '${year}`;
+  const day = date.getDate();
+  return `${month} ${day}`;
 }
 
 function aggregateCommitsByWeek(commits: any[]): CommitData[] {

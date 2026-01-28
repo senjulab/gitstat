@@ -1027,13 +1027,13 @@ export default function ContributorsPage() {
                   <h2 className="text-base font-medium text-[#181925]">
                     Commits over time
                   </h2>
-                  <p className="text-sm text-[#999]">
-                    {commitsOverTime.length > 0
-                      ? `Weekly from ${commitsOverTime[0].week} to ${commitsOverTime[commitsOverTime.length - 1].week}`
-                      : commitsOverTimeLoading
-                      ? "Loading..."
-                      : "No commits data available"}
-                  </p>
+                    <p className="text-sm text-[#999]">
+                      {commitsOverTime.length > 0
+                        ? `Weekly from ${commitsOverTime[0].week} to ${commitsOverTime[commitsOverTime.length - 1].week}`
+                        : commitsOverTimeLoading
+                        ? "Loading..."
+                        : "No commits data available"}
+                    </p>
                 </div>
 
                 {commitsOverTimeLoading ? (
