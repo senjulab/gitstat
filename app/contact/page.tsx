@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 import UserHeader from "@/components/user-header";
 
 export default function ContactPage() {
-  const [countdown, setCountdown] = useState(3);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const supabase = createClient();
 
@@ -21,21 +20,6 @@ export default function ContactPage() {
     };
     checkAuth();
   }, [supabase]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    const redirect = setTimeout(() => {
-      window.location.href = "https://x.com/gitstatdev";
-    }, 3000);
-
-    return () => {
-      clearInterval(timer);
-      clearTimeout(redirect);
-    };
-  }, []);
 
   return (
     <>
@@ -65,13 +49,13 @@ export default function ContactPage() {
             <p className="text-[#666] text-sm leading-relaxed">
               We provide support via X (formerly Twitter).
               <br />
-              Redirecting you in {countdown} seconds...
+              Click below to send us a message.
             </p>
           </div>
 
           <div className="pt-2">
             <Button
-              className="w-full h-12 bg-black hover:bg-[#F81DE5] text-white rounded-xl text-base font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-[#F81DE5]/20 flex items-center justify-center gap-2 group"
+              className="w-full h-12 bg-black  text-white rounded-xl text-base font-medium transition-all duration-300 shadow-md hover:shadow-lg  flex items-center justify-center gap-2 group cursor-pointer"
               onClick={() =>
                 (window.location.href = "https://x.com/gitstatdev")
               }
