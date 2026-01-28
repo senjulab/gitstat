@@ -121,27 +121,12 @@ export default function ConnectPage() {
                   <a
                     key={repo.id}
                     href={`/dashboard/${repo.repo_owner}/${repo.repo_name}/traffic`}
-                    className="block p-4 bg-white border border-neutral-200 rounded-xl hover:border-neutral-300 transition-colors group"
+                    className="block p-4 bg-[#fff] border border-neutral-200 rounded-xl hover:border-neutral-300 transition-colors group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-600">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                            />
-                          </svg>
-                        </div>
                         <div className="text-left">
-                          <p className="font-medium text-sm text-neutral-900 group-hover:text-blue-600 transition-colors">
+                          <p className="font-medium text-sm text-neutral-900 group-hover:text-[#f81ee5] transition-colors">
                             {repo.repo_name}
                           </p>
                           <p className="text-xs text-neutral-500">
@@ -150,7 +135,7 @@ export default function ConnectPage() {
                         </div>
                       </div>
                       <svg
-                        className="w-4 h-4 text-neutral-400 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all"
+                        className="w-4 h-4 text-neutral-400 group-hover:text-[#f81ee5] group-hover:translate-x-0.5 transition-all"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -170,8 +155,8 @@ export default function ConnectPage() {
               <div className="pt-2">
                 <Button
                   onClick={handleConnectGitHub}
-                  variant="outline"
-                  className="w-full h-12 rounded-xl text-base font-medium text-neutral-600 hover:text-neutral-900"
+                  variant="default"
+                  className="w-full h-12 rounded-xl text-base font-medium  cursor-pointer"
                 >
                   Connect more repositories
                 </Button>
