@@ -145,158 +145,191 @@ export function DashboardHeader({ owner, repo }: DashboardHeaderProps) {
             <div className="w-px h-6 bg-[#e5e5e5] shrink-0" />
 
             <div className="relative min-w-0" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors min-w-0"
-              >
-                <img
-                  src={`https://github.com/${owner}.png?size=40`}
-                  alt={owner}
-                  className="w-5 h-5 rounded shrink-0"
-                />
-                <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">
-                  {connectedRepos.find(
-                    (r) => r.owner === owner && r.name === repo,
-                  )?.displayName || repo}
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-[220px] max-w-[min(220px,calc(100vw-2rem))] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
-                  <div className="pb-1">
-                    <p className="text-sm font-medium text-[#999] px-3 py-1">
-                      Projects
-                    </p>
-                  </div>
-                  <div className="max-h-[200px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                    {connectedRepos.map((r) => (
-                      <Link
-                        key={`${r.owner}/${r.name}`}
-                        href={`/dashboard/${r.owner}/${r.name}${getCurrentSubRoute()}`}
-                        onClick={() => setIsDropdownOpen(false)}
-                        className={`w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          r.owner === owner && r.name === repo
-                            ? "text-[#181925] bg-[#f5f5f5]"
-                            : "text-[#181925] hover:bg-[#f5f5f5]"
-                        }`}
-                      >
-                        <img
-                          src={`https://github.com/${r.owner}.png?size=40`}
-                          alt={r.owner}
-                          className="w-4 h-4 rounded"
-                        />
-                        {r.displayName}
-                      </Link>
-                    ))}
-                  </div>
-
-                  <div className="border-t border-[#f0f0f0] my-2 mx-1" />
-
+              {/* If owner, show dropdown. If not, show static. */}
+              {connectedRepos.some(
+                (r) => r.owner === owner && r.name === repo,
+              ) ? (
+                <>
                   <button
-                    onClick={handleAddProject}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#181925] cursor-pointer hover:bg-[#f5f5f5] transition-colors"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg hover:bg-[#f5f5f5] transition-colors min-w-0"
                   >
-                    <Plus className="w-[16px] h-[16px] text-[#999]" />
-                    Add project
+                    <img
+                      src={`https://github.com/${owner}.png?size=40`}
+                      alt={owner}
+                      className="w-5 h-5 rounded shrink-0"
+                    />
+                    <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">
+                      {connectedRepos.find(
+                        (r) => r.owner === owner && r.name === repo,
+                      )?.displayName || repo}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-[#999] transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                    />
                   </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-[220px] max-w-[min(220px,calc(100vw-2rem))] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
+                      <div className="pb-1">
+                        <p className="text-sm font-medium text-[#999] px-3 py-1">
+                          Projects
+                        </p>
+                      </div>
+                      <div className="max-h-[200px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                        {connectedRepos.map((r) => (
+                          <Link
+                            key={`${r.owner}/${r.name}`}
+                            href={`/dashboard/${r.owner}/${r.name}${getCurrentSubRoute()}`}
+                            onClick={() => setIsDropdownOpen(false)}
+                            className={`w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              r.owner === owner && r.name === repo
+                                ? "text-[#181925] bg-[#f5f5f5]"
+                                : "text-[#181925] hover:bg-[#f5f5f5]"
+                            }`}
+                          >
+                            <img
+                              src={`https://github.com/${r.owner}.png?size=40`}
+                              alt={r.owner}
+                              className="w-4 h-4 rounded"
+                            />
+                            {r.displayName}
+                          </Link>
+                        ))}
+                      </div>
+
+                      <div className="border-t border-[#f0f0f0] my-2 mx-1" />
+
+                      <button
+                        onClick={handleAddProject}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#181925] cursor-pointer hover:bg-[#f5f5f5] transition-colors"
+                      >
+                        <Plus className="w-[16px] h-[16px] text-[#999]" />
+                        Add project
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 min-w-0">
+                  <img
+                    src={`https://github.com/${owner}.png?size=40`}
+                    alt={owner}
+                    className="w-5 h-5 rounded shrink-0"
+                  />
+                  <span className="text-sm font-medium text-[#333] truncate max-w-[100px] sm:max-w-none">
+                    {repo}
+                  </span>
                 </div>
               )}
             </div>
           </div>
 
           <div className="flex items-center gap-4 relative" ref={userMenuRef}>
-            <button
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="cursor-pointer"
-            >
-              <Avatar className="w-[30px] h-[30px]">
-                {userAvatar && (
-                  <AvatarImage src={userAvatar} alt="User avatar" />
+            {userEmail ? (
+              // Logged in
+              <>
+                {!connectedRepos.some(
+                  (r) => r.owner === owner && r.name === repo,
+                ) && (
+                  <Button
+                    variant="outline"
+                    className="h-9 px-4 text-sm font-medium rounded-full hidden sm:flex"
+                    onClick={() => router.push("/")}
+                  >
+                    Dashboard
+                  </Button>
                 )}
-                <AvatarFallback className="text-sm bg-[#f0f0f0] text-[#666]">
-                  {userName.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </button>
 
-            {isUserMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-[240px] max-w-[min(240px,calc(100vw-2rem))] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
-                <div className="flex items-center gap-2 mb-2 px-2">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="cursor-pointer"
+                >
                   <Avatar className="w-[30px] h-[30px]">
                     {userAvatar && (
                       <AvatarImage src={userAvatar} alt="User avatar" />
                     )}
-                    <AvatarFallback className="text-sm bg-[#c8d96f] text-white">
+                    <AvatarFallback className="text-sm bg-[#f0f0f0] text-[#666]">
                       {userName.slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="text-sm font-medium text-[#181925]">
-                      {userName}
-                    </p>
-                    <p className="text-xs text-[#999]">{userEmail}</p>
-                  </div>
-                </div>
-
-                <Link
-                  href={`/dashboard/${owner}/${repo}/settings`}
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                >
-                  Account
-                  <Settings className="w-[16px] h-[16px] text-[#999]" />
-                </Link>
-
-                <div className="border-t border-[#f0f0f0] my-1 -mx-2" />
-
-                {/* we dont need it for now */}
-
-                {/* <Link
-                  href="/docs"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                >
-                  Docs
-                  <BookOpen className="w-[16px] h-[16px] text-[#999]" />
-                </Link> */}
-                <Link
-                  href="/blog"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                >
-                  Blog
-                  <FileText className="w-[16px] h-[16px] text-[#999]" />
-                </Link>
-                <Link
-                  href="/contact"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                >
-                  Contact
-                  <MessageCircle className="w-[16px] h-[16px] text-[#999]" />
-                </Link>
-
-                <div className="border-t border-[#f0f0f0] my-1 -mx-2" />
-
-                <Link
-                  href="/"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-md text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                >
-                  Homepage
-                  <Globe className="w-[16px] h-[16px] text-[#999]" />
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-md text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
-                >
-                  Log out
-                  <LogOut className="w-[16px] h-[16px] text-[#999]" />
                 </button>
-              </div>
+
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-[240px] max-w-[min(240px,calc(100vw-2rem))] bg-white rounded-lg shadow-sm border border-[#f0f0f0] tracking-tight p-2 z-50">
+                    <div className="flex items-center gap-2 mb-2 px-2">
+                      <Avatar className="w-[30px] h-[30px]">
+                        {userAvatar && (
+                          <AvatarImage src={userAvatar} alt="User avatar" />
+                        )}
+                        <AvatarFallback className="text-sm bg-[#c8d96f] text-white">
+                          {userName.slice(0, 1).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium text-[#181925]">
+                          {userName}
+                        </p>
+                        <p className="text-xs text-[#999]">{userEmail}</p>
+                      </div>
+                    </div>
+
+                    <Link
+                      href={`/dashboard/${owner}/${repo}/settings`}
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                    >
+                      Account
+                      <Settings className="w-[16px] h-[16px] text-[#999]" />
+                    </Link>
+
+                    <div className="border-t border-[#f0f0f0] my-1 -mx-2" />
+
+                    <Link
+                      href="/blog"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                    >
+                      Blog
+                      <FileText className="w-[16px] h-[16px] text-[#999]" />
+                    </Link>
+                    <Link
+                      href="/contact"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-lg text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                    >
+                      Contact
+                      <MessageCircle className="w-[16px] h-[16px] text-[#999]" />
+                    </Link>
+
+                    <div className="border-t border-[#f0f0f0] my-1 -mx-2" />
+
+                    <Link
+                      href="/"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-md text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                    >
+                      Homepage
+                      <Globe className="w-[16px] h-[16px] text-[#999]" />
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-between gap-2 px-2 py-1 rounded-md text-sm font-medium text-[#181925] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                    >
+                      Log out
+                      <LogOut className="w-[16px] h-[16px] text-[#999]" />
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              // Not logged in
+              <Button
+                className="h-9 px-4 text-sm font-medium rounded-full bg-[#f81ee5] text-white hover:bg-[#f81ee5]/90 cursor-pointer"
+                onClick={() => router.push("/login")}
+              >
+                Register now
+              </Button>
             )}
           </div>
         </div>

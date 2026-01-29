@@ -65,9 +65,9 @@ export default function SettingsPage() {
     setTeamMembers(teamMembers.filter((m) => m !== username));
   };
 
-  // Fetch current display_name on mount
+  // Fetch current display_name and is_public on mount
   useEffect(() => {
-    const fetchDisplayName = async () => {
+    const fetchRepoDetails = async () => {
       try {
         const {
           data: { user },
@@ -76,20 +76,21 @@ export default function SettingsPage() {
 
         const { data, error } = await supabase
           .from("connected_repositories")
-          .select("display_name")
+          .select("display_name, is_public")
           .eq("user_id", user.id)
           .eq("repo_owner", owner)
           .eq("repo_name", repo)
           .single();
 
         if (error) {
-          console.error("Error fetching display name:", error);
+          console.error("Error fetching repo details:", error);
           return;
         }
 
-        if (data?.display_name) {
-          setProjectName(data.display_name);
-          setOriginalProjectName(data.display_name);
+        if (data) {
+          setProjectName(data.display_name || repo);
+          setOriginalProjectName(data.display_name || repo);
+          setIsPublic(data.is_public || false);
         }
       } catch (err) {
         console.error("Unexpected error:", err);
@@ -98,8 +99,35 @@ export default function SettingsPage() {
       }
     };
 
-    fetchDisplayName();
+    fetchRepoDetails();
   }, [owner, repo, supabase]);
+
+  const handleTogglePublic = async (checked: boolean) => {
+    // 1. Optimistic update
+    setIsPublic(checked);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("connected_repositories")
+        .update({ is_public: checked })
+        .eq("user_id", user.id)
+        .eq("repo_owner", owner)
+        .eq("repo_name", repo);
+
+      if (error) {
+        throw error;
+      }
+    } catch (err) {
+      console.error("Error updating public status:", err);
+      // Revert on error
+      setIsPublic(!checked);
+    }
+  };
 
   const handleSaveProjectName = async () => {
     if (projectName.trim() === originalProjectName.trim()) {
@@ -241,7 +269,7 @@ export default function SettingsPage() {
           </div>
 
           {/* will make it in public after launch */}
-          {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">
                 Public stats
@@ -250,7 +278,10 @@ export default function SettingsPage() {
                 Share your repo stats with anyone.
               </p>
               <div className="flex items-center gap-3">
-                <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+                <Switch
+                  checked={isPublic}
+                  onCheckedChange={handleTogglePublic}
+                />
                 <span className="text-sm text-[#666]">
                   {isPublic ? "Public" : "Private"}
                 </span>
@@ -272,7 +303,7 @@ export default function SettingsPage() {
                 )}
               </Button>
             </div>
-          </div> */}
+          </div>
 
           {/* will make it in public after launch */}
           {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
