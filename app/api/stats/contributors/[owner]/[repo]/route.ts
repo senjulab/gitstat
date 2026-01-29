@@ -16,20 +16,27 @@ export async function GET(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: repos } = await supabase
+    .from("connected_repositories")
+    .select("installation_id, is_public, user_id")
+    .eq("repo_owner", owner)
+    .eq("repo_name", repo);
+
+  let connectedRepo = null;
+  if (repos) {
+    connectedRepo =
+      repos.find((r) => r.is_public) ||
+      (user ? repos.find((r) => r.user_id === user.id) : null);
   }
 
-  const { data: connectedRepo } = await supabase
-    .from("connected_repositories")
-    .select("installation_id")
-    .eq("user_id", user.id)
-    .eq("repo_owner", owner)
-    .eq("repo_name", repo)
-    .single();
-
   if (!connectedRepo || !connectedRepo.installation_id) {
-    return NextResponse.json({ error: "Repository not connected or missing permission" }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.json(
+      { error: "Repository not connected or missing permission" },
+      { status: 403 },
+    );
   }
 
   const appId = process.env.GITHUB_APP_ID;

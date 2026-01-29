@@ -105,14 +105,6 @@ export default function TrafficPage() {
     setError(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error("Authentication required");
-      }
-
       // Fetch from our internal proxy API
       const response = await fetch(`/api/traffic/${owner}/${repo}`);
 

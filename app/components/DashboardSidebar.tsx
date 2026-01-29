@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   CursorMagicSelection04Icon,
@@ -16,6 +18,33 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const owner = params.owner as string;
   const repo = params.repo as string;
+
+  const [isOwner, setIsOwner] = useState(true); // Default to true to prevent flickering for owners, will correct quickly
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkOwnership = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setIsOwner(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("connected_repositories")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("repo_owner", owner)
+        .eq("repo_name", repo)
+        .single();
+
+      setIsOwner(!!data);
+    };
+    checkOwnership();
+  }, [owner, repo, supabase]);
 
   const sidebarItems = [
     {
@@ -48,7 +77,7 @@ export function DashboardSidebar() {
       icon: Settings01Icon,
       href: `/dashboard/${owner}/${repo}/settings`,
     },
-  ];
+  ].filter((item) => isOwner || item.id !== "settings");
 
   const linkClass = (isActive: boolean) =>
     `flex items-center cursor-pointer gap-2 px-3 py-1 text-sm font-medium transition-colors ${
