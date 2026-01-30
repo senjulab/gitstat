@@ -17,12 +17,18 @@ export default function Hero() {
           repo evolves in realtime.
         </p>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mt-4 w-full sm:w-auto max-w-sm sm:max-w-none">
-          <Link href="/register" className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white w-full sm:w-auto items-center justify-center cursor-pointer rounded-full font-medium inline-flex">
+          <Link
+            href="/register"
+            className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white w-full sm:w-auto items-center justify-center cursor-pointer rounded-full font-medium inline-flex"
+          >
             Start now for free
           </Link>
-          <button className="bg-[#00000008] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] w-full sm:w-auto items-center justify-center cursor-pointer rounded-full font-medium">
+          <Link
+            href="https://gitstat.dev/s/senjulab/gitstat"
+            className="bg-[#00000008] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] w-full sm:w-auto items-center justify-center cursor-pointer rounded-full font-medium inline-flex"
+          >
             See demo
-          </button>
+          </Link>
         </div>
 
         <span className="text-sm max-w-[188px] text-[#999]">
