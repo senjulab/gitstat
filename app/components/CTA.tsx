@@ -14,12 +14,18 @@ export default function CTA() {
             See your project's growth clearly and stay ahead of every change.
           </p>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mt-4 w-full sm:w-auto">
-            <Link href="/register" className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium inline-flex">
+            <Link
+              href="/register"
+              className="bg-[#F81DE5] px-5 h-11 gap-2 hover:bg-[#e01ad1] transition-colors duration-200 text-white items-center justify-center cursor-pointer rounded-full font-medium inline-flex"
+            >
               Start now for free
             </Link>
-            <button className="bg-[#00000010] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] items-center justify-center cursor-pointer rounded-full font-medium">
+            <Link
+              href="https://gitstat.dev/s/senjulab/gitstat"
+              className="bg-[#00000010] px-5 h-11 gap-2 hover:opacity-90 transition-colors duration-200 text-[#666] items-center justify-center cursor-pointer rounded-full font-medium inline-flex"
+            >
               See demo
-            </button>
+            </Link>
           </div>
           <span className="text-sm text-[#999]">No credit card required</span>
         </div>
