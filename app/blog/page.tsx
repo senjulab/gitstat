@@ -9,6 +9,19 @@ export const metadata = {
 
 const POSTS = [
   {
+    slug: "our-stack",
+    title: "The GitStat Stack: What We Use & Why",
+    category: "Engineering",
+    author: {
+      name: "Yassin",
+      image: "/pfp.png",
+    },
+    date: "Feb 02, 2026",
+    image: "/tech-stack-for-the-post.png",
+    excerpt:
+      "We like shipping fast. Here's the stack that helps us do it: Next.js 16, Tailwind v4, Supabase, and a few other secret weapons.",
+  },
+  {
     slug: "why-we-built-gitstat",
     title: "Introducing GitStat",
     category: "News",
