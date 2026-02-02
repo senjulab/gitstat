@@ -64,12 +64,12 @@ export default function Navbar() {
         </span>
       </Link>
       <Link
-        href="https://bags.fm/CBEPWiQ35jiuW1jZEYH1U98c39ixRz2qD3dQT41WBAGS"
+        href="https://github.com/senjulab/gitstat"
         target="_blank"
         onClick={() => setMobileMenuOpen(false)}
       >
         <span className="text-[#bbbcc3] font-medium text-sm hover:text-[#eaeaeb] transition-colors duration-200 cursor-pointer">
-          Support Dev
+          GitHub
         </span>
       </Link>
     </>
