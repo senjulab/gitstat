@@ -13,7 +13,7 @@ const POSTS = [
     title: "Protocol Roadmap: Building the Future of Git Analytics",
     category: "Protocol",
     author: {
-      name: "Yassin",
+      name: "Heyke",
       image: "/pfp.png",
     },
     date: "Feb 03, 2026",
@@ -26,7 +26,7 @@ const POSTS = [
     title: "The GitStat Stack: What We Use & Why",
     category: "Engineering",
     author: {
-      name: "Yassin",
+      name: "Heyke",
       image: "/pfp.png",
     },
     date: "Feb 02, 2026",
@@ -39,7 +39,7 @@ const POSTS = [
     title: "Introducing GitStat",
     category: "News",
     author: {
-      name: "Yassin",
+      name: "Heyke",
       image: "/pfp.png",
     },
     date: "Jan 26, 2026",
