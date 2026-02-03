@@ -9,7 +9,7 @@ export const metadata = {
   description:
     "We're building the ultimate developer analytics platform. Here's what we've shipped, what's coming, and how $GT holders get exclusive access to the future.",
   openGraph: {
-    images: ["/tech-stack-for-the-post.png"],
+    images: ["/roadmap.png"],
   },
 };
 
@@ -59,7 +59,7 @@ export default function RoadmapPage() {
             </h1>
             <div className="w-full aspect-[1200/630] bg-[#F5F5F7] rounded-xl overflow-hidden border border-[#00000008]">
               <img
-                src="/tech-stack-for-the-post.png"
+                src="/roadmap.png"
                 alt="GitStat Roadmap"
                 className="w-full h-full object-cover scale-105"
               />

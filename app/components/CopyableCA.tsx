@@ -32,7 +32,7 @@ export function CopyableCA({ ca }: CopyableCAProps) {
       </div>
       <button
         onClick={handleCopy}
-        className="flex-shrink-0 p-2 text-[#666666] hover:text-[#1a1a1a] hover:bg-white bg-transparent rounded-md border border-transparent hover:border-[#EAEAEA] transition-all duration-200 cursor-pointer"
+        className="shrink-0 p-2 text-[#666666] hover:text-[#1a1a1a] hover:bg-white bg-transparent rounded-md border border-transparent hover:border-[#EAEAEA] transition-all duration-200 cursor-pointer"
         aria-label="Copy to clipboard"
         title="Copy address"
       >
