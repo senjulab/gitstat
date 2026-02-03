@@ -441,7 +441,7 @@ export default function TrafficPage() {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 ">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -654,6 +654,101 @@ export default function TrafficPage() {
                   </AreaChart>
                 </ChartContainer>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <div className="mb-4">
+              <h2 className="text-base font-medium text-[#181925]">
+                Referring Sites
+              </h2>
+              <p className="text-sm text-[#999] mt-1">
+                Know exactly where your traffic is coming from
+              </p>
+            </div>
+
+            <div className="border border-[#eaeaea] rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#eaeaea] bg-[#fafafa]">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                      Site
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                      Visitors
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                      Unique Visitors
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-[#eaeaea]">
+                  <tr className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3 text-sm text-[#181925]">
+                      twitter.com
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      1,247
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      892
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3 text-sm text-[#181925]">
+                      news.ycombinator.com
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      856
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      634
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3 text-sm text-[#181925]">
+                      reddit.com
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      623
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      478
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3 text-sm text-[#181925]">
+                      github.com
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      412
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      301
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3 text-sm text-[#181925]">dev.to</td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      287
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      219
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-[#fafafa] transition-colors">
+                    <td className="px-4 py-3 text-sm text-[#181925]">
+                      linkedin.com
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      156
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                      134
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
