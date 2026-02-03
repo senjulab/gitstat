@@ -9,6 +9,19 @@ export const metadata = {
 
 const POSTS = [
   {
+    slug: "roadmap",
+    title: "Protocol Roadmap: Building the Future of Git Analytics",
+    category: "Protocol",
+    author: {
+      name: "Yassin",
+      image: "/pfp.png",
+    },
+    date: "Feb 03, 2026",
+    image: "/tech-stack-for-the-post.png",
+    excerpt:
+      "We're building the ultimate developer analytics platform. Here's what we've shipped, what's coming, and how $GT holders get exclusive access to the future.",
+  },
+  {
     slug: "our-stack",
     title: "The GitStat Stack: What We Use & Why",
     category: "Engineering",
