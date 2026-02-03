@@ -36,6 +36,12 @@ interface VisitorData {
   unique: number;
 }
 
+interface ReferrerData {
+  referrer: string;
+  count: number;
+  uniques: number;
+}
+
 const chartConfig = {
   unique: {
     label: "Unique",
@@ -73,8 +79,10 @@ export default function TrafficPage() {
 
   const [clonesData, setClonesData] = useState<TrafficData[]>([]);
   const [visitorData, setVisitorData] = useState<VisitorData[]>([]);
+  const [referrersData, setReferrersData] = useState<ReferrerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [referrersLoading, setReferrersLoading] = useState(true);
 
   const [clonesXAxis, setClonesXAxis] = useState<number | null>(null);
   const [visitorXAxis, setVisitorXAxis] = useState<number | null>(null);
@@ -171,9 +179,29 @@ export default function TrafficPage() {
     }
   }, []);
 
+  const fetchReferrersData = useCallback(async () => {
+    setReferrersLoading(true);
+
+    try {
+      const response = await fetch(`/api/referrers/${owner}/${repo}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch referrers data");
+      }
+
+      const data = await response.json();
+      setReferrersData(data.referrers || []);
+    } catch (err: any) {
+      console.error("Referrers fetch error:", err);
+    } finally {
+      setReferrersLoading(false);
+    }
+  }, [owner, repo]);
+
   useEffect(() => {
     fetchTrafficData();
-  }, [fetchTrafficData]);
+    fetchReferrersData();
+  }, [fetchTrafficData, fetchReferrersData]);
 
   const totalClones = totals.clones;
   const totalUniqueClones = totals.uniqueClones;
@@ -683,70 +711,39 @@ export default function TrafficPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-[#eaeaea]">
-                  <tr className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#181925]">
-                      twitter.com
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      1,247
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      892
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#181925]">
-                      news.ycombinator.com
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      856
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      634
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#181925]">
-                      reddit.com
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      623
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      478
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#181925]">
-                      github.com
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      412
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      301
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#181925]">dev.to</td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      287
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      219
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-[#fafafa] transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#181925]">
-                      linkedin.com
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      156
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
-                      134
-                    </td>
-                  </tr>
+                  {referrersLoading ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center">
+                        <Spinner className="mx-auto" />
+                      </td>
+                    </tr>
+                  ) : referrersData.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="px-4 py-8 text-center text-sm text-[#999]"
+                      >
+                        No referring sites data available
+                      </td>
+                    </tr>
+                  ) : (
+                    referrersData.map((referrer, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-[#fafafa] transition-colors"
+                      >
+                        <td className="px-4 py-3 text-sm text-[#181925]">
+                          {referrer.referrer}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                          {referrer.count.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                          {referrer.uniques.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
