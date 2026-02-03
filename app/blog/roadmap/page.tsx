@@ -262,7 +262,7 @@ export default function RoadmapPage() {
             We are currently building the referral and long-term data layers.
           </p>
 
-          <h3 className={h3}>Referring Sites Intelligence</h3>
+          <h3 className={h3}>Referring Sites</h3>
           <p className={p}>
             Know exactly where your traffic is coming from. Twitter? Hacker
             News? Reddit? distinct breakdowns to optimize your growth sources.

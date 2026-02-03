@@ -36,6 +36,12 @@ interface VisitorData {
   unique: number;
 }
 
+interface ReferrerData {
+  referrer: string;
+  count: number;
+  uniques: number;
+}
+
 const chartConfig = {
   unique: {
     label: "Unique",
@@ -73,8 +79,10 @@ export default function TrafficPage() {
 
   const [clonesData, setClonesData] = useState<TrafficData[]>([]);
   const [visitorData, setVisitorData] = useState<VisitorData[]>([]);
+  const [referrersData, setReferrersData] = useState<ReferrerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [referrersLoading, setReferrersLoading] = useState(true);
 
   const [clonesXAxis, setClonesXAxis] = useState<number | null>(null);
   const [visitorXAxis, setVisitorXAxis] = useState<number | null>(null);
@@ -171,9 +179,29 @@ export default function TrafficPage() {
     }
   }, []);
 
+  const fetchReferrersData = useCallback(async () => {
+    setReferrersLoading(true);
+
+    try {
+      const response = await fetch(`/api/referrers/${owner}/${repo}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch referrers data");
+      }
+
+      const data = await response.json();
+      setReferrersData(data.referrers || []);
+    } catch (err: any) {
+      console.error("Referrers fetch error:", err);
+    } finally {
+      setReferrersLoading(false);
+    }
+  }, [owner, repo]);
+
   useEffect(() => {
     fetchTrafficData();
-  }, [fetchTrafficData]);
+    fetchReferrersData();
+  }, [fetchTrafficData, fetchReferrersData]);
 
   const totalClones = totals.clones;
   const totalUniqueClones = totals.uniqueClones;
@@ -441,7 +469,7 @@ export default function TrafficPage() {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 ">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -654,6 +682,70 @@ export default function TrafficPage() {
                   </AreaChart>
                 </ChartContainer>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <div className="mb-4">
+              <h2 className="text-base font-medium text-[#181925]">
+                Referring Sites
+              </h2>
+              <p className="text-sm text-[#999] mt-1">
+                Know exactly where your traffic is coming from
+              </p>
+            </div>
+
+            <div className="border border-[#eaeaea] rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#eaeaea] bg-[#fafafa]">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                      Site
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                      Visitors
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                      Unique Visitors
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-[#eaeaea]">
+                  {referrersLoading ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center">
+                        <Spinner className="mx-auto" />
+                      </td>
+                    </tr>
+                  ) : referrersData.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="px-4 py-8 text-center text-sm text-[#999]"
+                      >
+                        No referring sites data available
+                      </td>
+                    </tr>
+                  ) : (
+                    referrersData.map((referrer, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-[#fafafa] transition-colors"
+                      >
+                        <td className="px-4 py-3 text-sm text-[#181925]">
+                          {referrer.referrer}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                          {referrer.count.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                          {referrer.uniques.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
