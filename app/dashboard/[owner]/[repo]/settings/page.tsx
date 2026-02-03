@@ -305,55 +305,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* will make it in public after launch */}
-          {/* <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
-            <div className="px-4 py-4">
-              <h2 className="text-base font-medium text-[#181925] mb-1">
-                Team
-              </h2>
-              <p className="text-sm text-[#999] mb-4">
-                Manage who has access to this project.
-              </p>
-
-              {teamMembers.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  {teamMembers.map((member) => (
-                    <div
-                      key={member}
-                      className="flex items-center justify-between py-2 px-3 bg-[#fafafa] rounded-xl"
-                    >
-                      <span className="text-sm font-medium text-[#181925]">
-                        {member}
-                      </span>
-                      <button
-                        onClick={() => handleRemoveMember(member)}
-                        className="cursor-pointer text-[#999] hover:text-[#ff2f00] transition-colors"
-                      >
-                        <HugeiconsIcon icon={Delete02Icon} size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Input
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="Enter email or username"
-                  className="border-none rounded-xl h-11 bg-[#fafafa] text-base font-medium placeholder:text-[#b3b3b3] focus:ring-0"
-                  onKeyDown={(e) => e.key === "Enter" && handleInvite()}
-                />
-                <Button
-                  onClick={handleInvite}
-                  className="cursor-pointer select-none h-11 px-4 text-sm rounded-full font-medium bg-white hover:bg-white text-[#181925] border border-[#e0e0e0] hover:border-[#b3b3b3] active:bg-[#f5f5f5] active:scale-[0.99] transition-all duration-200"
-                >
-                  Send invite
-                </Button>
-              </div>
-            </div>
-          </div> */}
-
           <div className="bg-white rounded-2xl shadow-sm border border-[#f7f7f7] overflow-hidden">
             <div className="px-4 py-4">
               <h2 className="text-base font-medium text-[#181925] mb-1">

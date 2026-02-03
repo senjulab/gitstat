@@ -80,14 +80,14 @@ export default function RoadmapPage() {
           <h2 className={h2}>Phase 1: The Foundation</h2>
           <p className={p}>
             <span className={status_built}>DEPLOYED</span>
-            The core infrastructure is live. We've solved the immediate pain
-            points that GitHub Insights ignored.
+            The core infrastructure is live. We've built the "God Mode"
+            dashboard that GitHub should have given you.
           </p>
 
           <ul className="space-y-4 mt-6 mb-8">
             <li className="flex items-start">
               <svg
-                className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0"
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -101,17 +101,17 @@ export default function RoadmapPage() {
               </svg>
               <div>
                 <strong className="block text-[#1a1a1a] font-medium">
-                  Detailed Traffic Analytics
+                  Traffic Intelligence
                 </strong>
                 <p className="text-[#666666] text-sm leading-relaxed">
-                  View clones, views, and unique visitors with granularity
-                  GitHub doesn't offer.
+                  Real-time view of clones, unique visitors, and total views.
+                  aggregated and visualized.
                 </p>
               </div>
             </li>
             <li className="flex items-start">
               <svg
-                className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0"
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -125,17 +125,17 @@ export default function RoadmapPage() {
               </svg>
               <div>
                 <strong className="block text-[#1a1a1a] font-medium">
-                  Deep Star History
+                  Deep Star Analytics
                 </strong>
                 <p className="text-[#666666] text-sm leading-relaxed">
-                  Full history visualization and a searchable list of every
-                  stargazer. Know your audience.
+                  Not just a count. See your full star history visualized.
+                  Identify viral moments instantly.
                 </p>
               </div>
             </li>
             <li className="flex items-start">
               <svg
-                className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0"
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -149,17 +149,18 @@ export default function RoadmapPage() {
               </svg>
               <div>
                 <strong className="block text-[#1a1a1a] font-medium">
-                  Multi-Project Support
+                  Contributor X-Ray
                 </strong>
                 <p className="text-[#666666] text-sm leading-relaxed">
-                  Manage multiple repositories side-by-side in a unified
-                  dashboard.
+                  See exactly who is shipping. We visualize additions/deletions
+                  per user and track the latest commit activity. No more
+                  guessing who the MVPs are.
                 </p>
               </div>
             </li>
             <li className="flex items-start">
               <svg
-                className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0"
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -173,17 +174,17 @@ export default function RoadmapPage() {
               </svg>
               <div>
                 <strong className="block text-[#1a1a1a] font-medium">
-                  Public Dashboards
+                  Issues & PRs Command Center
                 </strong>
                 <p className="text-[#666666] text-sm leading-relaxed">
-                  One-click sharing. Make your growth transparent to your
-                  investors and community.
+                  Clean, filterable lists with clear labels. Visualized activity
+                  charts to track velocity and bottlenecks.
                 </p>
               </div>
             </li>
             <li className="flex items-start">
               <svg
-                className="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0"
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -197,10 +198,59 @@ export default function RoadmapPage() {
               </svg>
               <div>
                 <strong className="block text-[#1a1a1a] font-medium">
-                  High-Fidelity Exports
+                  Custom Repo Identity
                 </strong>
                 <p className="text-[#666666] text-sm leading-relaxed">
-                  One-click PNG and CSV exports. Your data belongs to you.
+                  Rename your repositories within GitStat. Your dashboard, your
+                  organization.
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start">
+              <svg
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              <div>
+                <strong className="block text-[#1a1a1a] font-medium">
+                  Viral Social Sharing
+                </strong>
+                <p className="text-[#666666] text-sm leading-relaxed">
+                  Generate beautiful, Twitter-ready images of your stats.
+                  One-click flex.
+                </p>
+              </div>
+            </li>
+            <li className="flex items-start">
+              <svg
+                className="w-5 h-5 text-green-500 mr-3 mt-1 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              <div>
+                <strong className="block text-[#1a1a1a] font-medium">
+                  Unlimited Multi-Project
+                </strong>
+                <p className="text-[#666666] text-sm leading-relaxed">
+                  Add as many projects as you want. Aggregated stats for your
+                  entire portfolio.
                 </p>
               </div>
             </li>
@@ -209,25 +259,23 @@ export default function RoadmapPage() {
           <h2 className={h2}>Phase 2: Expansion</h2>
           <p className={p}>
             <span className={status_progress}>IN PROGRESS</span>
-            We are extending the capabilities of the platform to handle deeper
-            data accumulation.
+            We are currently building the referral and long-term data layers.
+          </p>
+
+          <h3 className={h3}>Referring Sites Intelligence</h3>
+          <p className={p}>
+            Know exactly where your traffic is coming from. Twitter? Hacker
+            News? Reddit? distinct breakdowns to optimize your growth sources.
           </p>
 
           <h3 className={h3}>Extended Data Retention (90 Days+)</h3>
           <p className={p}>
-            GitHub deletes traffic data after 14 days. We are building the
-            storage layer to accumulate this data for up to 3 months initially,
-            giving you quarterly growth insights that are currently impossible
-            to get.
-          </p>
-
-          <h3 className={h3}>Predictive Growth Models</h3>
-          <p className={p}>
-            Using your historical data to forecast future star trajectories and
-            traffic spikes. Know when you're about to trend before it happens.
+            We're breaking the 14-day GitHub limit. We are building the storage
+            layer to retain your traffic and star data for 90 days and beyond.
           </p>
 
           <h2 className={h2}>Phase 3: The Ecosystem & $GT</h2>
+
           <p className={p}>
             <span className={status_future}>UPCOMING</span>
             This is where things get interesting. We are significantly upgrading
