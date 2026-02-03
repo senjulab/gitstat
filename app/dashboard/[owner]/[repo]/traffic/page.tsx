@@ -42,6 +42,13 @@ interface ReferrerData {
   uniques: number;
 }
 
+interface PopularPathData {
+  path: string;
+  title: string;
+  count: number;
+  uniques: number;
+}
+
 const chartConfig = {
   unique: {
     label: "Unique",
@@ -80,9 +87,13 @@ export default function TrafficPage() {
   const [clonesData, setClonesData] = useState<TrafficData[]>([]);
   const [visitorData, setVisitorData] = useState<VisitorData[]>([]);
   const [referrersData, setReferrersData] = useState<ReferrerData[]>([]);
+  const [popularPathsData, setPopularPathsData] = useState<PopularPathData[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [referrersLoading, setReferrersLoading] = useState(true);
+  const [popularPathsLoading, setPopularPathsLoading] = useState(true);
 
   const [clonesXAxis, setClonesXAxis] = useState<number | null>(null);
   const [visitorXAxis, setVisitorXAxis] = useState<number | null>(null);
@@ -198,10 +209,30 @@ export default function TrafficPage() {
     }
   }, [owner, repo]);
 
+  const fetchPopularPathsData = useCallback(async () => {
+    setPopularPathsLoading(true);
+
+    try {
+      const response = await fetch(`/api/popular-paths/${owner}/${repo}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch popular paths data");
+      }
+
+      const data = await response.json();
+      setPopularPathsData(data.paths || []);
+    } catch (err: any) {
+      console.error("Popular paths fetch error:", err);
+    } finally {
+      setPopularPathsLoading(false);
+    }
+  }, [owner, repo]);
+
   useEffect(() => {
     fetchTrafficData();
     fetchReferrersData();
-  }, [fetchTrafficData, fetchReferrersData]);
+    fetchPopularPathsData();
+  }, [fetchTrafficData, fetchReferrersData, fetchPopularPathsData]);
 
   const totalClones = totals.clones;
   const totalUniqueClones = totals.uniqueClones;
@@ -695,7 +726,7 @@ export default function TrafficPage() {
               </p>
             </div>
 
-            <div className="border border-[#eaeaea] rounded-lg overflow-hidden">
+            <div className=" overflow-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#eaeaea] bg-[#fafafa]">
@@ -746,6 +777,78 @@ export default function TrafficPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Popular Content Section */}
+            <div className="mt-8">
+              <div className="mb-4">
+                <h2 className="text-base font-medium text-[#181925]">
+                  Popular Content
+                </h2>
+                <p className="text-sm text-[#999] mt-1">
+                  Most visited pages in your repository
+                </p>
+              </div>
+
+              <div className="overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[#eaeaea] bg-[#fafafa]">
+                      <th className="text-left px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        Content
+                      </th>
+                      <th className="text-right px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        Views
+                      </th>
+                      <th className="text-right px-4 py-3 text-xs font-medium text-[#666] uppercase tracking-wider">
+                        Unique Visitors
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-[#eaeaea]">
+                    {popularPathsLoading ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-8 text-center">
+                          <Spinner className="mx-auto" />
+                        </td>
+                      </tr>
+                    ) : popularPathsData.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={3}
+                          className="px-4 py-8 text-center text-sm text-[#999]"
+                        >
+                          No popular content data available
+                        </td>
+                      </tr>
+                    ) : (
+                      popularPathsData.map((path, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-[#fafafa] transition-colors"
+                        >
+                          <td className="px-4 py-3 text-sm text-[#181925]">
+                            <div className="flex flex-col">
+                              <span className="font-medium">{path.path}</span>
+                              {path.title && (
+                                <span className="text-xs text-[#999] mt-0.5">
+                                  {path.title}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                            {path.count.toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-[#181925] text-right font-mono tabular-nums">
+                            {path.uniques.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
